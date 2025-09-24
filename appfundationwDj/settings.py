@@ -40,7 +40,11 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "crispy_forms",
     "crispy_tailwind",
+    "cloudinary",
+    "cloudinary_storage",
     "users",
+    "breeds",
+    "animals",
 ]
 
 MIDDLEWARE = [
@@ -132,5 +136,14 @@ AUTH_USER_MODEL = "users.CustomUser"
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
 CRISPY_TEMPLATE_PACK = "tailwind"
+
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": os.getenv("CLOUD_NAME"),
+    "API_KEY": os.getenv("CLOUD_API_KEY"),
+    "API_SECRET": os.getenv("CLOUD_API_SECRET"),
+}
+
+
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 LOGIN_REDIRECT_URL = ""  # Debo colocar el nombre a donde voy a redireccionar

@@ -1,2 +1,6 @@
 Django==5.2.6
 crispy-tailwind==1.0.3
+django-crispy-forms==2.4
+Pillow==11.3.0
+cloudinary==1.44.1
+django-cloudinary-storage==0.3.0

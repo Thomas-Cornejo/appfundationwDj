@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .models import Breed
 
-# Register your models here.
+class BreedAnimal(admin.ModelAdmin):
+    model = Breed
+
+admin.site.register(Breed, BreedAnimal)

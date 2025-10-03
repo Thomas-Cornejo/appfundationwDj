@@ -1,0 +1,46 @@
+{% load static %}
+<header class="bg-white shadow-md w-full">
+  <nav
+    class="max-w-screen-2xl mx-auto flex items-center justify-between px-6 py-1"
+  >
+    <div class="flex items-center space-x-1">
+      <img src="{% static 'images/logo.png' %}" alt="Logo" class="w-20 h-15" />
+      <span class="text-2xl font-bold text-indigo-600">Mi Mejor Amigo</span>
+    </div>
+
+    <ul class="flex items-center space-x-8">
+      <li><a href="{% url 'home' %}" class="nav-link" data-page="home">Nosotros</a></li>
+      <li><a href="#" class="nav-link" data-page="adopt">Adóptanos</a></li>
+      <li><a href="#" class="nav-link" data-page="apadrina">Apadrínanos</a></li>
+      <li><a href="#" class="nav-link" data-page="ayuda">Ayúdanos</a></li>
+    </ul>
+
+    {% if user.is_authenticated %}
+    <div class="relative">
+      <button class="bg-indigo-600 text-white px-5 py-2 rounded-full">
+        {{ user.username }}
+      </button>
+      <div
+        class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg"
+      >
+        <a
+          href="{% url 'perfil' %}"
+          class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          >Perfil</a
+        >
+        <a
+          href="{% url 'logout' %}"
+          class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+          >Cerrar sesión</a
+        >
+      </div>
+    </div>
+    {% else %}
+    <a
+      href="{% url 'login' %}"
+      class="bg-indigo-600 text-white px-5 py-2 rounded-full"
+      >Iniciar sesión</a
+    >
+    {% endif %}
+  </nav>
+</header>

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
+import cloudinary
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -34,6 +35,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "jazzmin",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -42,7 +44,11 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "crispy_forms",
     "crispy_tailwind",
+    "cloudinary",
+    "cloudinary_storage",
     "users",
+    "breeds",
+    "animals",
 ]
 
 MIDDLEWARE = [
@@ -124,6 +130,7 @@ STATIC_URL = "static/"
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -135,4 +142,15 @@ AUTH_USER_MODEL = "users.CustomUser"
 CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
 CRISPY_TEMPLATE_PACK = "tailwind"
 
-LOGIN_REDIRECT_URL = ""  # Debo colocar el nombre a donde voy a redireccionar
+cloudinary.config(
+    cloud_name=os.getenv("CLOUD_NAME"),
+    api_key=os.getenv("CLOUD_API_KEY"),
+    api_secret=os.getenv("CLOUD_API_SECRET"),
+)
+
+
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+
+LOGIN_REDIRECT_URL = "home"
+
+LOGOUT_REDIRECT_URL = "home"

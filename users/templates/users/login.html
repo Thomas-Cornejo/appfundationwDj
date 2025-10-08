@@ -24,13 +24,13 @@
 
       <p class="mt-6 text-sm text-gray-500">
         ¿No tienes una cuenta?
-        <a href="#" class="text-indigo-600 hover:underline">Regístrate aquí</a>
+        <a href="{% url 'register' %}" class="text-indigo-600 hover:underline">Regístrate aquí</a>
       </p>
     </div>
 
     <div class="hidden md:block">
       <img
-        src="{% static 'WelcomeDog.png' %}"
+        src="{% static 'images/WelcomeDog.png' %}"
         alt="Welcome Dog"
         class="h-full w-full object-cover"
       />

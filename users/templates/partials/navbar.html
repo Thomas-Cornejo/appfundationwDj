@@ -1,4 +1,5 @@
 {% load static %}
+<script src="{% static 'js/navbar.js' %}"></script>
 <header class="bg-white shadow-md w-full">
   <nav
     class="max-w-screen-2xl mx-auto flex items-center justify-between px-6 py-1"
@@ -9,7 +10,11 @@
     </div>
 
     <ul class="flex items-center space-x-8">
-      <li><a href="{% url 'home' %}" class="nav-link" data-page="home">Nosotros</a></li>
+      <li>
+        <a href="{% url 'home' %}" class="nav-link" data-page="home"
+          >Nosotros</a
+        >
+      </li>
       <li><a href="#" class="nav-link" data-page="adopt">Adóptanos</a></li>
       <li><a href="#" class="nav-link" data-page="apadrina">Apadrínanos</a></li>
       <li><a href="#" class="nav-link" data-page="ayuda">Ayúdanos</a></li>
@@ -17,11 +22,12 @@
 
     {% if user.is_authenticated %}
     <div class="relative">
-      <button class="bg-indigo-600 text-white px-5 py-2 rounded-full">
+      <button id="user-button" class="bg-indigo-600 text-white px-5 py-2 rounded-full">
         {{ user.username }}
       </button>
       <div
-        class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg"
+        id="user-menu"
+        class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg hidden"
       >
         <a
           href="{% url 'perfil' %}"

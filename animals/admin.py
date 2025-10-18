@@ -7,7 +7,7 @@ class HistoryInline(admin.StackedInline):
     model = History
     extra = 1
     fieldsets = (
-        (None, {"fields": ("type", "description", "location_found", "entry_date")}),
+        (None, {"fields": ("history_type", "description", "location_found", "entry_date")}),
     )
     readonly_fields = ("entry_date",)
     show_change_link = True

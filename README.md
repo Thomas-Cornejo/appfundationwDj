@@ -55,6 +55,10 @@ Activate on macOS/Linux
 
 `$ pip install -r requirements.txt`
 
+#### Install dev tools (linting, testing, etc.)
+
+`$ pip install -r requirements-dev.txt`
+
 #### Configure environment variables
 
 Create a .env file at the project root and set the required variables.

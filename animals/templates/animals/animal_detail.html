@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Información de {{ animal.name }}{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-10">
+
+  <div class="max-w-5xl mx-auto mb-8 px-4">
+    <a href="{% url 'adoption_list' %}" class="flex items-center text-indigo-600 hover:text-indigo-800 mb-4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      Volver al catálogo
+    </a>
+    <h1 class="text-3xl font-semibold text-gray-800 flex items-center gap-2">
+      Información de {{ animal.name }}
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3" />
+      </svg>
+    </h1>
+  </div>
+
+  <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-center gap-6 px-4">
+    {% if animal.imagen %}
+      <div class="w-52 h-52 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden border border-blue-200 shadow">
+        <img src="{{ animal.imagen.url }}" alt="{{ animal.name }}" class="w-full h-full object-cover" />
+      </div>
+    {% endif %}
+
+    {% if animal.imagen2 %}
+      <div class="w-52 h-52 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden border border-blue-200 shadow">
+        <img src="{{ animal.imagen2.url }}" alt="{{ animal.name }}" class="w-full h-full object-cover" />
+      </div>
+    {% endif %}
+
+    {% if animal.imagen3 %}
+      <div class="w-52 h-52 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden border border-blue-200 shadow">
+        <img src="{{ animal.imagen3.url }}" alt="{{ animal.name }}" class="w-full h-full object-cover" />
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="max-w-4xl mx-auto bg-blue-50 mt-10 p-8 rounded-3xl shadow-sm">
+    <h2 class="text-2xl font-semibold text-blue-700 mb-3">{{ animal.name }}</h2>
+    {% with ingreso=animal.ingreso_history %}
+      <p>{{ ingreso.description }}</p>
+      <p><strong>Ubicación:</strong> {{ ingreso.location_found }}</p>
+    {% endwith %}
+
+
+    <div class="flex justify-end">
+      <a href="#" 
+         class="bg-indigo-500 text-white px-6 py-3 rounded-full hover:bg-indigo-600 transition font-medium">
+        🐾 Adoptar
+      </a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

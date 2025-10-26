@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+{% include "partials/navbar.html" %}
+
+<main class="bg-slate-50 min-h-screen py-10">
+  <div class="max-w-7xl mx-auto px-6">
+
+    <form method="get" class="mb-8 flex flex-wrap gap-4 items-center justify-center bg-white shadow-md p-4 rounded-lg">
+      <div>
+        <label for="bree" class="block text-sm font-medium text-gray-700">Razas</label>
+        <select name="breed" id="breed" class="border rounded px-3 py-2">
+          <option value="">Todas</option>
+          {% for r in breeds %}
+          <option value="{{ r.id }}" {% if selected_breed == r.id|stringformat:"s" %}selected{% endif %}>{{ r.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label for="birth_date" class="block text-sm font-medium text-gray-700">Edad</label>
+        <select name="birth_date" id="birth_date" class="border rounded px-3 py-2">
+          <option value="">Todas</option>
+          <option value="joven" {% if selected_birth_date == "joven" %}selected{% endif %}>Joven (0-2 años)</option>
+          <option value="adulto" {% if selected_birth_date == "adulto" %}selected{% endif %}>Adulto (3-7 años)</option>
+          <option value="senior" {% if selected_birth_date == "senior" %}selected{% endif %}>Senior (8+ años)</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="size" class="block text-sm font-medium text-gray-700">Tamaño</label>
+        <select name="size" id="size" class="border rounded px-3 py-2">
+          <option value="">Todos</option>
+          <option value="P" {% if selected_size == "P" %}selected{% endif %}>Pequeño</option>
+          <option value="M" {% if selected_size == "M" %}selected{% endif %}>Mediano</option>
+          <option value="G" {% if selected_size == "G" %}selected{% endif %}>Grande</option>
+        </select>
+      </div>
+
+      <div>
+        <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+          Filtrar
+        </button>
+      </div>
+    </form>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+      {% for animal in page_obj %}
+      <div class="bg-white rounded-2xl shadow-md overflow-hidden hover:scale-105 transition">
+        
+        <div class="h-48 bg-gray-200 flex justify-center items-center">
+          {% if animal.imagen %}
+            <img src="{{ animal.imagen.url }}" alt="{{ animal.name }}" class="h-full w-full object-cover">
+          {% else %}
+            <span class="text-gray-500">Sin imagen</span>
+          {% endif %}
+        </div>
+        
+        <div class="p-4 text-center">
+          <h3 class="text-xl font-bold text-indigo-700">{{ animal.name }}</h3>
+          <p class="text-gray-600">{{ animal.breed.name }}</p>
+          <p class="text-gray-500">
+            {{ animal.age }} años • 
+            {% if animal.size == "P" %}Pequeño
+            {% elif animal.size == "M" %}Mediano
+            {% else %}Grande{% endif %}
+          </p>
+          <a href="{% url 'animal_detail' animal.id %}" 
+            class="mt-4 bg-indigo-500 text-white px-4 py-2 rounded-full hover:bg-blue-500 transition inline-block text-center">
+            Adóptame
+          </a>
+        </div>
+      </div>
+      {% empty %}
+      <p class="col-span-4 text-center text-gray-500">No se encontraron animales con esos filtros.</p>
+      {% endfor %}
+    </div>
+
+    <div class="flex justify-center items-center mt-10 space-x-2">
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}&breed={{ selected_breed }}&birth_date={{ selected_birth_date }}&size={{ selected_size }}"
+         class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Anterior</a>
+      {% endif %}
+
+      <span class="px-4 py-2 bg-indigo-600 text-white rounded">
+        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+      </span>
+
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}&breed={{ selected_breed }}&birth_date={{ selected_birth_date }}&size={{ selected_size }}"
+         class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Siguiente</a>
+      {% endif %}
+    </div>
+
+  </div>
+</main>
+
+{% endblock %}

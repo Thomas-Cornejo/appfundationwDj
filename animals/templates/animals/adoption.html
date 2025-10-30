@@ -61,7 +61,7 @@
           <h3 class="text-xl font-bold text-indigo-700">{{ animal.name }}</h3>
           <p class="text-gray-600">{{ animal.breed.name }}</p>
           <p class="text-gray-500">
-            {{ animal.age }} años • 
+            {{ animal.age }} año{% if animal.age != 1 %}s{% endif %} • 
             {% if animal.size == "P" %}Pequeño
             {% elif animal.size == "M" %}Mediano
             {% else %}Grande{% endif %}

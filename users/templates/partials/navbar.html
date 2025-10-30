@@ -6,7 +6,7 @@
   >
     <div class="flex items-center space-x-1">
       <img src="{% static 'images/logo.png' %}" alt="Logo" class="w-20 h-15" />
-      <span class="text-2xl font-bold text-indigo-600">Mi Mejor Amigo</span>
+      <span class="text-2xl font-bold text-blue-600">Mi Mejor Amigo</span>
     </div>
 
     <ul class="flex items-center space-x-8">
@@ -22,7 +22,7 @@
 
     {% if user.is_authenticated %}
     <div class="relative">
-      <button id="user-button" class="bg-indigo-600 text-white px-5 py-2 rounded-full">
+      <button id="user-button" class="bg-blue-600 text-white px-5 py-2 rounded-full">
         {{ user.username }}
       </button>
       <div
@@ -34,8 +34,12 @@
           class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
           >Perfil</a
         >
+        <form id="logout-form" method="post" action="{% url 'logout' %}" style="display: none;">
+          {% csrf_token %}
+        </form>
         <a
-          href="{% url 'logout' %}"
+          href="#"
+          onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
           class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
           >Cerrar sesión</a
         >
@@ -44,7 +48,7 @@
     {% else %}
     <a
       href="{% url 'login' %}"
-      class="bg-indigo-600 text-white px-5 py-2 rounded-full"
+      class="bg-blue-600 text-white px-5 py-2 rounded-full"
       >Iniciar sesión</a
     >
     {% endif %}

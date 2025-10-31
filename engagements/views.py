@@ -20,8 +20,10 @@ def adopt_animal(request, animal_id):
     ).first()
 
     if existing:
-        messages.warning(request, f'Ya tienes una solicitud para {animal.name}.')
-        return redirect('animal_detail', animal_id=animal.id)
+        return render(request, 'engagements/already_applied.html', {
+            'engagement': existing,
+            'animal': animal
+        })
 
     if request.method == 'POST':
         form = AdoptionForm(request.POST)

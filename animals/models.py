@@ -1,5 +1,6 @@
 from django.db import models
 from breeds.models import Breed
+from datetime import date
 from django.utils import timezone
 from cloudinary.models import CloudinaryField
 
@@ -14,11 +15,20 @@ class Animal(models.Model):
     color = models.CharField(max_length=20, verbose_name="Color")
     imagen = CloudinaryField("image")
     availability = models.CharField(max_length=1, choices=AVAILABILITY_CHOICES, default="A", verbose_name="Disponibilidad")
-    status = models.BooleanField(default=False, null=False, blank=False)
+    is_active = models.BooleanField(default=True, verbose_name="Activo")
     breed = models.ForeignKey(Breed, on_delete=models.PROTECT, verbose_name="Raza")
 
     def __str__(self):
         return f"{self.name} ({self.breed})"
+    
+    @property
+    def age(self):
+        """Return the animal's age in years."""
+        today = date.today()
+        age = today.year - self.birth_date.year - (
+            (today.month, today.day) < (self.birth_date.month, self.birth_date.day)
+        )
+        return age
 
     def ingreso_history(self):
         return self.history.filter(history_type="I").first()

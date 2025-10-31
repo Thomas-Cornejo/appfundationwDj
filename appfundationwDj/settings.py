@@ -152,6 +152,6 @@ cloudinary.config(
 
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
-LOGIN_REDIRECT_URL = "home"
+LOGIN_REDIRECT_URL = "/users/home/"
 
-LOGOUT_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "/users/home/"

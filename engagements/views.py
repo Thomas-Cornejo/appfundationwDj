@@ -57,7 +57,7 @@ def adoption_success(request, engagement_id):
 
 @login_required
 def download_pdf(request, engagement_id):
-    """Vista para descargar el PDF con el nombre correcto"""
+    """View to download the PDF with the correct name"""
     engagement = get_object_or_404(AnimalEngagement, pk=engagement_id)
     
     if not (request.user == engagement.user or request.user.is_staff):

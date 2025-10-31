@@ -28,7 +28,7 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
     actions = ['approve_engagements', 'reject_engagements']
 
     def form_data_display(self, obj):
-        """Muestra los datos del formulario de forma legible"""
+        """Displays form data in a readable format"""
         if obj.form_data:
             html = "<table style='width:100%; border-collapse: collapse;'>"
             for key, value in obj.form_data.items():

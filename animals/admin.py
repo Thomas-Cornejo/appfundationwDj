@@ -12,7 +12,6 @@ class HistoryInline(admin.StackedInline):
     readonly_fields = ("entry_date",)
     show_change_link = True
 
-
 @admin.register(Animal)
 class AnimalAdmin(admin.ModelAdmin):
     list_display = ("name", "breed", "sex", "size", "color", "preview_image")
@@ -25,12 +24,12 @@ class AnimalAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "name",
+                    "birth_date",
                     "breed",
                     "sex",
                     "size",
                     "color",
                     "availability",
-                    "status",
                     "imagen",
                 )
             },

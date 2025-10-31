@@ -1,20 +1,48 @@
 from django.utils.html import format_html
 from django.contrib import admin
-from .models import Animal
+from .models import Animal, History
 
+
+class HistoryInline(admin.StackedInline):
+    model = History
+    extra = 1
+    fieldsets = (
+        (None, {"fields": ("history_type", "description", "location_found", "entry_date")}),
+    )
+    readonly_fields = ("entry_date",)
+    show_change_link = True
+
+
+@admin.register(Animal)
 class AnimalAdmin(admin.ModelAdmin):
-    list_display = ('name', 'breed', 'sex', 'size', 'color', 'preview_image')
+    list_display = ("name", "breed", "sex", "size", "color", "preview_image")
     list_filter = ("breed__species", "sex", "size")
-    
-    def get_species(self, obj):
-        return obj.breed.get_species_display()
-    get_species.short_description = "Especie"
+    inlines = [HistoryInline]
+
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "name",
+                    "breed",
+                    "sex",
+                    "size",
+                    "color",
+                    "availability",
+                    "status",
+                    "imagen",
+                )
+            },
+        ),
+    )
 
     def preview_image(self, obj):
         if obj.imagen:
-            return format_html('<img src="{}" width="120" height="120" />', obj.imagen.url)
-        return "No image"
+            return format_html(
+                '<img src="{}" width="120" height="120" style="border-radius:10px;" />',
+                obj.imagen.url,
+            )
+        return "Sin imagen"
 
     preview_image.short_description = "Vista previa"
-
-admin.site.register(Animal, AnimalAdmin)

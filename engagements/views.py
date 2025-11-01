@@ -1,3 +1,4 @@
+# engagements/views.py
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -5,10 +6,12 @@ from django.core.files.base import ContentFile
 from django.http import FileResponse, Http404
 from animals.models import Animal
 from .models import AnimalEngagement
-from .forms import AdoptionForm
-from .utils import generate_adoption_pdf
+from .forms import AdoptionForm, SponsorshipForm  # 👈 Importar el nuevo formulario
+from .utils import generate_adoption_pdf, generate_sponsorship_pdf  # 👈 Nueva función
 from datetime import datetime
 import os
+
+# ========== ADOPCIONES ==========
 
 @login_required
 def adopt_animal(request, animal_id):
@@ -22,7 +25,8 @@ def adopt_animal(request, animal_id):
     if existing:
         return render(request, 'engagements/already_applied.html', {
             'engagement': existing,
-            'animal': animal
+            'animal': animal,
+            'engagement_type': 'adopción'
         })
 
     if request.method == 'POST':
@@ -45,21 +49,85 @@ def adopt_animal(request, animal_id):
             
             engagement.pdf_file.save(filename, ContentFile(pdf_buffer.read()), save=True)
             
-            messages.success(request, f'¡Solicitud enviada para {animal.name}!')
-            return redirect('adoption_success', engagement_id=engagement.id)
+            messages.success(request, f'¡Solicitud de adopción enviada para {animal.name}!')
+            return redirect('engagement_success', engagement_id=engagement.id)
     else:
         form = AdoptionForm()
 
     return render(request, 'engagements/adoption_form.html', {'form': form, 'animal': animal})
 
+
+# ========== APADRINAMIENTOS ==========
+
 @login_required
-def adoption_success(request, engagement_id):
+def sponsor_animal(request, animal_id):
+    animal = get_object_or_404(Animal, pk=animal_id)
+    user = request.user
+
+    # Verificar si ya tiene una solicitud de apadrinamiento pendiente o aprobada
+    existing = AnimalEngagement.objects.filter(
+        user=user, animal=animal, engagements_type='S', status__in=['P', 'A']
+    ).first()
+
+    if existing:
+        return render(request, 'engagements/already_applied.html', {
+            'engagement': existing,
+            'animal': animal,
+            'engagement_type': 'apadrinamiento'
+        })
+
+    if request.method == 'POST':
+        form = SponsorshipForm(request.POST)
+        if form.is_valid():
+            form_data = form.cleaned_data
+            
+            # Crear engagement con el aporte mensual
+            engagement = AnimalEngagement.objects.create(
+                user=user,
+                animal=animal,
+                engagements_type='S',
+                status='P',
+                form_data=form_data,
+                amount=form_data.get('monthly_contribution')  # 👈 Guardar el monto
+            )
+            
+            # Generar PDF
+            pdf_buffer = generate_sponsorship_pdf(engagement, form_data)
+            
+            # Nombre del archivo
+            filename = f"Solicitud_Apadrinamiento_{user.username}_para_{animal.name}.pdf"
+            filename = filename.replace(' ', '_').replace('/', '_').replace('\\', '_')
+            
+            # Guardar PDF
+            engagement.pdf_file.save(filename, ContentFile(pdf_buffer.read()), save=True)
+            
+            messages.success(request, f'¡Solicitud de apadrinamiento enviada para {animal.name}!')
+            return redirect('engagement_success', engagement_id=engagement.id)
+    else:
+        form = SponsorshipForm()
+
+    return render(request, 'engagements/sponsorship_form.html', {'form': form, 'animal': animal})
+
+
+# ========== COMPARTIDAS ==========
+
+@login_required
+def engagement_success(request, engagement_id):
+    """Vista unificada de éxito para adopciones y apadrinamientos"""
     engagement = get_object_or_404(AnimalEngagement, pk=engagement_id, user=request.user)
-    return render(request, 'engagements/adoption_success.html', {'engagement': engagement})
+    
+    # Determinar el tipo para el template
+    engagement_type = engagement.get_engagements_type_display()
+    
+    return render(request, 'engagements/engagement_success.html', {
+        'engagement': engagement,
+        'engagement_type': engagement_type
+    })
+
 
 @login_required
 def download_pdf(request, engagement_id):
-    """View to download the PDF with the correct name"""
+    """Vista para descargar el PDF con el nombre correcto"""
     engagement = get_object_or_404(AnimalEngagement, pk=engagement_id)
     
     if not (request.user == engagement.user or request.user.is_staff):
@@ -68,7 +136,9 @@ def download_pdf(request, engagement_id):
     if not engagement.pdf_file:
         raise Http404("No hay PDF disponible")
     
-    filename = f"Solicitud_Adopcion_{engagement.user.username}_para_{engagement.animal.name}.pdf"
+    # Nombre según el tipo
+    engagement_type_name = "Adopcion" if engagement.engagements_type == 'A' else "Apadrinamiento"
+    filename = f"Solicitud_{engagement_type_name}_{engagement.user.username}_para_{engagement.animal.name}.pdf"
     filename = filename.replace(' ', '_')
     
     try:

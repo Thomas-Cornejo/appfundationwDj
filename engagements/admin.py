@@ -90,43 +90,104 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
         self.message_user(request, f"{queryset.count()} solicitud(es) rechazada(s).")
     reject_engagements.short_description = "Rechazar solicitudes"
 
-    def send_status_email(self, engagement, approved):
-        subject = f"{'Aprobación' if approved else 'Actualización'} de tu solicitud de adopción"
+def send_status_email(self, engagement, approved):
+    """Envía un correo al usuario informando el estado de su solicitud"""
+    
+    # Determinar tipo de engagement para el mensaje
+    engagement_name = engagement.get_engagements_type_display()
+    
+    if approved:
+        subject = f'✅ ¡Tu solicitud de {engagement_name.lower()} ha sido aprobada!'
         
-        if approved:
+        if engagement.engagements_type == 'A':  # Adopción
             message = f"""
 Hola {engagement.user.username},
 
-¡Excelentes noticias! Tu solicitud de adopción para {engagement.animal.name} ha sido APROBADA.
+¡Excelentes noticias! 🎉
 
-Pronto nos pondremos en contacto contigo para continuar con el proceso.
+Tu solicitud de adopción para {engagement.animal.name} ha sido APROBADA.
 
-Gracias por tu interés en ayudar a nuestros animales.
+Detalles de tu solicitud:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Animal: {engagement.animal.name}
+- Raza: {engagement.animal.breed.name}
+- Edad: {engagement.animal.age} años
+- Fecha de solicitud: {engagement.created_at.strftime('%d/%m/%Y')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Saludos,
-El equipo de la fundación
+Próximos pasos:
+1. Nuestro equipo se pondrá en contacto contigo en las próximas 48 horas
+2. Coordinaremos una visita para conocer a {engagement.animal.name}
+3. Completaremos el proceso de adopción
+
+¡Gracias por darle una segunda oportunidad a {engagement.animal.name}! 🐾
+
+Saludos cordiales,
+El equipo de la Fundación
             """
-        else:
+        else:  # Apadrinamiento
             message = f"""
 Hola {engagement.user.username},
 
-Lamentamos informarte que tu solicitud de adopción para {engagement.animal.name} no ha sido aprobada en este momento.
+¡Excelentes noticias! 💜
 
-Si tienes preguntas, no dudes en contactarnos.
+Tu solicitud de apadrinamiento para {engagement.animal.name} ha sido APROBADA.
 
-Gracias por tu interés.
+Detalles de tu apadrinamiento:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Animal: {engagement.animal.name}
+- Raza: {engagement.animal.breed.name}
+- Aporte mensual: ${engagement.amount:,.0f} COP
+- Fecha de solicitud: {engagement.created_at.strftime('%d/%m/%Y')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Saludos,
-El equipo de la fundación
+¿Qué sigue?
+1. Recibirás instrucciones de pago en las próximas 24 horas
+2. Te enviaremos actualizaciones mensuales sobre {engagement.animal.name}
+3. Tendrás acceso a fotos y videos exclusivos de tu ahijad@
+
+¡Gracias por tu generosidad y compromiso con {engagement.animal.name}! 🐾
+
+Saludos cordiales,
+El equipo de la Fundación
             """
+    else:
+        subject = f'Actualización sobre tu solicitud de {engagement_name.lower()}'
         
-        try:
-            send_mail(
-                subject,
-                message,
-                settings.DEFAULT_FROM_EMAIL,
-                [engagement.user.email],
-                fail_silently=False,
-            )
-        except Exception as e:
-            print(f"Error enviando email: {e}")
+        message = f"""
+Hola {engagement.user.username},
+
+Gracias por tu interés en {engagement_name.lower().replace('ó', 'o')} a {engagement.animal.name}.
+
+Lamentamos informarte que en este momento tu solicitud no ha sido aprobada.
+
+Detalles de tu solicitud:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Animal: {engagement.animal.name}
+- Raza: {engagement.animal.breed.name}
+- Fecha de solicitud: {engagement.created_at.strftime('%d/%m/%Y')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Esto puede deberse a diversos factores relacionados con las necesidades específicas del animal.
+
+Te invitamos a:
+- Explorar otros animales disponibles en nuestra fundación
+- Contactarnos para más información sobre el proceso
+
+Agradecemos tu interés en ayudar a nuestros animales. 🐾
+
+Saludos cordiales,
+El equipo de la Fundación
+        """
+    
+    try:
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [engagement.user.email],
+            fail_silently=False,
+        )
+        print(f"✅ Email enviado exitosamente a {engagement.user.email}")
+    except Exception as e:
+        print(f"❌ Error enviando email: {e}")

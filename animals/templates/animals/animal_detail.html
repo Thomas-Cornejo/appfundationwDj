@@ -44,29 +44,66 @@
         {% endif %}
       {% endwith %}
 
+      <!-- Sección de botones de acción -->
       <div class="flex flex-wrap gap-4 mt-8">
         {% if user.is_authenticated %}
-        <a href="{% url 'adopt_animal' animal.id %}" class="bg-indigo-500 text-white px-6 py-3 rounded-full hover:bg-indigo-600 transition font-medium">
-          🐾 Adoptar
-        </a>
+          
+          <!-- Botón Adoptar (si está disponible para adopción) -->
+          {% if animal.availability == 'A' or animal.availability == 'B' %}
+            <a href="{% url 'adopt_animal' animal.id %}" class="bg-indigo-500 text-white px-6 py-3 rounded-full hover:bg-indigo-600 transition font-medium">
+              🐾 Adoptar
+            </a>
+          {% endif %}
+
+          <!-- Botón Apadrinar (si está disponible para apadrinamiento) -->
+          {% if animal.availability == 'S' or animal.availability == 'B' %}
+            <a href="{% url 'sponsor_animal' animal.id %}" class="bg-purple-500 text-white px-6 py-3 rounded-full hover:bg-purple-600 transition font-medium">
+              💜 Apadrinar
+            </a>
+          {% endif %}
+
         {% else %}
-          <a href="{% url 'login' %}" class="text-blue-600 underline">Inicia sesión para adoptar</a>
+          <!-- Si no está autenticado -->
+          <div class="w-full">
+            <p class="text-gray-600 mb-3">Para adoptar o apadrinar a {{ animal.name }}, debes iniciar sesión:</p>
+            <a href="{% url 'login' %}" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-full hover:bg-blue-700 transition font-medium">
+              Iniciar sesión
+            </a>
+          </div>
         {% endif %}
 
+        <!-- Botón Ver eventos clínicos (siempre visible) -->
         <button id="openEvents" class="border border-indigo-500 text-indigo-600 px-6 py-3 rounded-full hover:bg-indigo-50 transition font-medium">
           🩺 Ver eventos clínicos
         </button>
+      </div>
+
+      <!-- Información sobre disponibilidad (opcional) -->
+      <div class="mt-6 pt-6 border-t border-gray-200">
+        <p class="text-sm text-gray-600">
+          <strong>Disponibilidad:</strong> 
+          {% if animal.availability == 'A' %}
+            <span class="text-indigo-600">Disponible para adopción</span>
+          {% elif animal.availability == 'S' %}
+            <span class="text-purple-600">Disponible para apadrinamiento</span>
+          {% elif animal.availability == 'B' %}
+            <span class="text-green-600">Disponible para adopción y apadrinamiento</span>
+          {% else %}
+            <span class="text-gray-500">No disponible actualmente</span>
+          {% endif %}
+        </p>
       </div>
     </div>
   </div>
 </div>
 
+<!-- Modal de Eventos Clínicos -->
 <div id="eventsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
   <div class="bg-white rounded-2xl shadow-lg w-11/12 md:w-2/3 lg:w-1/2 p-6 relative">
-    <button id="closeEvents" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
+    <button id="closeEvents" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-2xl font-bold w-8 h-8 flex items-center justify-center">
       ✕
     </button>
-    <h3 class="text-xl font-semibold text-blue-700 mb-4">Eventos clínicos</h3>
+    <h3 class="text-xl font-semibold text-blue-700 mb-4">Eventos clínicos de {{ animal.name }}</h3>
 
     {% with events=animal.history.all %}
       {% if events %}
@@ -74,33 +111,48 @@
           {% for event in events %}
             {% if event.history_type != "I" %}
               <li class="py-3">
-                <p><strong>Tipo:</strong> {{ event.get_history_type_display }}</p>
-                <p><strong>Descripción:</strong> {{ event.description }}</p>
+                <p class="text-gray-800"><strong>Tipo:</strong> {{ event.get_history_type_display }}</p>
+                <p class="text-gray-700"><strong>Descripción:</strong> {{ event.description }}</p>
                 <p class="text-sm text-gray-500"><strong>Fecha:</strong> {{ event.entry_date|date:"d/m/Y" }}</p>
               </li>
             {% endif %}
           {% endfor %}
         </ul>
 
+        {% comment %}
+        Verificar si hay eventos que no sean de tipo "Ingreso"
+        {% endcomment %}
         {% if not events|dictsort:"history_type"|yesno:"true,false" %}
           <p class="text-gray-500 text-center mt-4">No se han registrado otros eventos clínicos.</p>
         {% endif %}
       {% else %}
-        <p class="text-gray-500">No se han registrado eventos clínicos para este animal.</p>
+        <p class="text-gray-500 text-center">No se han registrado eventos clínicos para este animal.</p>
       {% endif %}
     {% endwith %}
   </div>
 </div>
 
 <script>
+  // Manejo del modal de eventos clínicos
   const openBtn = document.getElementById("openEvents");
   const closeBtn = document.getElementById("closeEvents");
   const modal = document.getElementById("eventsModal");
 
   openBtn.addEventListener("click", () => modal.classList.remove("hidden"));
   closeBtn.addEventListener("click", () => modal.classList.add("hidden"));
+  
+  // Cerrar modal al hacer clic fuera de él
   modal.addEventListener("click", (e) => {
-    if (e.target === modal) modal.classList.add("hidden");
+    if (e.target === modal) {
+      modal.classList.add("hidden");
+    }
+  });
+
+  // Cerrar modal con tecla Escape
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !modal.classList.contains("hidden")) {
+      modal.classList.add("hidden");
+    }
   });
 </script>
 {% endblock %}

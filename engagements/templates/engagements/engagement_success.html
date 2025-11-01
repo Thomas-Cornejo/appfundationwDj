@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Solicitud Existente{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen flex items-center justify-center py-10 px-4">
+  <div class="max-w-md w-full bg-white rounded-3xl shadow-lg p-8">
+    <div class="text-center mb-6">
+      {% if engagement.status == 'P' %}
+        <svg class="mx-auto h-16 w-16 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      {% elif engagement.status == 'A' %}
+        {% if engagement.engagements_type == 'A' %}
+          <svg class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        {% else %}
+          <svg class="mx-auto h-16 w-16 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        {% endif %}
+      {% endif %}
+    </div>
+    
+    {% if engagement.status == 'P' %}
+      <h1 class="text-2xl font-bold text-gray-900 mb-4 text-center">Solicitud en Revisión</h1>
+      
+      <p class="text-gray-600 mb-6 text-center">
+        Ya tienes una solicitud de <strong>{{ engagement_type }}</strong> <strong>pendiente</strong> para <strong>{{ animal.name }}</strong>.
+      </p>
+
+      <div class="bg-yellow-50 rounded-lg p-4 mb-6 border border-yellow-200">
+        <p class="text-sm text-yellow-800 mb-2">
+          <strong>📋 Estado:</strong> Pendiente de revisión
+        </p>
+        <p class="text-sm text-yellow-800 mb-2">
+          <strong>📅 Fecha de solicitud:</strong> {{ engagement.created_at|date:"d/m/Y H:i" }}
+        </p>
+        {% if engagement.engagements_type == 'S' and engagement.amount %}
+          <p class="text-sm text-yellow-800 mb-2">
+            <strong>💰 Aporte mensual:</strong> ${{ engagement.amount|floatformat:0 }} COP
+          </p>
+        {% endif %}
+        <p class="text-sm text-yellow-700 mt-3">
+          Nuestro equipo está revisando tu solicitud. Te contactaremos pronto con una respuesta.
+        </p>
+      </div>
+
+    {% elif engagement.status == 'A' %}
+      <h1 class="text-2xl font-bold text-gray-900 mb-4 text-center">¡Solicitud Aprobada!</h1>
+      
+      <p class="text-gray-600 mb-6 text-center">
+        Tu solicitud de <strong>{{ engagement_type }}</strong> para <strong>{{ animal.name }}</strong> ya ha sido <strong>aprobada</strong>.
+      </p>
+
+      <div class="{% if engagement.engagements_type == 'A' %}bg-green-50 border-green-200{% else %}bg-purple-50 border-purple-200{% endif %} rounded-lg p-4 mb-6 border">
+        <p class="text-sm {% if engagement.engagements_type == 'A' %}text-green-800{% else %}text-purple-800{% endif %} mb-2">
+          <strong>✅ Estado:</strong> Aprobada
+        </p>
+        <p class="text-sm {% if engagement.engagements_type == 'A' %}text-green-800{% else %}text-purple-800{% endif %} mb-2">
+          <strong>📅 Fecha de aprobación:</strong> {{ engagement.updated_at|date:"d/m/Y" }}
+        </p>
+        {% if engagement.engagements_type == 'S' and engagement.amount %}
+          <p class="text-sm {% if engagement.engagements_type == 'A' %}text-green-800{% else %}text-purple-800{% endif %} mb-2">
+            <strong>💰 Aporte mensual:</strong> ${{ engagement.amount|floatformat:0 }} COP
+          </p>
+        {% endif %}
+        <p class="text-sm {% if engagement.engagements_type == 'A' %}text-green-700{% else %}text-purple-700{% endif %} mt-3">
+          {% if engagement.engagements_type == 'A' %}
+            ¡Felicidades! Pronto te contactaremos para completar el proceso de adopción.
+          {% else %}
+            ¡Gracias por tu generosidad! Pronto recibirás la primera actualización sobre {{ animal.name }}.
+          {% endif %}
+        </p>
+      </div>
+    {% endif %}
+
+    <!-- Información del animal -->
+    <div class="{% if engagement.engagements_type == 'A' %}bg-indigo-50{% else %}bg-purple-50{% endif %} rounded-lg p-4 mb-6">
+      <h3 class="font-semibold {% if engagement.engagements_type == 'A' %}text-indigo-900{% else %}text-purple-900{% endif %} mb-3 flex items-center">
+        <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Información del animal
+      </h3>
+      <div class="flex items-center">
+        {% if animal.imagen %}
+          <img src="{{ animal.imagen.url }}" alt="{{ animal.name }}" class="w-16 h-16 rounded-full object-cover mr-4" />
+        {% endif %}
+        <div>
+          <p class="text-sm {% if engagement.engagements_type == 'A' %}text-indigo-900{% else %}text-purple-900{% endif %}"><strong>Nombre:</strong> {{ animal.name }}</p>
+          <p class="text-sm {% if engagement.engagements_type == 'A' %}text-indigo-800{% else %}text-purple-800{% endif %}"><strong>Edad:</strong> {{ animal.age }} años</p>
+          <p class="text-sm {% if engagement.engagements_type == 'A' %}text-indigo-800{% else %}text-purple-800{% endif %}"><strong>Raza:</strong> {{ animal.breed.name }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="flex flex-col gap-3">
+      {% if engagement.pdf_file %}
+      <a href="{% url 'download_pdf' engagement.id %}" target="_blank" class="w-full text-center px-6 py-3 {% if engagement.engagements_type == 'A' %}bg-indigo-600 hover:bg-indigo-700{% else %}bg-purple-600 hover:bg-purple-700{% endif %} text-white rounded-full transition font-medium">
+        📄 Ver mi solicitud
+      </a>
+      {% endif %}
+
+      <a href="{% url 'animal_detail' animal.id %}" class="w-full text-center px-6 py-3 border border-gray-300 text-gray-700 rounded-full hover:bg-gray-50 transition font-medium">
+        Ver detalles de {{ animal.name }}
+      </a>
+
+      <a href="{% url 'adoption_list' %}" class="w-full text-center px-6 py-3 border border-gray-300 text-gray-700 rounded-full hover:bg-gray-50 transition font-medium">
+        Ver otros animales
+      </a>
+    </div>
+
+    <!-- Nota adicional -->
+    <div class="mt-6 pt-6 border-t border-gray-200">
+      <p class="text-xs text-gray-500 text-center">
+        Si tienes preguntas sobre tu solicitud, contáctanos o espera nuestra respuesta por email.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

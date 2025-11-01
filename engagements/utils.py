@@ -1,4 +1,3 @@
-# engagements/utils.py
 from io import BytesIO
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -28,7 +27,6 @@ def generate_adoption_pdf(engagement, form_data):
     elements.append(title)
     elements.append(Spacer(1, 0.3*inch))
     
-    # Información del animal
     animal_title = Paragraph("<b>INFORMACIÓN DEL ANIMAL</b>", styles['Heading2'])
     elements.append(animal_title)
     elements.append(Spacer(1, 0.1*inch))
@@ -55,7 +53,6 @@ def generate_adoption_pdf(engagement, form_data):
     elements.append(animal_table)
     elements.append(Spacer(1, 0.3*inch))
     
-    # Información del solicitante
     user_title = Paragraph("<b>INFORMACIÓN DEL SOLICITANTE</b>", styles['Heading2'])
     elements.append(user_title)
     elements.append(Spacer(1, 0.1*inch))
@@ -83,7 +80,6 @@ def generate_adoption_pdf(engagement, form_data):
     elements.append(user_table)
     elements.append(Spacer(1, 0.3*inch))
     
-    # Información adicional
     additional_title = Paragraph("<b>INFORMACIÓN ADICIONAL</b>", styles['Heading2'])
     elements.append(additional_title)
     elements.append(Spacer(1, 0.1*inch))
@@ -142,12 +138,11 @@ def generate_sponsorship_pdf(engagement, form_data):
     elements = []
     styles = getSampleStyleSheet()
     
-    # Estilo título con color púrpura para apadrinamiento
     title_style = ParagraphStyle(
         'CustomTitle',
         parent=styles['Heading1'],
         fontSize=24,
-        textColor=colors.HexColor('#9333EA'),  # Púrpura
+        textColor=colors.HexColor('#9333EA'), 
         spaceAfter=30,
         alignment=1
     )
@@ -156,7 +151,6 @@ def generate_sponsorship_pdf(engagement, form_data):
     elements.append(title)
     elements.append(Spacer(1, 0.3*inch))
     
-    # Información del animal
     animal_title = Paragraph("<b>INFORMACIÓN DEL ANIMAL</b>", styles['Heading2'])
     elements.append(animal_title)
     elements.append(Spacer(1, 0.1*inch))
@@ -172,7 +166,7 @@ def generate_sponsorship_pdf(engagement, form_data):
     
     animal_table = Table(animal_data, colWidths=[2*inch, 4*inch])
     animal_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#F3E8FF')),  # Púrpura claro
+        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#F3E8FF')),
         ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
@@ -183,7 +177,6 @@ def generate_sponsorship_pdf(engagement, form_data):
     elements.append(animal_table)
     elements.append(Spacer(1, 0.3*inch))
     
-    # Información del padrino
     user_title = Paragraph("<b>INFORMACIÓN DEL PADRINO/MADRINA</b>", styles['Heading2'])
     elements.append(user_title)
     elements.append(Spacer(1, 0.1*inch))
@@ -208,7 +201,6 @@ def generate_sponsorship_pdf(engagement, form_data):
     elements.append(user_table)
     elements.append(Spacer(1, 0.3*inch))
     
-    # Detalles del apadrinamiento
     sponsorship_title = Paragraph("<b>DETALLES DEL APADRINAMIENTO</b>", styles['Heading2'])
     elements.append(sponsorship_title)
     elements.append(Spacer(1, 0.1*inch))
@@ -240,7 +232,6 @@ def generate_sponsorship_pdf(engagement, form_data):
     elements.append(sponsorship_table)
     elements.append(Spacer(1, 0.2*inch))
     
-    # Motivación
     if form_data.get('reason_for_sponsorship'):
         reason_title = Paragraph("<b>¿Por qué desea apadrinar?</b>", styles['Heading3'])
         elements.append(reason_title)
@@ -248,7 +239,6 @@ def generate_sponsorship_pdf(engagement, form_data):
         elements.append(reason_text)
         elements.append(Spacer(1, 0.3*inch))
     
-    # Fecha
     date_text = Paragraph(
         f"<i>Fecha de solicitud: {engagement.created_at.strftime('%d/%m/%Y %H:%M')}</i>",
         styles['Normal']

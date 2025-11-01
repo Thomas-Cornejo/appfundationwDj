@@ -93,13 +93,12 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
 def send_status_email(self, engagement, approved):
     """Envía un correo al usuario informando el estado de su solicitud"""
     
-    # Determinar tipo de engagement para el mensaje
     engagement_name = engagement.get_engagements_type_display()
     
     if approved:
-        subject = f'✅ ¡Tu solicitud de {engagement_name.lower()} ha sido aprobada!'
+        subject = f'¡Tu solicitud de {engagement_name.lower()} ha sido aprobada!'
         
-        if engagement.engagements_type == 'A':  # Adopción
+        if engagement.engagements_type == 'A': 
             message = f"""
 Hola {engagement.user.username},
 
@@ -125,11 +124,11 @@ Próximos pasos:
 Saludos cordiales,
 El equipo de la Fundación
             """
-        else:  # Apadrinamiento
+        else: 
             message = f"""
 Hola {engagement.user.username},
 
-¡Excelentes noticias! 💜
+¡Excelentes noticias!
 
 Tu solicitud de apadrinamiento para {engagement.animal.name} ha sido APROBADA.
 
@@ -188,6 +187,6 @@ El equipo de la Fundación
             [engagement.user.email],
             fail_silently=False,
         )
-        print(f"✅ Email enviado exitosamente a {engagement.user.email}")
+        print(f"Email enviado exitosamente a {engagement.user.email}")
     except Exception as e:
-        print(f"❌ Error enviando email: {e}")
+        print(f"Error enviando email: {e}")

@@ -1,4 +1,5 @@
 Django==5.2.6
+reportlab==4.4.4
 crispy-tailwind==1.0.3
 django-crispy-forms==2.4
 Pillow==11.3.0

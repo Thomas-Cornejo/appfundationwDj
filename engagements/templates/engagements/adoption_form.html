@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Adoptar a {{ animal.name }}{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-10">
+  <div class="max-w-3xl mx-auto px-4">
+    <a href="{% url 'animal_detail' animal.id %}" class="flex items-center text-indigo-600 hover:text-indigo-800 mb-6">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      Volver
+    </a>
+
+    <div class="bg-white rounded-3xl shadow-lg p-8">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-indigo-700 mb-2">Solicitud de Adopción</h1>
+        <p class="text-gray-600">Completa el formulario para adoptar a <strong>{{ animal.name }}</strong></p>
+      </div>
+
+      {% if animal.imagen %}
+      <div class="flex justify-center mb-8">
+        <img src="{{ animal.imagen.url }}" alt="{{ animal.name }}" class="w-32 h-32 rounded-full object-cover shadow-md" />
+      </div>
+      {% endif %}
+
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.full_name.label }}</label>
+            {{ form.full_name }}
+            {% if form.full_name.errors %}
+              <p class="text-red-500 text-sm mt-1">{{ form.full_name.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.phone.label }}</label>
+            {{ form.phone }}
+            {% if form.phone.errors %}
+              <p class="text-red-500 text-sm mt-1">{{ form.phone.errors.0 }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.city.label }}</label>
+            {{ form.city }}
+            {% if form.city.errors %}
+              <p class="text-red-500 text-sm mt-1">{{ form.city.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.occupation.label }}</label>
+            {{ form.occupation }}
+            {% if form.occupation.errors %}
+              <p class="text-red-500 text-sm mt-1">{{ form.occupation.errors.0 }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.address.label }}</label>
+          {{ form.address }}
+          {% if form.address.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.address.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.housing_type.label }}</label>
+          {{ form.housing_type }}
+          {% if form.housing_type.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.housing_type.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex items-center">
+            {{ form.has_experience }}
+            <label class="ml-2 text-sm text-gray-700">{{ form.has_experience.label }}</label>
+          </div>
+
+          <div class="flex items-center">
+            {{ form.has_outdoor_space }}
+            <label class="ml-2 text-sm text-gray-700">{{ form.has_outdoor_space.label }}</label>
+          </div>
+
+          <div class="flex items-center">
+            {{ form.has_other_pets }}
+            <label class="ml-2 text-sm text-gray-700">{{ form.has_other_pets.label }}</label>
+          </div>
+        </div>
+
+        <div id="otherPetsSection" style="display: none;">
+          <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.other_pets_description.label }}</label>
+          {{ form.other_pets_description }}
+          {% if form.other_pets_description.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.other_pets_description.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.reason_for_adoption.label }}</label>
+          {{ form.reason_for_adoption }}
+          {% if form.reason_for_adoption.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.reason_for_adoption.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div class="flex justify-end gap-4 pt-6">
+          <a href="{% url 'animal_detail' animal.id %}" class="px-6 py-3 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-50 transition">
+            Cancelar
+          </a>
+          <button type="submit" class="px-6 py-3 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition font-medium">
+            Enviar Solicitud
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const hasOtherPetsCheckbox = document.getElementById('id_has_other_pets');
+  const otherPetsSection = document.getElementById('otherPetsSection');
+
+  hasOtherPetsCheckbox.addEventListener('change', function() {
+    otherPetsSection.style.display = this.checked ? 'block' : 'none';
+  });
+
+  // Mostrar la sección si ya está marcado (en caso de error de formulario)
+  if (hasOtherPetsCheckbox.checked) {
+    otherPetsSection.style.display = 'block';
+  }
+</script>
+{% endblock %}

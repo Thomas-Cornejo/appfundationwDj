@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Apadrinar a {{ animal.name }}{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-10">
+  <div class="max-w-3xl mx-auto px-4">
+    <a href="{% url 'animal_detail' animal.id %}" class="flex items-center text-purple-600 hover:text-purple-800 mb-6">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      Volver
+    </a>
+
+    <div class="bg-white rounded-3xl shadow-lg p-8">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-purple-700 mb-2">Solicitud de Apadrinamiento</h1>
+        <p class="text-gray-600">Completa el formulario para apadrinar a <strong>{{ animal.name }}</strong></p>
+      </div>
+
+      {% if animal.imagen %}
+      <div class="flex justify-center mb-8">
+        <img src="{{ animal.imagen.url }}" alt="{{ animal.name }}" class="w-32 h-32 rounded-full object-cover shadow-md" />
+      </div>
+      {% endif %}
+
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.full_name.label }}</label>
+            {{ form.full_name }}
+            {% if form.full_name.errors %}
+              <p class="text-red-500 text-sm mt-1">{{ form.full_name.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.phone.label }}</label>
+            {{ form.phone }}
+            {% if form.phone.errors %}
+              <p class="text-red-500 text-sm mt-1">{{ form.phone.errors.0 }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.email.label }}</label>
+          {{ form.email }}
+          {% if form.email.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.email.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div class="bg-purple-50 rounded-lg p-6 border border-purple-200">
+          <h3 class="font-semibold text-purple-900 mb-4">💰 Detalles del Apadrinamiento</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.monthly_contribution.label }}</label>
+              {{ form.monthly_contribution }}
+              <p class="text-xs text-gray-500 mt-1">{{ form.monthly_contribution.help_text }}</p>
+              {% if form.monthly_contribution.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ form.monthly_contribution.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.sponsorship_duration.label }}</label>
+              {{ form.sponsorship_duration }}
+              {% if form.sponsorship_duration.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ form.sponsorship_duration.errors.0 }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.reason_for_sponsorship.label }}</label>
+          {{ form.reason_for_sponsorship }}
+          {% if form.reason_for_sponsorship.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.reason_for_sponsorship.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div class="flex items-start">
+          {{ form.accept_terms }}
+          <label class="ml-2 text-sm text-gray-700">{{ form.accept_terms.label }}</label>
+          {% if form.accept_terms.errors %}
+            <p class="text-red-500 text-sm mt-1 ml-2">{{ form.accept_terms.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+          <p class="text-sm text-blue-800">
+            <strong>ℹ️ Nota:</strong> El apadrinamiento es un compromiso de apoyo económico mensual 
+            que ayuda a cubrir los gastos de alimentación, atención veterinaria y cuidado de {{ animal.name }}. 
+            Recibirás actualizaciones periódicas sobre su estado.
+          </p>
+        </div>
+
+        <div class="flex justify-end gap-4 pt-6">
+          <a href="{% url 'animal_detail' animal.id %}" class="px-6 py-3 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-50 transition">
+            Cancelar
+          </a>
+          <button type="submit" class="px-6 py-3 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition font-medium">
+            Enviar Solicitud
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

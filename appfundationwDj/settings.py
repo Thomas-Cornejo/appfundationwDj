@@ -61,7 +61,7 @@ INSTALLED_APPS = [
     "crispy_tailwind",
     "cloudinary",
     "cloudinary_storage",
-    "shelter",
+    "shelters",
     "users",
     "breeds",
     "animals",

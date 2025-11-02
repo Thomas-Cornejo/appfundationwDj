@@ -107,49 +107,43 @@ class SponsorshipForm(forms.Form):
             'placeholder': 'Tu número de teléfono'
         })
     )
-    email = forms.EmailField(
-        label='Correo electrónico',
-        widget=forms.EmailInput(attrs={
-            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500',
-            'placeholder': 'tu@email.com'
-        })
-    )
-    monthly_contribution = forms.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        label='Aporte mensual (COP)',
-        widget=forms.NumberInput(attrs={
-            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500',
-            'placeholder': '50000',
-            'min': '10000',
-            'step': '1000'
-        }),
-        help_text='Mínimo $10,000 COP'
-    )
-    sponsorship_duration = forms.ChoiceField(
-        choices=[
-            ('1', '1 mes'),
-            ('3', '3 meses'),
-            ('6', '6 meses'),
-            ('12', '1 año'),
-            ('indefinido', 'Indefinido'),
-        ],
-        label='Duración del apadrinamiento',
-        widget=forms.Select(attrs={
-            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500'
-        })
-    )
+    
     reason_for_sponsorship = forms.CharField(
         widget=forms.Textarea(attrs={
             'rows': 4,
             'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500',
-            'placeholder': 'Cuéntanos por qué deseas apadrinar a este animal'
+            'placeholder': 'Cuéntanos por qué deseas apadrinar a este animal y cómo planeas interactuar con él'
         }),
-        label='¿Por qué deseas apadrinar?'
+        label='¿Por qué deseas apadrinar?',
+        help_text='El apadrinamiento te permitirá cuidar virtualmente del animal a través de nuestro sistema gamificado'
+    )
+    availability_hours = forms.ChoiceField(
+        choices=[
+            ('1-2', '1-2 horas por semana'),
+            ('3-5', '3-5 horas por semana'),
+            ('6-10', '6-10 horas por semana'),
+            ('10+', 'Más de 10 horas por semana'),
+        ],
+        label='¿Cuánto tiempo puedes dedicar?',
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500'
+        }),
+        help_text='Tiempo estimado que dedicarás a interactuar con el animal en el sistema'
+    )
+    motivation_level = forms.ChoiceField(
+        choices=[
+            ('casual', 'Casual - Quiero ayudar ocasionalmente'),
+            ('regular', 'Regular - Me comprometo a visitas frecuentes'),
+            ('dedicated', 'Dedicado - Quiero ser un padrino muy activo'),
+        ],
+        label='Nivel de compromiso',
+        widget=forms.RadioSelect(attrs={
+            'class': 'text-purple-600 focus:ring-purple-500'
+        })
     )
     accept_terms = forms.BooleanField(
         required=True,
-        label='Acepto recibir actualizaciones mensuales sobre el animal apadrinado',
+        label='Acepto recibir notificaciones sobre el estado del animal y comprometerme a cuidar de él virtualmente',
         widget=forms.CheckboxInput(attrs={
             'class': 'w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500'
         })

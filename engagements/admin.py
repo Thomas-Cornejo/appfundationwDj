@@ -7,17 +7,17 @@ from .models import AnimalEngagement
 
 @admin.register(AnimalEngagement)
 class AnimalEngagementAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'animal', 'engagement_type_badge', 'status_badge', 'created_at', 'view_pdf']
-    list_filter = ['engagements_type', 'status', 'created_at']
-    search_fields = ['user__username', 'user__email', 'animal__name']
-    readonly_fields = ['created_at', 'updated_at', 'pdf_file', 'form_data_display']
+    list_display = ['id', 'user', 'animal', 'shelter_display', 'engagement_type_badge', 'status_badge', 'created_at', 'view_pdf']
+    list_filter = ['engagements_type', 'status', 'created_at', 'animal__shelter']
+    search_fields = ['user__username', 'user__email', 'animal__name', 'animal__shelter__name']
+    readonly_fields = ['created_at', 'updated_at', 'pdf_file', 'form_data_display', 'user', 'animal', 'engagements_type']
     
     fieldsets = (
         ('Información básica', {
             'fields': ('user', 'animal', 'engagements_type', 'status')
         }),
         ('Detalles de la solicitud', {
-            'fields': ('form_data_display', 'pdf_file', 'admin_notes')
+            'fields': ('form_data_display', 'amount', 'pdf_file', 'admin_notes')
         }),
         ('Fechas', {
             'fields': ('created_at', 'updated_at'),
@@ -27,6 +27,48 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
     
     actions = ['approve_engagements', 'reject_engagements']
 
+    def shelter_display(self, obj):
+        """Show the animal's shelter"""
+        return obj.animal.shelter.name
+    shelter_display.short_description = 'Albergue'
+    
+    def get_queryset(self, request):
+        """Filter engagements based on user role"""
+        qs = super().get_queryset(request)
+        
+        if request.user.is_superuser or request.user.is_superadmin():
+            return qs
+        
+        if request.user.is_shelter_admin() and request.user.shelter:
+            return qs.filter(animal__shelter=request.user.shelter)
+        
+        return qs.none()
+    
+    def has_add_permission(self, request):
+        """Only regular users can create engagements"""
+        return False  
+    
+    def has_delete_permission(self, request, obj=None):
+        """Only Super Admin can delete engagements"""
+        if request.user.is_superuser or request.user.is_superadmin():
+            return True
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        """
+        Super Admin and Shelter Admin can change the status.
+        Shelter Admin can only change engagements for their shelter.
+        """
+        if request.user.is_superuser or request.user.is_superadmin():
+            return True
+        
+        if request.user.is_shelter_admin():
+            if obj is None:
+                return True
+            return obj.animal.shelter == request.user.shelter
+        
+        return False
+    
     def form_data_display(self, obj):
         """Displays form data in a readable format"""
         if obj.form_data:
@@ -38,11 +80,16 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
                 html += "</tr>"
             html += "</table>"
             return format_html(html)
-        return "No hay datos"
-    form_data_display.short_description = 'Datos del formulario'
+        return "There is no data."
+    form_data_display.short_description = 'Form data'
 
     def engagement_type_badge(self, obj):
-        colors = {'A': '#10b981', 'S': '#3b82f6', 'D': '#f59e0b'}
+        """Badge color-coded according to the type of engagement"""
+        colors = {
+            'A': '#10b981',  
+            'S': '#9333EA',  
+            'D': '#f59e0b'  
+        }
         color = colors.get(obj.engagements_type, '#6b7280')
         return format_html(
             '<span style="background-color: {}; color: white; padding: 3px 10px; border-radius: 10px; font-size: 12px;">{}</span>',
@@ -51,7 +98,12 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
     engagement_type_badge.short_description = 'Tipo'
 
     def status_badge(self, obj):
-        colors = {'P': '#f59e0b', 'A': '#10b981', 'R': '#ef4444'}
+        """Badge color according to state"""
+        colors = {
+            'P': '#f59e0b', 
+            'A': '#10b981',  
+            'R': '#ef4444'   
+        }
         color = colors.get(obj.status, '#6b7280')
         return format_html(
             '<span style="background-color: {}; color: white; padding: 3px 10px; border-radius: 10px; font-size: 12px;">{}</span>',
@@ -60,46 +112,51 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
     status_badge.short_description = 'Estado'
 
     def view_pdf(self, obj):
+        """Stylish link to view/download the PDF"""
         if obj.pdf_file:
             download_url = reverse('download_pdf', args=[obj.id])
             return format_html(
                 '<a href="{}" target="_blank" '
                 'style="background-color:#2563eb; color:white; padding:6px 10px; '
                 'border-radius:6px; text-decoration:none; box-shadow:0 2px 4px rgba(0,0,0,0.1);">'
-                'Ver 📄</a>',
+                '📄 Ver PDF</a>',
                 download_url
             )
         return '-'
     view_pdf.short_description = 'PDF'
 
     def approve_engagements(self, request, queryset):
+        """Mass action to approve applications"""
         for engagement in queryset:
             if engagement.status != 'A':
                 engagement.status = 'A'
                 engagement.save()
                 self.send_status_email(engagement, approved=True)
-        self.message_user(request, f"{queryset.count()} solicitud(es) aprobada(s).")
-    approve_engagements.short_description = "Aprobar solicitudes"
+        
+        self.message_user(request, f"{queryset.count()} solicitud(es) aprobada(s) exitosamente.")
+    approve_engagements.short_description = "Aprobar solicitudes seleccionadas"
 
     def reject_engagements(self, request, queryset):
+        """Mass action to reject applications"""
         for engagement in queryset:
             if engagement.status != 'R':
                 engagement.status = 'R'
                 engagement.save()
                 self.send_status_email(engagement, approved=False)
-        self.message_user(request, f"{queryset.count()} solicitud(es) rechazada(s).")
-    reject_engagements.short_description = "Rechazar solicitudes"
-
-def send_status_email(self, engagement, approved):
-    """Envía un correo al usuario informando el estado de su solicitud"""
-    
-    engagement_name = engagement.get_engagements_type_display()
-    
-    if approved:
-        subject = f'¡Tu solicitud de {engagement_name.lower()} ha sido aprobada!'
         
-        if engagement.engagements_type == 'A': 
-            message = f"""
+        self.message_user(request, f"{queryset.count()} solicitud(es) rechazada(s).")
+    reject_engagements.short_description = "Rechazar solicitudes seleccionadas"
+
+    def send_status_email(self, engagement, approved):  
+        """Send an email to the user informing them of the status of their request"""
+        
+        engagement_name = engagement.get_engagements_type_display()
+        
+        if approved:
+            subject = f'¡Tu solicitud de {engagement_name.lower()} ha sido aprobada!'
+            
+            if engagement.engagements_type == 'A':
+                message = f"""
 Hola {engagement.user.username},
 
 ¡Excelentes noticias! 🎉
@@ -123,9 +180,10 @@ Próximos pasos:
 
 Saludos cordiales,
 El equipo de la Fundación
-            """
-        else: 
-            message = f"""
+                """
+            else:
+                amount_text = f"${engagement.amount:,.0f} COP" if engagement.amount else "A definir"
+                message = f"""
 Hola {engagement.user.username},
 
 ¡Excelentes noticias!
@@ -136,27 +194,27 @@ Detalles de tu apadrinamiento:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - Animal: {engagement.animal.name}
 - Raza: {engagement.animal.breed.name}
-- Aporte mensual: ${engagement.amount:,.0f} COP
+- Aporte mensual: {amount_text}
 - Fecha de solicitud: {engagement.created_at.strftime('%d/%m/%Y')}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ¿Qué sigue?
-1. Recibirás instrucciones de pago en las próximas 24 horas
-2. Te enviaremos actualizaciones mensuales sobre {engagement.animal.name}
-3. Tendrás acceso a fotos y videos exclusivos de tu ahijad@
+1. Recibirás instrucciones de acceso al sistema de gamificación
+2. Podrás interactuar con {engagement.animal.name} virtualmente
+3. Recibirás actualizaciones sobre su estado y progreso
 
 ¡Gracias por tu generosidad y compromiso con {engagement.animal.name}! 🐾
 
 Saludos cordiales,
 El equipo de la Fundación
-            """
-    else:
-        subject = f'Actualización sobre tu solicitud de {engagement_name.lower()}'
-        
-        message = f"""
+                """
+        else:
+            subject = f'Actualización sobre tu solicitud de {engagement_name.lower()}'
+            
+            message = f"""
 Hola {engagement.user.username},
 
-Gracias por tu interés en {engagement_name.lower().replace('ó', 'o')} a {engagement.animal.name}.
+Gracias por tu interés en {engagement_name.lower()} a {engagement.animal.name}.
 
 Lamentamos informarte que en este momento tu solicitud no ha sido aprobada.
 
@@ -177,16 +235,16 @@ Agradecemos tu interés en ayudar a nuestros animales. 🐾
 
 Saludos cordiales,
 El equipo de la Fundación
-        """
-    
-    try:
-        send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [engagement.user.email],
-            fail_silently=False,
-        )
-        print(f"Email enviado exitosamente a {engagement.user.email}")
-    except Exception as e:
-        print(f"Error enviando email: {e}")
+            """
+        
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [engagement.user.email],
+                fail_silently=False,
+            )
+            print(f"Email successfully sent to {engagement.user.email}")
+        except Exception as e:
+            print(f"Error sending email:{e}")

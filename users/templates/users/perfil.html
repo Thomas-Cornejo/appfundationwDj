@@ -1,5 +1,233 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h1>Perfil de {{ user.username }}</h1>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header del Perfil -->
+    <div class="bg-white rounded-2xl shadow-xl p-6 mb-8">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-3xl font-bold">
+            {{ user.username|slice:":1"|upper }}
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-gray-800">¡Hola, {{ user.username }}!</h1>
+            <p class="text-gray-600">Tu espacio de cuidado y amor 🐾</p>
+          </div>
+        </div>
+        <a href="{% url 'home' %}" class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+          Volver al inicio
+        </a>
+      </div>
+    </div>
+
+    <!-- Tabs de Navegación -->
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
+      <div class="flex border-b border-gray-200">
+        <button onclick="switchTab('adoptions')" id="tab-adoptions" class="flex-1 py-4 px-6 text-center font-semibold transition border-b-4 border-purple-500 text-purple-600">
+          🏠 Mis Adopciones ({{ adoptions.count }})
+        </button>
+        <button onclick="switchTab('sponsorships')" id="tab-sponsorships" class="flex-1 py-4 px-6 text-center font-semibold transition border-b-4 border-transparent text-gray-600 hover:text-purple-600">
+          💖 Mis Apadrinamientos ({{ sponsorships|length }})
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenido: Adopciones -->
+    <div id="content-adoptions" class="tab-content">
+      {% if has_adoptions %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {% for adoption in adoptions %}
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-1">
+              <div class="h-48 bg-gradient-to-br from-blue-400 to-purple-400 flex items-center justify-center">
+                {% if adoption.animal.imagen %}
+                  <img src="{{ adoption.animal.imagen.url }}" alt="{{ adoption.animal.name }}" class="w-full h-full object-cover">
+                {% else %}
+                  <span class="text-white text-6xl">🐕</span>
+                {% endif %}
+              </div>
+              <div class="p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">{{ adoption.animal.name }}</h3>
+                <p class="text-gray-600 mb-1"><span class="font-semibold">Raza:</span> {{ adoption.animal.breed.name }}</p>
+                <p class="text-gray-600 mb-1"><span class="font-semibold">Edad:</span> {{ adoption.animal.age }} años</p>
+                <p class="text-gray-600 mb-4"><span class="font-semibold">Albergue:</span> {{ adoption.animal.shelter.name }}</p>
+                <div class="flex items-center justify-between">
+                  <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
+                    ✓ Adoptado
+                  </span>
+                  <span class="text-gray-500 text-sm">{{ adoption.created_at|date:"d/m/Y" }}</span>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="bg-white rounded-2xl shadow-lg p-12 text-center">
+          <div class="text-6xl mb-4">🏠</div>
+          <h3 class="text-2xl font-bold text-gray-800 mb-2">Aún no has adoptado ningún animal</h3>
+          <p class="text-gray-600 mb-6">Explora nuestros animales disponibles y dale un hogar a tu nuevo mejor amigo</p>
+          <a href="{% url 'animal_list' %}" class="inline-block px-8 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition">
+            Ver animales disponibles
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Contenido: Apadrinamientos -->
+    <div id="content-sponsorships" class="tab-content hidden">
+      {% if has_sponsorships %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {% for item in sponsorships %}
+            <a href="{% url 'gamifications:dashboard' item.animal.id %}" class="block group">
+              <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-2">
+                <!-- Imagen del animal -->
+                <div class="relative h-48 bg-gradient-to-br from-pink-400 to-yellow-400">
+                  {% if item.animal.imagen %}
+                    <img src="{{ item.animal.imagen.url }}" alt="{{ item.animal.name }}" class="w-full h-full object-cover">
+                  {% else %}
+                    <div class="w-full h-full flex items-center justify-center text-white text-6xl">🐶</div>
+                  {% endif %}
+                  
+                  <!-- Badge de estado -->
+                  {% if item.care_indicator.needs_attention %}
+                    <div class="absolute top-4 right-4 px-3 py-1 bg-red-500 text-white rounded-full text-xs font-bold animate-pulse">
+                      ⚠️ Necesita atención
+                    </div>
+                  {% else %}
+                    <div class="absolute top-4 right-4 px-3 py-1 bg-green-500 text-white rounded-full text-xs font-bold">
+                      ✓ Bien cuidado
+                    </div>
+                  {% endif %}
+                </div>
+
+                <!-- Información del animal -->
+                <div class="p-6">
+                  <h3 class="text-2xl font-bold text-gray-800 mb-3">{{ item.animal.name }}</h3>
+                  
+                  <!-- Indicadores -->
+                  <div class="space-y-3 mb-4">
+                    <!-- Alimento -->
+                    <div>
+                      <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm font-semibold text-gray-700">🍖 Alimento</span>
+                        <span class="text-sm font-bold 
+                          {% if item.care_indicator.food_level >= 70 %}text-green-600
+                          {% elif item.care_indicator.food_level >= 40 %}text-yellow-600
+                          {% else %}text-red-600{% endif %}">
+                          {{ item.care_indicator.food_level }}%
+                        </span>
+                      </div>
+                      <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="h-2 rounded-full transition-all
+                          {% if item.care_indicator.food_level >= 70 %}bg-green-500
+                          {% elif item.care_indicator.food_level >= 40 %}bg-yellow-500
+                          {% else %}bg-red-500{% endif %}" 
+                          style="width: {{ item.care_indicator.food_level }}%">
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Higiene -->
+                    <div>
+                      <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm font-semibold text-gray-700">🧼 Higiene</span>
+                        <span class="text-sm font-bold
+                          {% if item.care_indicator.hygiene_level >= 70 %}text-green-600
+                          {% elif item.care_indicator.hygiene_level >= 40 %}text-yellow-600
+                          {% else %}text-red-600{% endif %}">
+                          {{ item.care_indicator.hygiene_level }}%
+                        </span>
+                      </div>
+                      <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="h-2 rounded-full transition-all
+                          {% if item.care_indicator.hygiene_level >= 70 %}bg-blue-500
+                          {% elif item.care_indicator.hygiene_level >= 40 %}bg-yellow-500
+                          {% else %}bg-red-500{% endif %}" 
+                          style="width: {{ item.care_indicator.hygiene_level }}%">
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Salud -->
+                    <div>
+                      <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm font-semibold text-gray-700">❤️ Salud</span>
+                        <span class="text-sm font-bold
+                          {% if item.care_indicator.health_level >= 70 %}text-green-600
+                          {% elif item.care_indicator.health_level >= 40 %}text-yellow-600
+                          {% else %}text-red-600{% endif %}">
+                          {{ item.care_indicator.health_level }}%
+                        </span>
+                      </div>
+                      <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="h-2 rounded-full transition-all
+                          {% if item.care_indicator.health_level >= 70 %}bg-pink-500
+                          {% elif item.care_indicator.health_level >= 40 %}bg-yellow-500
+                          {% else %}bg-red-500{% endif %}" 
+                          style="width: {{ item.care_indicator.health_level }}%">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Estado general -->
+                  <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                    <span class="text-sm text-gray-600">Estado general:</span>
+                    <span class="px-3 py-1 rounded-full text-sm font-bold
+                      {% if item.care_indicator.overall_status >= 70 %}bg-green-100 text-green-700
+                      {% elif item.care_indicator.overall_status >= 40 %}bg-yellow-100 text-yellow-700
+                      {% else %}bg-red-100 text-red-700{% endif %}">
+                      {{ item.care_indicator.overall_status }}%
+                    </span>
+                  </div>
+
+                  <!-- Botón de acción -->
+                  <div class="mt-4">
+                    <div class="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg text-center font-semibold group-hover:from-purple-600 group-hover:to-pink-600 transition">
+                      🎮 Cuidar ahora
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="bg-white rounded-2xl shadow-lg p-12 text-center">
+          <div class="text-6xl mb-4">💖</div>
+          <h3 class="text-2xl font-bold text-gray-800 mb-2">Aún no has apadrinado ningún animal</h3>
+          <p class="text-gray-600 mb-6">Apadrina un animal y participa en su cuidado virtual con nuestro sistema de gamificación</p>
+          <a href="{% url 'animal_list' %}" class="inline-block px-8 py-3 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition">
+            Ver animales para apadrinar
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function switchTab(tab) {
+    // Ocultar todos los contenidos
+    document.querySelectorAll('.tab-content').forEach(content => {
+      content.classList.add('hidden');
+    });
+    
+    // Remover estilos activos de todos los tabs
+    document.querySelectorAll('[id^="tab-"]').forEach(button => {
+      button.classList.remove('border-purple-500', 'text-purple-600');
+      button.classList.add('border-transparent', 'text-gray-600');
+    });
+    
+    // Mostrar contenido seleccionado
+    document.getElementById('content-' + tab).classList.remove('hidden');
+    
+    // Activar tab seleccionado
+    const activeTab = document.getElementById('tab-' + tab);
+    activeTab.classList.add('border-purple-500', 'text-purple-600');
+    activeTab.classList.remove('border-transparent', 'text-gray-600');
+  }
+</script>
 {% endblock %}

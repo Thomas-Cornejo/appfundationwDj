@@ -14,13 +14,14 @@ import os
 from pathlib import Path
 import cloudinary
 from dotenv import load_dotenv
+
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -30,18 +31,18 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
-DEBUG = True # Debo de cambiar a False cuando cambie a produccion
+DEBUG = True  # Debo de cambiar a False cuando cambie a produccion
 
 if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 else:
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = "smtp.gmail.com"
     EMAIL_PORT = 587
     EMAIL_USE_TLS = True
-    EMAIL_HOST_USER = os.environ.get('EMAIL_USER', 'dmnfndcnnml@gmail.com')
-    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD', 'uihm dwwd ifnh ygny')
-    DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_USER', 'dmnfndcnnml@gmail.com')
+    EMAIL_HOST_USER = os.environ.get("EMAIL_USER", "dmnfndcnnml@gmail.com")
+    EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_PASSWORD", "uihm dwwd ifnh ygny")
+    DEFAULT_FROM_EMAIL = os.environ.get("EMAIL_USER", "dmnfndcnnml@gmail.com")
 
 
 ALLOWED_HOSTS = []
@@ -61,10 +62,12 @@ INSTALLED_APPS = [
     "crispy_tailwind",
     "cloudinary",
     "cloudinary_storage",
+    "shelters",
     "users",
     "breeds",
     "animals",
-    "engagements"
+    "engagements",
+    "gamifications",
 ]
 
 MIDDLEWARE = [
@@ -144,7 +147,7 @@ USE_TZ = True
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"

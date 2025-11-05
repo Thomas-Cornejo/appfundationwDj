@@ -10,20 +10,41 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
     list_display = ['id', 'user', 'animal', 'shelter_display', 'engagement_type_badge', 'status_badge', 'created_at', 'view_pdf']
     list_filter = ['engagements_type', 'status', 'created_at', 'animal__shelter']
     search_fields = ['user__username', 'user__email', 'animal__name', 'animal__shelter__name']
-    readonly_fields = ['created_at', 'updated_at', 'pdf_file', 'form_data_display', 'user', 'animal', 'engagements_type']
+    
+    # Campos readonly solo para edición, no para creación
+    def get_readonly_fields(self, request, obj=None):
+        if obj:  # Editando un objeto existente
+            return ['created_at', 'updated_at', 'pdf_file', 'form_data_display']
+        return ['created_at', 'updated_at']  # Creando uno nuevo
     
     fieldsets = (
         ('Información básica', {
             'fields': ('user', 'animal', 'engagements_type', 'status')
         }),
         ('Detalles de la solicitud', {
-            'fields': ('form_data_display', 'amount', 'pdf_file', 'admin_notes')
+            'fields': ('form_data_display', 'pdf_file', 'admin_notes')
         }),
         ('Fechas', {
             'fields': ('created_at', 'updated_at'),
             'classes': ('collapse',)
         }),
     )
+    
+    # Fieldsets para creación (sin form_data_display ni pdf_file)
+    add_fieldsets = (
+        ('Información básica', {
+            'fields': ('user', 'animal', 'engagements_type', 'status')
+        }),
+        ('Notas del administrador', {
+            'fields': ('admin_notes',)
+        }),
+    )
+    
+    def get_fieldsets(self, request, obj=None):
+        """Usar fieldsets diferentes para crear vs editar"""
+        if not obj:  # Creando nuevo
+            return self.add_fieldsets
+        return super().get_fieldsets(request, obj)
     
     actions = ['approve_engagements', 'reject_engagements']
 
@@ -45,8 +66,10 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
         return qs.none()
     
     def has_add_permission(self, request):
-        """Only regular users can create engagements"""
-        return False  
+        """Superadmins y superusers pueden crear engagements manualmente (para pruebas)"""
+        if request.user.is_superuser or request.user.is_superadmin():
+            return True
+        return False
     
     def has_delete_permission(self, request, obj=None):
         """Only Super Admin can delete engagements"""
@@ -71,7 +94,7 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
     
     def form_data_display(self, obj):
         """Displays form data in a readable format"""
-        if obj.form_data:
+        if obj and obj.form_data:
             html = "<table style='width:100%; border-collapse: collapse;'>"
             for key, value in obj.form_data.items():
                 html += f"<tr style='border-bottom: 1px solid #ddd;'>"
@@ -80,8 +103,8 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
                 html += "</tr>"
             html += "</table>"
             return format_html(html)
-        return "There is no data."
-    form_data_display.short_description = 'Form data'
+        return "No hay datos de formulario"
+    form_data_display.short_description = 'Datos del formulario'
 
     def engagement_type_badge(self, obj):
         """Badge color-coded according to the type of engagement"""
@@ -182,7 +205,6 @@ Saludos cordiales,
 El equipo de la Fundación
                 """
             else:
-                amount_text = f"${engagement.amount:,.0f} COP" if engagement.amount else "A definir"
                 message = f"""
 Hola {engagement.user.username},
 
@@ -194,7 +216,6 @@ Detalles de tu apadrinamiento:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - Animal: {engagement.animal.name}
 - Raza: {engagement.animal.breed.name}
-- Aporte mensual: {amount_text}
 - Fecha de solicitud: {engagement.created_at.strftime('%d/%m/%Y')}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -247,4 +268,16 @@ El equipo de la Fundación
             )
             print(f"Email successfully sent to {engagement.user.email}")
         except Exception as e:
-            print(f"Error sending email:{e}")
+            print(f"Error sending email: {e}")
+    
+    def save_model(self, request, obj, form, change):
+        """Al guardar, si es un apadrinamiento aprobado, el signal creará automáticamente el CareIndicator"""
+        super().save_model(request, obj, form, change)
+        
+        # Mensaje informativo al admin
+        if not change and obj.engagements_type == 'S' and obj.status == 'A':
+            self.message_user(
+                request, 
+                f"✅ Apadrinamiento creado. El CareIndicator se creará automáticamente por el signal.",
+                level='SUCCESS'
+            )

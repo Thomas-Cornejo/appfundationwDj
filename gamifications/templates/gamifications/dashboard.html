@@ -1,493 +1,369 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 py-8">
-  <div class="max-w-7xl mx-auto px-4">
-    
-    <div class="mb-6">
-      <a href="{% url 'perfil' %}" class="inline-flex items-center px-6 py-3 bg-white rounded-xl shadow-lg hover:shadow-xl transition text-gray-700 font-semibold">
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-        </svg>
-        Volver al perfil
-      </a>
-    </div>
-
-    <div class="bg-white rounded-2xl shadow-xl p-6 mb-8">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-          <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-            {{ user.username|slice:":1"|upper }}
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-stone-50">
+  
+  <!-- Header minimalista -->
+  <div class="bg-white border-b border-gray-100 sticky top-0 z-50 backdrop-blur-lg bg-white/90">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <a href="{% url 'perfil' %}" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          <span class="text-sm font-medium">Volver</span>
+        </a>
+        
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2 px-4 py-2 bg-amber-50 rounded-full">
+            <svg class="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+            </svg>
+            <span class="text-lg font-bold text-amber-900">{{ wallet.balance }}</span>
           </div>
-          <div>
-            <h2 class="text-2xl font-bold text-gray-800">{{ user.username }}</h2>
-            <p class="text-gray-600">Cuidando a {{ animal.name }}</p>
-          </div>
-        </div>
-        <div class="text-right">
-          <div class="flex items-center space-x-2">
-            <span class="text-4xl">🪙</span>
-            <span id="wallet-balance" class="text-3xl font-bold text-yellow-600">{{ wallet.balance }}</span>
-          </div>
-          <p class="text-sm text-gray-600">Monedas disponibles</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      
-      <div class="lg:col-span-2">
-        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
           
-          <div class="bg-gradient-to-r from-blue-400 to-purple-500 p-6 text-white">
-            <div class="flex items-center justify-between mb-4">
-              <h1 class="text-4xl font-bold">{{ animal.name }}</h1>
-              <div class="flex space-x-2">
-                <span class="px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm">⭐⭐⭐</span>
+          <a href="{% url 'gamifications:recharge_wallet' %}" 
+            class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium rounded-full hover:from-indigo-700 hover:to-purple-700 transition-all shadow-sm hover:shadow-md">
+            Recargar
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Hero section del animal -->
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+      <div class="relative h-64 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
+        {% if animal.image %}
+        <img src="{{ animal.image.url }}" alt="{{ animal.name }}" 
+          class="w-full h-full object-cover mix-blend-overlay opacity-50">
+        {% endif %}
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+        <div class="absolute bottom-0 left-0 right-0 p-8">
+          <h1 class="text-4xl font-bold text-white mb-2">{{ animal.name }}</h1>
+          <div class="flex items-center gap-4 text-white/90 text-sm">
+            <span>{{ animal.breed.name }}</span>
+            <span>•</span>
+            <span>{{ animal.age }} años</span>
+            <span>•</span>
+            <span>{{ animal.get_sex_display }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid de indicadores y acciones -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      
+      <!-- Indicadores (2 columnas en desktop) -->
+      <div class="lg:col-span-2 space-y-4">
+        
+        <!-- Alimento -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center">
+                <span class="text-2xl">🍖</span>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-900">Alimento</h3>
+                <p class="text-sm text-gray-500">{{ food_cost }} monedas</p>
               </div>
             </div>
-            <div class="flex items-center space-x-4 text-sm">
-              <span>📍 {{ shelter.name }}</span>
-              <span>🐾 {{ animal.breed.name }}</span>
-              <span>🎂 {{ animal.age }} años</span>
+            <button onclick="feedAnimal()" id="feed-button"
+              class="px-6 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-medium transition-colors text-sm shadow-sm">
+              Alimentar
+            </button>
+          </div>
+          
+          <div class="relative">
+            <div class="flex items-center justify-between text-sm mb-2">
+              <span class="text-gray-600">Nivel</span>
+              <span class="font-bold text-orange-600" id="food-level-text">{{ care_indicator.food_level }}%</span>
+            </div>
+            <div class="h-3 bg-gray-100 rounded-full overflow-hidden">
+              <div id="food-bar" class="h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full transition-all duration-500"
+                style="width: {{ care_indicator.food_level }}%"></div>
             </div>
           </div>
+        </div>
 
-          <div class="relative bg-gradient-to-br from-yellow-100 to-pink-100 p-8">
-            <div class="flex items-center justify-center h-80">
-              {% if animal.imagen %}
-                <img src="{{ animal.imagen.url }}" alt="{{ animal.name }}" class="max-h-full max-w-full object-contain rounded-2xl shadow-2xl">
-              {% else %}
-                <div class="w-64 h-64 bg-gradient-to-br from-orange-400 to-pink-400 rounded-full flex items-center justify-center text-9xl">
-                  🐶
-                </div>
-              {% endif %}
+        <!-- Higiene -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center">
+                <span class="text-2xl">🧼</span>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-900">Higiene</h3>
+                <p class="text-sm text-gray-500">{{ hygiene_cost }} monedas</p>
+              </div>
             </div>
-            <div class="absolute top-4 right-4 w-16 h-16 bg-orange-400 rounded-full flex items-center justify-center text-3xl shadow-lg">
-              🏠
+            <button onclick="cleanAnimal()" id="clean-button"
+              class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors text-sm shadow-sm">
+              Limpiar
+            </button>
+          </div>
+          
+          <div class="relative">
+            <div class="flex items-center justify-between text-sm mb-2">
+              <span class="text-gray-600">Nivel</span>
+              <span class="font-bold text-blue-600" id="hygiene-level-text">{{ care_indicator.hygiene_level }}%</span>
+            </div>
+            <div class="h-3 bg-gray-100 rounded-full overflow-hidden">
+              <div id="hygiene-bar" class="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all duration-500"
+                style="width: {{ care_indicator.hygiene_level }}%"></div>
             </div>
           </div>
+        </div>
 
-          <div class="p-8 space-y-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Indicadores de Cuidado</h2>
-            
-            <div class="space-y-2">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                  <span class="text-3xl">🍖</span>
-                  <span class="text-lg font-semibold text-gray-700">Alimento</span>
-                </div>
-                <span id="food-level-text" class="text-xl font-bold 
-                  {% if care_indicator.food_level >= 70 %}text-green-600
-                  {% elif care_indicator.food_level >= 40 %}text-yellow-600
-                  {% else %}text-red-600{% endif %}">
-                  {{ care_indicator.food_level }}%
-                </span>
+        <!-- Salud -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-100 to-green-50 flex items-center justify-center">
+                <span class="text-2xl">💚</span>
               </div>
-              <div class="w-full bg-gray-200 rounded-full h-4">
-                <div id="food-level-bar" class="h-4 rounded-full transition-all duration-500
-                  {% if care_indicator.food_level >= 70 %}bg-green-500
-                  {% elif care_indicator.food_level >= 40 %}bg-yellow-500
-                  {% else %}bg-red-500{% endif %}" 
-                  style="width: {{ care_indicator.food_level }}%">
-                </div>
-              </div>
-            </div>
-
-            <div class="space-y-2">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                  <span class="text-3xl">❤️</span>
-                  <span class="text-lg font-semibold text-gray-700">Salud</span>
-                </div>
-                <span id="health-level-text" class="text-xl font-bold
-                  {% if care_indicator.health_level >= 70 %}text-green-600
-                  {% elif care_indicator.health_level >= 40 %}text-yellow-600
-                  {% else %}text-red-600{% endif %}">
-                  {{ care_indicator.health_level }}%
-                </span>
-              </div>
-              <div class="w-full bg-gray-200 rounded-full h-4">
-                <div id="health-level-bar" class="h-4 rounded-full transition-all duration-500
-                  {% if care_indicator.health_level >= 70 %}bg-pink-500
-                  {% elif care_indicator.health_level >= 40 %}bg-yellow-500
-                  {% else %}bg-red-500{% endif %}" 
-                  style="width: {{ care_indicator.health_level }}%">
-                </div>
-              </div>
-            </div>
-
-            <div class="space-y-2">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                  <span class="text-3xl">🧼</span>
-                  <span class="text-lg font-semibold text-gray-700">Higiene</span>
-                </div>
-                <span id="hygiene-level-text" class="text-xl font-bold
-                  {% if care_indicator.hygiene_level >= 70 %}text-green-600
-                  {% elif care_indicator.hygiene_level >= 40 %}text-yellow-600
-                  {% else %}text-red-600{% endif %}">
-                  {{ care_indicator.hygiene_level }}%
-                </span>
-              </div>
-              <div class="w-full bg-gray-200 rounded-full h-4">
-                <div id="hygiene-level-bar" class="h-4 rounded-full transition-all duration-500
-                  {% if care_indicator.hygiene_level >= 70 %}bg-blue-500
-                  {% elif care_indicator.hygiene_level >= 40 %}bg-yellow-500
-                  {% else %}bg-red-500{% endif %}" 
-                  style="width: {{ care_indicator.hygiene_level }}%">
-                </div>
+              <div>
+                <h3 class="font-semibold text-gray-900">Salud</h3>
+                <p class="text-sm text-gray-500">Tratamientos médicos</p>
               </div>
             </div>
           </div>
-
-          <div class="p-8 bg-gradient-to-r from-purple-50 to-pink-50 border-t border-gray-200">
-            <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Contribuye con tu ahijado</h3>
-            <div class="grid grid-cols-3 gap-4">
-              
-              <button onclick="feedAnimal()" class="group transform hover:scale-105 transition duration-200">
-                <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl text-center">
-                  <div class="text-5xl mb-3">🍖</div>
-                  <p class="font-semibold text-gray-800 mb-1">Dar comida</p>
-                  <p class="text-sm text-gray-600 mb-2">{{ food_cost }} 🪙</p>
-                  <div class="text-xs text-gray-500">+10%</div>
-                </div>
-              </button>
-
-              <button onclick="showHealthEventsModal()" class="group transform hover:scale-105 transition duration-200">
-                <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl text-center">
-                  <div class="text-5xl mb-3">💊</div>
-                  <p class="font-semibold text-gray-800 mb-1">Dar medicamentos</p>
-                  <p class="text-sm text-gray-600 mb-2">Variable 🪙</p>
-                  <div class="text-xs text-gray-500">Tratamientos</div>
-                </div>
-              </button>
-
-              <button onclick="cleanAnimal()" class="group transform hover:scale-105 transition duration-200">
-                <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl text-center">
-                  <div class="text-5xl mb-3">🧼</div>
-                  <p class="font-semibold text-gray-800 mb-1">Limpiar</p>
-                  <p class="text-sm text-gray-600 mb-2">{{ hygiene_cost }} 🪙</p>
-                  <div class="text-xs text-gray-500">+10%</div>
-                </div>
-              </button>
-              
+          
+          <div class="relative">
+            <div class="flex items-center justify-between text-sm mb-2">
+              <span class="text-gray-600">Nivel</span>
+              <span class="font-bold text-green-600" id="health-level-text">{{ care_indicator.health_level }}%</span>
+            </div>
+            <div class="h-3 bg-gray-100 rounded-full overflow-hidden">
+              <div id="health-bar" class="h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full transition-all duration-500"
+                style="width: {{ care_indicator.health_level }}%"></div>
             </div>
           </div>
-
         </div>
       </div>
 
+      <!-- Sidebar -->
       <div class="space-y-6">
         
-        <div class="bg-white rounded-2xl shadow-xl p-6">
+        <!-- Nivel y XP -->
+        <div class="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl shadow-sm p-6 text-white">
           <div class="text-center mb-4">
-            <div class="inline-block px-6 py-2 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full">
-              <span class="text-2xl font-bold text-white">Lv. {{ level }}</span>
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl mb-3">
+              <span class="text-3xl font-bold">{{ level }}</span>
             </div>
+            <p class="text-sm text-white/80">Nivel actual</p>
           </div>
           
           <div class="space-y-2">
-            <div class="flex items-center justify-between text-sm text-gray-600">
-              <span>Progreso</span>
+            <div class="flex justify-between text-sm">
+              <span class="text-white/80">Experiencia</span>
               <span class="font-semibold">{{ xp_current }}/{{ xp_max }} XP</span>
             </div>
-            <div class="w-full bg-gray-200 rounded-full h-3">
-              <div class="bg-gradient-to-r from-orange-400 to-yellow-400 h-3 rounded-full transition-all" 
-                style="width: {{ xp_current }}%">
-              </div>
+            <div class="h-2 bg-white/20 rounded-full overflow-hidden">
+              <div class="h-full bg-white rounded-full transition-all duration-500"
+                style="width: {{ xp_current }}%"></div>
             </div>
-          </div>
-
-          <div class="mt-6 p-4 bg-yellow-50 rounded-xl">
-            <p class="text-sm text-gray-700 text-center">
-              <span class="text-2xl">🏆</span><br>
-              <strong>MAX: 20</strong><br>
-              <span class="text-xs text-gray-600">No dejes bajar a tu ahijado del 50% del indicador de alimento</span>
-            </p>
           </div>
         </div>
 
-        <div class="bg-gradient-to-br from-yellow-400 to-orange-400 rounded-2xl shadow-xl p-6 text-white">
-          <div class="flex items-center justify-between mb-4">
-            <span class="text-5xl">🪙</span>
-            <div class="text-right">
-              <p id="wallet-balance-sidebar" class="text-4xl font-bold">{{ wallet.balance }}</p>
-              <p class="text-sm opacity-90">Monedas</p>
-            </div>
-          </div>
-          <button class="w-full bg-white bg-opacity-20 hover:bg-opacity-30 rounded-xl py-3 font-semibold transition">
-            Recargar monedas
-          </button>
-        </div>
-
-        {% if health_events %}
-        <div class="bg-white rounded-2xl shadow-xl p-6">
-          <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            <span class="text-2xl mr-2">🏥</span>
-            Eventos de Salud
-          </h3>
-          <div class="space-y-3">
-            {% for event in health_events %}
-            <div class="p-4 {% if event.is_urgent %}bg-red-50 border-2 border-red-300{% else %}bg-blue-50 border-2 border-blue-200{% endif %} rounded-xl">
-              <div class="flex items-start justify-between mb-2">
-                <h4 class="font-semibold text-gray-800">{{ event.get_history_type_display }}</h4>
-                {% if event.is_urgent %}
-                <span class="px-2 py-1 bg-red-500 text-white text-xs rounded-full animate-pulse">¡URGENTE!</span>
-                {% endif %}
+        <!-- Estado general -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h3 class="font-semibold text-gray-900 mb-4">Estado general</h3>
+          
+          {% if care_indicator.food_level >= 70 and care_indicator.hygiene_level >= 70 and care_indicator.health_level >= 70 %}
+            <div class="flex items-center gap-3 p-3 bg-green-50 rounded-xl">
+              <span class="text-2xl">😊</span>
+              <div>
+                <p class="font-medium text-green-900">¡Excelente!</p>
+                <p class="text-sm text-green-700">{{ animal.name }} está muy bien cuidado</p>
               </div>
-              <p class="text-sm text-gray-600 mb-3">{{ event.description|truncatewords:15 }}</p>
-              <div class="space-y-2">
-                <div class="flex justify-between text-xs text-gray-600">
-                  <span>Progreso</span>
-                  <span class="font-semibold">{{ event.contributed_coins }}/{{ event.cost_coins }} 🪙</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full" 
-                    style="width: {{ event.progress_percentage }}%">
-                  </div>
-                </div>
-              </div>
-              <button onclick="contributeHealth({{ event.id }})" 
-                class="mt-3 w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-lg transition">
-                Contribuir
-              </button>
             </div>
-            {% endfor %}
-          </div>
+          {% elif care_indicator.food_level >= 40 and care_indicator.hygiene_level >= 40 and care_indicator.health_level >= 40 %}
+            <div class="flex items-center gap-3 p-3 bg-yellow-50 rounded-xl">
+              <span class="text-2xl">😐</span>
+              <div>
+                <p class="font-medium text-yellow-900">Necesita atención</p>
+                <p class="text-sm text-yellow-700">Algunos indicadores están bajos</p>
+              </div>
+            </div>
+          {% else %}
+            <div class="flex items-center gap-3 p-3 bg-red-50 rounded-xl">
+              <span class="text-2xl">😟</span>
+              <div>
+                <p class="font-medium text-red-900">¡Atención urgente!</p>
+                <p class="text-sm text-red-700">{{ animal.name}} necesita cuidados</p>
+              </div>
+            </div>
+          {% endif %}
         </div>
-        {% endif %}
 
       </div>
     </div>
 
-  </div>
-</div>
-
-<div id="health-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-  <div class="bg-white rounded-3xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between mb-6">
-      <h2 class="text-3xl font-bold text-gray-800">Tratamientos Médicos</h2>
-      <button onclick="closeHealthModal()" class="text-gray-500 hover:text-gray-700">
-        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </button>
-    </div>
-    
+    <!-- Eventos de salud -->
     {% if health_events %}
-      <div class="space-y-4">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Eventos de Salud</h3>
+      
+      <div class="space-y-3">
         {% for event in health_events %}
-        <div class="p-6 {% if event.is_urgent %}bg-red-50 border-2 border-red-300{% else %}bg-blue-50 border-2 border-blue-200{% endif %} rounded-2xl">
+        <div class="border border-gray-200 rounded-xl p-4 hover:border-gray-300 transition-colors">
           <div class="flex items-start justify-between mb-3">
             <div>
-              <h3 class="text-xl font-bold text-gray-800">{{ event.get_history_type_display }}</h3>
-              <p class="text-sm text-gray-600 mt-1">{{ event.entry_date|date:"d/m/Y" }}</p>
-            </div>
-            {% if event.is_urgent %}
-            <span class="px-3 py-1 bg-red-500 text-white text-sm rounded-full animate-pulse font-semibold">
-              ⚠️ URGENTE
-            </span>
-            {% endif %}
-          </div>
-          
-          <p class="text-gray-700 mb-4">{{ event.description }}</p>
-          
-          <div class="space-y-3">
-            <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-600">Costo total:</span>
-              <span class="text-xl font-bold text-purple-600">{{ event.cost_coins }} 🪙</span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-600">Ya contribuido:</span>
-              <span class="text-lg font-semibold text-green-600">{{ event.contributed_coins }} 🪙</span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-600">Falta:</span>
-              <span class="text-lg font-semibold text-orange-600">{{ event.remaining_coins }} 🪙</span>
-            </div>
-            
-            <div class="w-full bg-gray-200 rounded-full h-3">
-              <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all" 
-                style="width: {{ event.progress_percentage }}%">
+              <div class="flex items-center gap-2 mb-1">
+                {% if event.is_urgent %}
+                <span class="px-2 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-md">URGENTE</span>
+                {% endif %}
+                <h4 class="font-medium text-gray-900">{{ event.description }}</h4>
               </div>
-            </div>
-            
-            <div class="flex space-x-2">
-              <input type="number" 
-                id="contribution-{{ event.id }}" 
-                min="1" 
-                max="{{ event.remaining_coins }}" 
-                value="{{ event.remaining_coins|default:10 }}"
-                class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
-              <button onclick="contributeHealth({{ event.id }})" 
-                class="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-purple-600 transition">
-                Contribuir
-              </button>
+              <p class="text-sm text-gray-600">{{ event.entry_date|date:"d/m/Y" }}</p>
             </div>
           </div>
+          
+          <div class="mb-3">
+            <div class="flex justify-between text-sm mb-2">
+              <span class="text-gray-600">Progreso</span>
+              <span class="font-medium text-gray-900">{{ event.contributed_coins }}/{{ event.cost_coins }} monedas</span>
+            </div>
+            <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
+                style="width: {{ event.contributed_coins|floatformat:0 }}{{ event.cost_coins|floatformat:0 }}%"></div>
+            </div>
+          </div>
+          
+          <button onclick="contributeHealth({{ event.id }}, {{ event.cost_coins }}, {{ event.contributed_coins }})"
+            class="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors text-sm">
+            Contribuir
+          </button>
         </div>
         {% endfor %}
       </div>
-    {% else %}
-      <div class="text-center py-12">
-        <div class="text-6xl mb-4">✅</div>
-        <h3 class="text-2xl font-bold text-gray-800 mb-2">¡Todo en orden!</h3>
-        <p class="text-gray-600">{{ animal.name }} no tiene eventos médicos pendientes</p>
-      </div>
+    </div>
     {% endif %}
+
   </div>
 </div>
 
-<div id="toast" class="fixed top-4 right-4 transform translate-x-full transition-transform duration-300 z-50">
-  <div class="bg-white rounded-2xl shadow-2xl p-6 flex items-center space-x-4 min-w-[300px]">
-    <div id="toast-icon" class="text-4xl"></div>
-    <div class="flex-1">
-      <p id="toast-message" class="font-semibold text-gray-800"></p>
-      <p id="toast-submessage" class="text-sm text-gray-600"></p>
-    </div>
+<!-- Toast para notificaciones -->
+<div id="toast" class="fixed bottom-4 right-4 transform translate-y-20 transition-transform duration-300 z-50">
+  <div class="bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 backdrop-blur-lg">
+    <span id="toast-icon"></span>
+    <span id="toast-message" class="font-medium"></span>
   </div>
 </div>
 
 <script>
-const animalId = {{ animal.id }};
 const csrfToken = '{{ csrf_token }}';
+const animalId = {{ animal.id }};
 
-function showToast(icon, message, submessage, type = 'success') {
+function showToast(message, type = 'success') {
   const toast = document.getElementById('toast');
-  const toastIcon = document.getElementById('toast-icon');
-  const toastMessage = document.getElementById('toast-message');
-  const toastSubmessage = document.getElementById('toast-submessage');
+  const icon = document.getElementById('toast-icon');
+  const msg = document.getElementById('toast-message');
   
-  toastIcon.textContent = icon;
-  toastMessage.textContent = message;
-  toastSubmessage.textContent = submessage || '';
+  icon.textContent = type === 'success' ? '✓' : '✗';
+  msg.textContent = message;
   
-  toast.classList.remove('translate-x-full');
+  toast.classList.remove('translate-y-20');
+  toast.classList.add('translate-y-0');
   
   setTimeout(() => {
-    toast.classList.add('translate-x-full');
+    toast.classList.remove('translate-y-0');
+    toast.classList.add('translate-y-20');
   }, 3000);
 }
 
-function updateIndicator(type, newLevel) {
-  const levelText = document.getElementById(`${type}-level-text`);
-  const levelBar = document.getElementById(`${type}-level-bar`);
-  
-  levelText.textContent = `${newLevel}%`;
-  levelBar.style.width = `${newLevel}%`;
-  
-  levelText.className = 'text-xl font-bold ';
-  levelBar.className = 'h-4 rounded-full transition-all duration-500 ';
-  
-  if (newLevel >= 70) {
-    levelText.className += newLevel >= 70 ? 'text-green-600' : '';
-    levelBar.className += type === 'food' ? 'bg-green-500' : type === 'hygiene' ? 'bg-blue-500' : 'bg-pink-500';
-  } else if (newLevel >= 40) {
-    levelText.className += 'text-yellow-600';
-    levelBar.className += 'bg-yellow-500';
-  } else {
-    levelText.className += 'text-red-600';
-    levelBar.className += 'bg-red-500';
-  }
-}
-function updateWalletBalance(newBalance) {
-  document.getElementById('wallet-balance').textContent = newBalance;
-  document.getElementById('wallet-balance-sidebar').textContent = newBalance;
-}
-
 async function feedAnimal() {
+  const button = document.getElementById('feed-button');
+  button.disabled = true;
+  button.textContent = '...';
+  
   try {
     const response = await fetch(`/gamifications/animal/${animalId}/feed/`, {
       method: 'POST',
-      headers: {
-        'X-CSRFToken': csrfToken,
-        'Content-Type': 'application/json'
-      }
+      headers: {'X-CSRFToken': csrfToken}
     });
     
     const data = await response.json();
     
     if (data.success) {
-      updateIndicator('food', data.new_level);
-      updateWalletBalance(data.new_balance);
-      showToast('🍖', data.message, `Gastaste ${data.coins_spent} monedas | +${data.xp_earned} XP`);
+      document.getElementById('food-level-text').textContent = data.new_level + '%';
+      document.getElementById('food-bar').style.width = data.new_level + '%';
+      document.querySelector('.text-amber-900').textContent = data.new_balance;
+      showToast(data.message);
     } else {
-      showToast('❌', 'Error', data.error, 'error');
+      showToast(data.error, 'error');
     }
   } catch (error) {
-    console.error('Error:', error);
-    showToast('❌', 'Error', 'Ocurrió un error al alimentar', 'error');
+    showToast('Error al alimentar', 'error');
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Alimentar';
   }
 }
 
 async function cleanAnimal() {
+  const button = document.getElementById('clean-button');
+  button.disabled = true;
+  button.textContent = '...';
+  
   try {
     const response = await fetch(`/gamifications/animal/${animalId}/clean/`, {
       method: 'POST',
-      headers: {
-        'X-CSRFToken': csrfToken,
-        'Content-Type': 'application/json'
-      }
+      headers: {'X-CSRFToken': csrfToken}
     });
     
     const data = await response.json();
     
     if (data.success) {
-      updateIndicator('hygiene', data.new_level);
-      updateWalletBalance(data.new_balance);
-      showToast('🧼', data.message, `Gastaste ${data.coins_spent} monedas | +${data.xp_earned} XP`);
+      document.getElementById('hygiene-level-text').textContent = data.new_level + '%';
+      document.getElementById('hygiene-bar').style.width = data.new_level + '%';
+      document.querySelector('.text-amber-900').textContent = data.new_balance;
+      showToast(data.message);
     } else {
-      showToast('❌', 'Error', data.error, 'error');
+      showToast(data.error, 'error');
     }
   } catch (error) {
-    console.error('Error:', error);
-    showToast('❌', 'Error', 'Ocurrió un error al limpiar', 'error');
+    showToast('Error al limpiar', 'error');
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Limpiar';
   }
 }
 
-async function contributeHealth(eventId) {
-  const input = document.getElementById(`contribution-${eventId}`);
-  const amount = parseInt(input ? input.value : 10);
+async function contributeHealth(historyId, totalCost, contributed) {
+  const remaining = totalCost - contributed;
+  const amount = prompt(`¿Cuántas monedas quieres contribuir? (Faltan ${remaining})`);
+  
+  if (!amount || isNaN(amount)) return;
   
   try {
-    const response = await fetch(`/gamifications/animal/${animalId}/health/${eventId}/contribute/`, {
+    const formData = new FormData();
+    formData.append('amount', amount);
+    
+    const response = await fetch(`/gamifications/animal/${animalId}/health/${historyId}/contribute/`, {
       method: 'POST',
-      headers: {
-        'X-CSRFToken': csrfToken,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ amount: amount })
+      headers: {'X-CSRFToken': csrfToken},
+      body: formData
     });
     
     const data = await response.json();
     
     if (data.success) {
-      updateWalletBalance(data.new_balance);
-      showToast('💊', data.message, `Contribución: ${data.contribution} monedas | +${data.xp_earned} XP`);
-      
-      if (data.fully_funded) {
-        setTimeout(() => {
-          location.reload();
-        }, 2000);
-      }
+      showToast(data.message);
+      setTimeout(() => location.reload(), 2000);
     } else {
-      showToast('❌', 'Error', data.error, 'error');
+      showToast(data.error, 'error');
     }
   } catch (error) {
-    console.error('Error:', error);
-    showToast('❌', 'Error', 'Ocurrió un error al contribuir', 'error');
+    showToast('Error al contribuir', 'error');
   }
-}
-
-function showHealthEventsModal() {
-  document.getElementById('health-modal').classList.remove('hidden');
-  document.getElementById('health-modal').classList.add('flex');
-}
-
-function closeHealthModal() {
-  document.getElementById('health-modal').classList.add('hidden');
-  document.getElementById('health-modal').classList.remove('flex');
 }
 </script>
 

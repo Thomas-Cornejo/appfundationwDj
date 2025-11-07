@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8">
+  <div class="max-w-6xl mx-auto px-4">
+    
+    <div class="mb-6 flex items-center justify-between">
+      <a href="{% url 'perfil' %}" class="inline-flex items-center px-6 py-3 bg-white rounded-xl shadow-lg hover:shadow-xl transition text-gray-700 font-semibold">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Volver
+      </a>
+      
+      <a href="{% url 'gamifications:recharge_wallet' %}" class="px-6 py-3 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition font-semibold">
+        💰 Nueva Recarga
+      </a>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
+      
+      <div class="bg-gradient-to-r from-blue-500 to-purple-600 p-8 text-white">
+        <h1 class="text-4xl font-bold mb-2">📜 Historial de Recargas</h1>
+        <p class="text-blue-100">Todas tus transacciones y donaciones</p>
+      </div>
+
+      <div class="p-8">
+        
+        <div class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-6 mb-8">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-600 text-sm mb-1">Saldo Actual</p>
+              <p class="text-5xl font-bold text-orange-600">{{ wallet.balance }} 🪙</p>
+            </div>
+            <div class="text-right">
+              <p class="text-gray-600 text-sm mb-1">Total Recargado</p>
+              <p class="text-2xl font-bold text-gray-800">${{ wallet.total_earned|floatformat:0 }} COP</p>
+            </div>
+          </div>
+        </div>
+
+        {% if recharges %}
+        <div class="space-y-4">
+          {% for recharge in recharges %}
+          <div class="border-2 {% if recharge.status == 'A' %}border-green-200 bg-green-50
+               {% elif recharge.status == 'P' %}border-yellow-200 bg-yellow-50
+               {% elif recharge.status == 'R' %}border-red-200 bg-red-50
+               {% else %}border-gray-200 bg-gray-50{% endif %} rounded-2xl p-6">
+            
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <div class="flex items-center space-x-3 mb-2">
+                  <span class="text-3xl">
+                    {% if recharge.status == 'A' %}✅
+                    {% elif recharge.status == 'P' %}⏳
+                    {% elif recharge.status == 'R' %}❌
+                    {% else %}⚠️{% endif %}
+                  </span>
+                  <div>
+                    <h3 class="text-xl font-bold text-gray-800">
+                      {% if recharge.status == 'A' %}Aprobada
+                      {% elif recharge.status == 'P' %}Pendiente
+                      {% elif recharge.status == 'R' %}Rechazada
+                      {% else %}Fallida{% endif %}
+                    </h3>
+                    <p class="text-sm text-gray-600">{{ recharge.created_at|date:"d/m/Y H:i" }}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="text-right">
+                <p class="text-3xl font-bold text-gray-900">${{ recharge.amount_cop|floatformat:0 }}</p>
+                <p class="text-sm text-gray-600">COP</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div>
+                <p class="text-sm text-gray-600 mb-1">Monedas</p>
+                <p class="text-2xl font-bold text-orange-600">{{ recharge.coins_received }} 🪙</p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-600 mb-1">Método de pago</p>
+                <p class="font-semibold text-gray-800">{{ recharge.get_payment_method_display }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-600 mb-1">Albergue</p>
+                <p class="font-semibold text-gray-800">{{ recharge.shelter.name }}</p>
+              </div>
+            </div>
+
+            {% if recharge.transaction_id %}
+            <div class="text-xs text-gray-500 font-mono">
+              ID: {{ recharge.transaction_id }}
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        
+        {% else %}
+        <div class="text-center py-16">
+          <div class="text-8xl mb-4">💰</div>
+          <h3 class="text-2xl font-bold text-gray-800 mb-2">Aún no has realizado recargas</h3>
+          <p class="text-gray-600 mb-8">Recarga tu billetera para cuidar a tus animales ahijados</p>
+          <a href="{% url 'gamifications:recharge_wallet' %}" 
+            class="inline-block px-8 py-4 bg-gradient-to-r from-orange-500 to-pink-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-pink-600 transition">
+            💰 Primera Recarga
+          </a>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

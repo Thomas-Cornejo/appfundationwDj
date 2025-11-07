@@ -1,0 +1,478 @@
+{% extends "base.html" %} {% block content %}
+<div
+  class="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-stone-50 py-8"
+>
+  <div class="max-w-4xl mx-auto px-4">
+    <div class="flex items-center justify-between mb-8">
+      <a
+        href="{% url 'perfil' %}"
+        class="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+          />
+        </svg>
+        <span class="text-sm font-medium">Volver</span>
+      </a>
+
+      <a
+        href="{% url 'gamifications:recharge_history' %}"
+        class="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+      >
+        Ver historial →
+      </a>
+    </div>
+
+    <div
+      class="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-3xl shadow-xl p-8 mb-8 text-white"
+    >
+      <p class="text-white/80 text-sm mb-2">Saldo actual</p>
+      <div class="flex items-baseline gap-2">
+        <span class="text-6xl font-bold">{{ wallet.balance }}</span>
+        <span class="text-2xl text-white/80">monedas</span>
+      </div>
+    </div>
+
+    <div
+      class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden"
+    >
+      <div class="bg-blue-50 border-b border-blue-100 p-6">
+        <div class="flex items-start gap-4">
+          <div
+            class="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center"
+          >
+            <svg
+              class="w-6 h-6 text-blue-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-semibold text-blue-900 mb-1">
+              💝 Tu recarga es una donación
+            </h3>
+            <p class="text-sm text-blue-700">
+              El 100% del dinero va directamente al albergue. Las monedas te
+              permiten participar en el cuidado de tu ahijado.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <form id="recharge-form" class="p-8 space-y-8">
+        {% csrf_token %}
+
+        <div>
+          <h2 class="text-xl font-bold text-gray-900 mb-4">
+            Selecciona un paquete
+          </h2>
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {% for package in packages %}
+            <label class="cursor-pointer group relative">
+              <input
+                type="radio"
+                name="package"
+                value="{{ package.cop }}"
+                data-coins="{{ package.coins }}"
+                class="peer sr-only"
+                {%
+                if
+                forloop.first
+                %}checked{%
+                endif
+                %}
+              />
+              <div
+                class="peer-checked:border-indigo-500 peer-checked:shadow-lg peer-checked:bg-indigo-50 border-2 border-gray-200 rounded-2xl p-4 text-center transition-all hover:border-indigo-300 hover:shadow-md"
+              >
+                {% if package.bonus > 0 %}
+                <div
+                  class="absolute -top-2 -right-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white px-2 py-1 rounded-full text-xs font-bold"
+                >
+                  +{{ package.bonus }} 🎁
+                </div>
+                {% endif %}
+
+                <div class="text-sm font-medium text-gray-600 mb-2">
+                  {{ package.label }}
+                </div>
+                <div class="text-3xl font-bold text-gray-900 mb-1">
+                  ${{ package.cop|floatformat:0 }}
+                </div>
+                <div class="text-xs text-gray-500 mb-3">COP</div>
+                <div class="h-px bg-gray-200 my-3"></div>
+                <div class="text-2xl font-bold text-indigo-600">
+                  {{ package.coins }}
+                </div>
+                <div class="text-xs text-gray-600">monedas</div>
+
+                {% if package.bonus > 0 %}
+                <div class="mt-2 text-xs font-semibold text-green-600">
+                  + {{ package.bonus }} bonus
+                </div>
+                {% endif %}
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="bg-gray-50 rounded-2xl p-6">
+          <h3 class="font-semibold text-gray-900 mb-4">
+            O ingresa un monto personalizado
+          </h3>
+          <div class="flex items-center gap-4">
+            <div class="flex-1">
+              <div class="relative">
+                <span
+                  class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-lg font-semibold"
+                  >$</span
+                >
+                <input
+                  type="number"
+                  id="custom-amount"
+                  min="5000"
+                  step="1000"
+                  placeholder="50000"
+                  class="w-full pl-8 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none text-lg"
+                />
+              </div>
+              <p class="text-xs text-gray-500 mt-2">Mínimo $5,000 COP</p>
+            </div>
+            <div class="text-2xl text-gray-400">=</div>
+            <div class="flex-1">
+              <div class="bg-white p-4 rounded-xl border-2 border-gray-200">
+                <div
+                  id="custom-coins"
+                  class="text-3xl font-bold text-indigo-600"
+                >
+                  0
+                </div>
+                <div class="text-sm text-gray-600">monedas</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="font-semibold text-gray-900 mb-3">Albergue destino</h3>
+          <select
+            name="shelter_id"
+            id="shelter-select"
+            required
+            class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none"
+          >
+            <option value="">Selecciona un albergue...</option>
+            {% for shelter in shelters %}
+            <option value="{{ shelter.id }}">{{ shelter.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div
+          class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-6"
+        >
+          <h3 class="font-semibold text-gray-900 mb-4">Resumen</h3>
+          <div class="space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="text-gray-700">Monto:</span>
+              <span id="summary-amount" class="text-2xl font-bold text-gray-900"
+                >$0</span
+              >
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-700">Monedas base:</span>
+              <span id="summary-base-coins" class="font-semibold text-gray-700"
+                >0 🪙</span
+              >
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-green-600">Bonus:</span>
+              <span id="summary-bonus" class="font-semibold text-green-600"
+                >+0 🎁</span
+              >
+            </div>
+            <div class="h-px bg-gray-300"></div>
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-gray-900">Total:</span>
+              <span
+                id="summary-total-coins"
+                class="text-3xl font-bold text-indigo-600"
+                >0 🪙</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          id="pay-button"
+          class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold py-4 rounded-2xl text-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+        >
+          Proceder al Pago →
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Cargar Widget de Wompi -->
+<script src="https://checkout.wompi.co/widget.js"></script>
+
+<script>
+const csrfToken = '{{ csrf_token }}';
+const WOMPI_PUBLIC_KEY = '{{ wompi_public_key|escapejs }}';
+
+if (!WOMPI_PUBLIC_KEY || WOMPI_PUBLIC_KEY.length < 20) {
+  console.error('❌ Public Key inválida o vacía');
+  alert('Error de configuración. Por favor contacta al administrador.');
+}
+
+function calculateCoins(amountCOP) {
+  let baseCoins = Math.floor(amountCOP / 10);
+  let bonus = 0;
+  
+  if (amountCOP >= 100000) bonus = Math.floor(baseCoins * 0.20);
+  else if (amountCOP >= 50000) bonus = Math.floor(baseCoins * 0.15);
+  else if (amountCOP >= 20000) bonus = Math.floor(baseCoins * 0.10);
+  
+  return { base: baseCoins, bonus: bonus, total: baseCoins + bonus };
+}
+
+function updateSummary() {
+  const customAmount = document.getElementById('custom-amount').value;
+  const selectedPackage = document.querySelector('input[name="package"]:checked');
+  
+  let amount = 0;
+  
+  if (customAmount && parseInt(customAmount) > 0) {
+    amount = parseInt(customAmount);
+  } else if (selectedPackage) {
+    amount = parseInt(selectedPackage.value);
+  }
+  
+  const coins = calculateCoins(amount);
+  
+  document.getElementById('summary-amount').textContent = `$${amount.toLocaleString('es-CO')}`;
+  document.getElementById('summary-base-coins').textContent = `${coins.base} 🪙`;
+  document.getElementById('summary-bonus').textContent = `+${coins.bonus} 🎁`;
+  document.getElementById('summary-total-coins').textContent = `${coins.total} 🪙`;
+  document.getElementById('custom-coins').textContent = coins.total;
+}
+
+document.querySelectorAll('input[name="package"]').forEach(radio => {
+  radio.addEventListener('change', function() {
+    document.getElementById('custom-amount').value = '';
+    updateSummary();
+  });
+});
+
+document.getElementById('custom-amount').addEventListener('input', function() {
+  document.querySelectorAll('input[name="package"]').forEach(r => r.checked = false);
+  updateSummary();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  updateSummary();
+});
+
+document.getElementById('recharge-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const customAmount = document.getElementById('custom-amount').value;
+  const selectedPackage = document.querySelector('input[name="package"]:checked');
+  const shelterId = document.getElementById('shelter-select').value;
+  
+  let amount = 0;
+  
+  if (customAmount && parseInt(customAmount) > 0) {
+    amount = parseInt(customAmount);
+  } else if (selectedPackage) {
+    amount = parseInt(selectedPackage.value);
+  }
+  
+  if (amount < 5000) {
+    alert('El monto mínimo es $5,000 COP');
+    return;
+  }
+  
+  if (!shelterId) {
+    alert('Por favor selecciona un albergue');
+    return;
+  }
+  
+  const button = document.getElementById('pay-button');
+  button.disabled = true;
+  button.innerHTML = '⏳ Creando transacción...';
+  
+  try {
+    const formData = new FormData();
+    formData.append('amount_cop', amount);
+    formData.append('shelter_id', shelterId);
+    formData.append('payment_method', 'WOMPI');
+    
+    
+    const response = await fetch('{% url "gamifications:create_recharge" %}', {
+      method: 'POST',
+      headers: {'X-CSRFToken': csrfToken},
+      body: formData
+    });
+    
+    const data = await response.json();
+    console.log('📥 Respuesta backend:', data);
+    
+    if (!data.success) {
+      alert('Error: ' + data.error);
+      button.disabled = false;
+      button.innerHTML = 'Proceder al Pago →';
+      return;
+    }
+    
+    button.innerHTML = '⏳ Abriendo pasarela de pago...';
+    
+    if (typeof WidgetCheckout === 'undefined') {
+      alert('Error: No se pudo cargar el sistema de pagos. Por favor recarga la página.');
+      button.disabled = false;
+      button.innerHTML = 'Proceder al Pago →';
+      return;
+    }
+    
+  
+    if (!data.reference) {
+      alert('Error: No se generó la referencia de pago');
+      button.disabled = false;
+      button.innerHTML = 'Proceder al Pago →';
+      return;
+    }
+    
+    if (!data.integrity_signature) {
+      alert('Error: No se generó la firma de seguridad');
+      button.disabled = false;
+      button.innerHTML = 'Proceder al Pago →';
+      return;
+    }
+    
+    const checkoutConfig = {
+      currency: 'COP',
+      amountInCents: data.amount_in_cents,
+      reference: String(data.reference),
+      publicKey: WOMPI_PUBLIC_KEY,
+      redirectUrl: window.location.origin + '{% url "gamifications:recharge_callback" %}',
+      customerData: {
+        email: '{{ user.email }}',
+        fullName: '{{ user.get_full_name|default:"Usuario" }}'
+      }
+    };
+    
+    if (data.integrity_signature) {
+      checkoutConfig.signature = {
+        integrity: data.integrity_signature
+      };
+      console.log('🔐 Firma agregada a la configuración');
+    } else {
+      console.warn('⚠️ No se proporcionó firma de integridad (solo válido en sandbox)');
+    }
+    
+    const validations = {
+      'currency': checkoutConfig.currency === 'COP',
+      'amountInCents > 0': checkoutConfig.amountInCents > 0,
+      'reference existe': !!checkoutConfig.reference,
+      'reference length': checkoutConfig.reference.length > 5,
+      'publicKey formato': checkoutConfig.publicKey.startsWith('pub_'),
+      'redirectUrl existe': !!checkoutConfig.redirectUrl
+    };
+    
+    
+    const failedValidations = Object.entries(validations)
+      .filter(([key, value]) => !value)
+      .map(([key]) => key);
+    
+    if (failedValidations.length > 0) {
+      console.error('❌ Validaciones fallidas:', failedValidations);
+      alert('Error en la configuración: ' + failedValidations.join(', '));
+      button.disabled = false;
+      button.innerHTML = 'Proceder al Pago →';
+      return;
+    }
+    
+    if (!checkoutConfig.publicKey.startsWith('pub_')) {
+      console.error('❌ Public Key no tiene el formato correcto');
+      alert('Error de configuración en la clave pública');
+      button.disabled = false;
+      button.innerHTML = 'Proceder al Pago →';
+      return;
+    }
+    
+    let checkout;
+    
+    try {
+      console.log('Intentando crear WidgetCheckout...');
+      checkout = new WidgetCheckout(checkoutConfig);
+      console.log('Checkout objeto creado:', checkout);
+    } catch (widgetError) {
+      console.error('Error al crear WidgetCheckout:', widgetError);
+      alert('Error al crear el checkout: ' + widgetError.message);
+      button.disabled = false;
+      button.innerHTML = 'Proceder al Pago →';
+      return;
+    }
+    
+    checkout.open(function(result) {
+      console.log('📊 Resultado del pago:', result);
+      
+      if (result.transaction) {
+        const status = result.transaction.status;
+        const transactionId = result.transaction.id;
+        
+        console.log('💳 Estado:', status);
+        console.log('🆔 ID:', transactionId);
+        
+        if (status === 'APPROVED') {
+          console.log('✅ Pago aprobado, redirigiendo...');
+          window.location.href = '{% url "gamifications:recharge_callback" %}?id=' + transactionId;
+        } else if (status === 'DECLINED') {
+          alert('❌ Pago rechazado. Por favor intenta nuevamente.');
+          button.disabled = false;
+          button.innerHTML = 'Proceder al Pago →';
+        } else if (status === 'PENDING') {
+          console.log('⏳ Pago pendiente');
+          window.location.href = '{% url "gamifications:recharge_callback" %}?id=' + transactionId;
+        } else {
+          console.log('⚠️ Estado desconocido:', status);
+          button.disabled = false;
+          button.innerHTML = 'Proceder al Pago →';
+        }
+      } else {
+        console.log('ℹ️ Usuario cerró el modal');
+        button.disabled = false;
+        button.innerHTML = 'Proceder al Pago →';
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Error:', error);
+    alert('Ocurrió un error al procesar el pago: ' + error.message);
+    button.disabled = false;
+    button.innerHTML = 'Proceder al Pago →';
+  }
+});
+</script>
+
+{% endblock %}

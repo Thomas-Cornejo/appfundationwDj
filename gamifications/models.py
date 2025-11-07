@@ -8,8 +8,8 @@ from engagements.models import AnimalEngagement
 
 class CareIndicator(models.Model):
     """
-    Indicadores de cuidado para un animal apadrinado.
-    Cada engagement aprobado de tipo 'S' (Sponsorship) tiene un CareIndicator.
+    Care indicators for a sponsored animal.
+    Each approved 'S' (Sponsorship) engagement has a CareIndicator.
     """
     
     engagement = models.OneToOneField(
@@ -52,26 +52,26 @@ class CareIndicator(models.Model):
     
     @property
     def animal(self):
-        """Atajo para acceder al animal"""
+        """Shortcut to access the animal"""
         return self.engagement.animal
     
     @property
     def user(self):
-        """Atajo para acceder al usuario (padrino)"""
+        """Shortcut to access the user (godfather)"""
         return self.engagement.user
     
     @property
     def shelter(self):
-        """Atajo para acceder al albergue"""
+        """Shortcut to access the hostel"""
         return self.engagement.animal.shelter
     
     @property
     def overall_status(self):
-        """Retorna el estado general promedio (0-100)"""
+        """Returns the average overall state (0-100)"""
         return round((self.food_level + self.hygiene_level + self.health_level) / 3)
     
     def get_status_color(self):
-        """Retorna color según el estado general"""
+        """Returns color according to the overall condition"""
         status = self.overall_status
         if status >= 70:
             return 'green'  
@@ -81,7 +81,7 @@ class CareIndicator(models.Model):
             return 'red'  
     
     def needs_attention(self):
-        """Verifica si algún indicador está crítico (<30%)"""
+        """Check if any indicator is critical (<30%)"""
         return (
             self.food_level < 30 or 
             self.hygiene_level < 30 or 
@@ -90,8 +90,8 @@ class CareIndicator(models.Model):
     
     def apply_degradation(self):
         """
-        Aplica degradación automática según configuración del shelter.
-        Este método será llamado por un cron job o celery task periódicamente.
+        Automatic downgrade based on shelter configuration.
+        This method will be called periodically by a cron job or Celery task.
         """
         shelter = self.shelter
         now = timezone.now()
@@ -125,8 +125,8 @@ class CareIndicator(models.Model):
 
 class CareAction(models.Model):
     """
-    Registro de cada acción de cuidado que realiza un usuario.
-    Permite llevar historial y calcular estadísticas.
+    Record of every care action performed by a user.
+    Allows for tracking history and calculating statistics. 
     """
     
     ACTION_TYPES = [
@@ -185,8 +185,8 @@ class CareAction(models.Model):
 
 class VirtualWallet(models.Model):
     """
-    Billetera virtual del usuario con monedas para gastar en cuidados.
-    Cada usuario tiene UNA billetera.
+    The user's virtual wallet contains coins to spend on care.
+    Each user has one wallet.
     """
     
     user = models.OneToOneField(
@@ -241,7 +241,7 @@ class VirtualWallet(models.Model):
         return True
     
     def spend_coins(self, amount, description=""):
-        """Gastar monedas (verifica saldo)"""
+        """Spend coins (check balance)"""
         if amount <= 0:
             return False
         
@@ -261,13 +261,13 @@ class VirtualWallet(models.Model):
         return True
     
     def can_afford(self, amount):
-        """Verifica si tiene suficiente saldo"""
+        """Check if you have enough balance"""
         return self.balance >= amount
     
 class WalletTransaction(models.Model):
     """
-    Registro de todas las transacciones de monedas.
-    Permite auditoría y estadísticas.
+    Record of all currency transactions.
+    Enables auditing and statistics.
     """
     
     TRANSACTION_TYPES = [
@@ -319,8 +319,8 @@ class WalletTransaction(models.Model):
     
 class WalletRecharge(models.Model):
     """
-    Registro de recargas de dinero real a la billetera virtual.
-    Cada recarga es una DONACIÓN a la fundación.
+    Record of real money top-ups to the virtual wallet.
+    Each top-up is a DONATION to the foundation.
     """
     
     PAYMENT_METHODS = [
@@ -410,7 +410,7 @@ class WalletRecharge(models.Model):
         return f"{self.wallet.user.username} - ${self.amount_cop} → {self.coins_received} monedas [{self.get_status_display()}]"
     
     def approve(self):
-        """Aprobar la recarga y agregar monedas a la billetera"""
+        """Approve the top-up and add coins to the wallet"""
         if self.status != 'A':
             self.status = 'A'
             self.approved_at = timezone.now()
@@ -420,12 +420,11 @@ class WalletRecharge(models.Model):
                 amount=self.coins_received,
                 description=f"Recarga aprobada: ${self.amount_cop} COP"
             )
-            
             return True
         return False
     
     def reject(self, reason=""):
-        """Rechazar la recarga"""
+        """Reject the recharge"""
         self.status = 'R'
         if reason:
             self.admin_notes = reason
@@ -439,3 +438,249 @@ class WalletRecharge(models.Model):
         Tasa: 1 COP = 0.1 monedas (o sea, 10 COP = 1 moneda)
         """
         return int(amount_cop / 10)
+
+class CoinUsage(models.Model):
+    """
+    It records every time coins are used and which hostel they go to.
+    It allows you to track the distribution of funds.
+    """
+    wallet = models.ForeignKey(
+        'VirtualWallet',
+        on_delete=models.CASCADE,
+        related_name='coin_usages'
+    )
+    shelter = models.ForeignKey(
+        'shelters.Shelter',
+        on_delete=models.CASCADE,
+        related_name='coin_usages'
+    )
+    animal = models.ForeignKey(
+        'animals.Animal',
+        on_delete=models.CASCADE,
+        related_name='coin_usages'
+    )
+    care_action = models.ForeignKey(
+        'CareAction',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='coin_usage'
+    )
+    
+    coins_used = models.IntegerField(verbose_name="Monedas usadas")
+    amount_cop = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Equivalente en COP"
+    )
+    
+    action_type = models.CharField(
+        max_length=10,
+        choices=[
+            ('FEED', 'Alimentar'),
+            ('CLEAN', 'Limpiar'),
+            ('HEALTH', 'Salud'),
+        ],
+        verbose_name="Tipo de acción"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Uso de Monedas"
+        verbose_name_plural = "Usos de Monedas"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['shelter', 'created_at']),
+            models.Index(fields=['wallet', 'created_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.coins_used} monedas → {self.shelter.name} ({self.get_action_type_display()})"
+
+
+class MonthlyDistribution(models.Model):
+    """
+    Monthly distribution record for shelters.
+    It is automatically calculated based on the month's CoinUsage.
+    """
+    shelter = models.ForeignKey(
+        'shelters.Shelter',
+        on_delete=models.CASCADE,
+        related_name='monthly_distributions'
+    )
+    
+    month = models.DateField(
+        verbose_name="Mes de distribución",
+        help_text="Primer día del mes correspondiente"
+    )
+    
+    total_coins_used = models.IntegerField(
+        default=0,
+        verbose_name="Monedas usadas en el mes"
+    )
+    
+    amount_cop = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        verbose_name="Monto en COP"
+    )
+    
+    STATUS_CHOICES = [
+        ('P', 'Pendiente'),
+        ('PR', 'Procesando'),
+        ('PA', 'Pagado'),
+        ('F', 'Fallido'),
+    ]
+    status = models.CharField(
+        max_length=2,
+        choices=STATUS_CHOICES,
+        default='P',
+        verbose_name="Estado"
+    )
+    
+    wompi_payout_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="ID del desembolso en Wompi"
+    )
+    
+    error_message = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Mensaje de error",
+        help_text="Si el pago falló, aquí se guarda el motivo"
+    )
+    
+    paid_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Fecha de pago"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Monthly Distribution"
+        verbose_name_plural = "Monthly Distributions"
+        unique_together = ['shelter', 'month']
+        ordering = ['-month', 'shelter']
+        indexes = [
+            models.Index(fields=['month', 'status']),
+            models.Index(fields=['shelter', 'month']),
+        ]
+    
+    def __str__(self):
+        return f"{self.shelter.name} - {self.month.strftime('%B %Y')} - ${self.amount_cop:,.0f}"
+    
+    def mark_as_paid(self, payout_id):
+        """Mark as paid successfully"""
+        self.status = 'PA'
+        self.wompi_payout_id = payout_id
+        self.paid_at = timezone.now()
+        self.save()
+    
+    def mark_as_failed(self, error_message):
+        """Mark as failed"""
+        self.status = 'F'
+        self.error_message = error_message
+        self.save()
+
+
+class DirectPayment(models.Model):
+    """
+    Direct payments to shelters (for medical emergencies).
+    They do not go through the virtual currency system.
+    The money goes directly to the shelter immediately.
+    """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='direct_payments'
+    )
+    history = models.ForeignKey(
+        'animals.History',
+        on_delete=models.CASCADE,
+        related_name='direct_payments',
+        help_text="Evento médico al que se contribuye"
+    )
+    shelter = models.ForeignKey(
+        'shelters.Shelter',
+        on_delete=models.CASCADE,
+        related_name='direct_payments'
+    )
+    
+    amount_cop = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Monto en COP"
+    )
+    
+    STATUS_CHOICES = [
+        ('P', 'Pendiente'),
+        ('A', 'Aprobado'),
+        ('T', 'Transferido'),
+        ('R', 'Rechazado'),
+    ]
+    status = models.CharField(
+        max_length=1,
+        choices=STATUS_CHOICES,
+        default='P',
+        verbose_name="Estado"
+    )
+    
+    payment_reference = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Referencia de pago"
+    )
+    
+    transaction_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="ID de transacción Wompi"
+    )
+    
+    transferred_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Fecha de transferencia"
+    )
+    
+    transfer_reference = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Referencia de transferencia",
+        help_text="Referencia del pago al albergue"
+    )
+    
+    admin_notes = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Notas del administrador"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Pago Directo"
+        verbose_name_plural = "Pagos Directos"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.username} → {self.shelter.name} - ${self.amount_cop:,.0f}"
+    
+    def mark_as_transferred(self, reference, notes=""):
+        """Marcar como transferido al albergue"""
+        self.status = 'T'
+        self.transferred_at = timezone.now()
+        self.transfer_reference = reference
+        if notes:
+            self.admin_notes = notes
+        self.save()

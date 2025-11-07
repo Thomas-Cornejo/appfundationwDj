@@ -25,6 +25,7 @@ urlpatterns = [
     path("users/", include("users.urls")),
     path("animals/", include("animals.urls")),
     path('engagements/', include('engagements.urls')),
+        path('gamifications/', include('gamifications.urls')),
 ]
 
 if settings.DEBUG:

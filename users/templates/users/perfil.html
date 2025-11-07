@@ -4,7 +4,6 @@
 <div class="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     
-    <!-- Header del Perfil -->
     <div class="bg-white rounded-2xl shadow-xl p-6 mb-8">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
@@ -22,7 +21,6 @@
       </div>
     </div>
 
-    <!-- Tabs de Navegación -->
     <div class="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
       <div class="flex border-b border-gray-200">
         <button onclick="switchTab('adoptions')" id="tab-adoptions" class="flex-1 py-4 px-6 text-center font-semibold transition border-b-4 border-purple-500 text-purple-600">
@@ -34,7 +32,6 @@
       </div>
     </div>
 
-    <!-- Contenido: Adopciones -->
     <div id="content-adoptions" class="tab-content">
       {% if has_adoptions %}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -74,14 +71,12 @@
       {% endif %}
     </div>
 
-    <!-- Contenido: Apadrinamientos -->
     <div id="content-sponsorships" class="tab-content hidden">
       {% if has_sponsorships %}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {% for item in sponsorships %}
             <a href="{% url 'gamifications:dashboard' item.animal.id %}" class="block group">
               <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-2">
-                <!-- Imagen del animal -->
                 <div class="relative h-48 bg-gradient-to-br from-pink-400 to-yellow-400">
                   {% if item.animal.imagen %}
                     <img src="{{ item.animal.imagen.url }}" alt="{{ item.animal.name }}" class="w-full h-full object-cover">
@@ -89,7 +84,6 @@
                     <div class="w-full h-full flex items-center justify-center text-white text-6xl">🐶</div>
                   {% endif %}
                   
-                  <!-- Badge de estado -->
                   {% if item.care_indicator.needs_attention %}
                     <div class="absolute top-4 right-4 px-3 py-1 bg-red-500 text-white rounded-full text-xs font-bold animate-pulse">
                       ⚠️ Necesita atención
@@ -101,13 +95,10 @@
                   {% endif %}
                 </div>
 
-                <!-- Información del animal -->
                 <div class="p-6">
                   <h3 class="text-2xl font-bold text-gray-800 mb-3">{{ item.animal.name }}</h3>
                   
-                  <!-- Indicadores -->
                   <div class="space-y-3 mb-4">
-                    <!-- Alimento -->
                     <div>
                       <div class="flex items-center justify-between mb-1">
                         <span class="text-sm font-semibold text-gray-700">🍖 Alimento</span>
@@ -128,7 +119,6 @@
                       </div>
                     </div>
 
-                    <!-- Higiene -->
                     <div>
                       <div class="flex items-center justify-between mb-1">
                         <span class="text-sm font-semibold text-gray-700">🧼 Higiene</span>
@@ -149,7 +139,6 @@
                       </div>
                     </div>
 
-                    <!-- Salud -->
                     <div>
                       <div class="flex items-center justify-between mb-1">
                         <span class="text-sm font-semibold text-gray-700">❤️ Salud</span>
@@ -171,7 +160,6 @@
                     </div>
                   </div>
 
-                  <!-- Estado general -->
                   <div class="flex items-center justify-between pt-4 border-t border-gray-200">
                     <span class="text-sm text-gray-600">Estado general:</span>
                     <span class="px-3 py-1 rounded-full text-sm font-bold
@@ -182,7 +170,6 @@
                     </span>
                   </div>
 
-                  <!-- Botón de acción -->
                   <div class="mt-4">
                     <div class="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg text-center font-semibold group-hover:from-purple-600 group-hover:to-pink-600 transition">
                       🎮 Cuidar ahora
@@ -210,21 +197,17 @@
 
 <script>
   function switchTab(tab) {
-    // Ocultar todos los contenidos
     document.querySelectorAll('.tab-content').forEach(content => {
       content.classList.add('hidden');
     });
     
-    // Remover estilos activos de todos los tabs
     document.querySelectorAll('[id^="tab-"]').forEach(button => {
       button.classList.remove('border-purple-500', 'text-purple-600');
       button.classList.add('border-transparent', 'text-gray-600');
     });
     
-    // Mostrar contenido seleccionado
     document.getElementById('content-' + tab).classList.remove('hidden');
     
-    // Activar tab seleccionado
     const activeTab = document.getElementById('tab-' + tab);
     activeTab.classList.add('border-purple-500', 'text-purple-600');
     activeTab.classList.remove('border-transparent', 'text-gray-600');

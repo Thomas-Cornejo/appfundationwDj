@@ -3,16 +3,19 @@ from django.utils.html import format_html
 from django.db.models import Avg, Sum, Count
 from django.utils import timezone
 from .models import (
-    CareIndicator, 
+    CareIndicator,
+    CareAction,
+    VirtualWallet,
+    WalletTransaction,
+    WalletRecharge,
+    CoinUsage,
+    MonthlyDistribution,
+    DirectPayment, 
     CareAction, 
     VirtualWallet, 
     WalletTransaction, 
     WalletRecharge
 )
-
-# ============================================
-# ADMIN 1: CARE INDICATOR
-# ============================================
 
 @admin.register(CareIndicator)
 class CareIndicatorAdmin(admin.ModelAdmin):
@@ -77,7 +80,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
     actions = ['reset_indicators']
     
     def user_display(self, obj):
-        """Muestra el usuario (padrino)"""
+        """Shows the user (godfather)"""
         try:
             return obj.user.username
         except Exception as e:
@@ -85,7 +88,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
     user_display.short_description = 'Usuario'
     
     def animal_display(self, obj):
-        """Muestra el animal"""
+        """Show the animal"""
         try:
             return obj.animal.name
         except Exception as e:
@@ -93,7 +96,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
     animal_display.short_description = 'Animal'
     
     def shelter_display(self, obj):
-        """Muestra el albergue"""
+        """Show the hostel"""
         try:
             return obj.shelter.name
         except Exception as e:
@@ -101,7 +104,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
     shelter_display.short_description = 'Albergue'
     
     def food_badge(self, obj):
-        """Badge colorizado para nivel de comida"""
+        """Colored badge for food level"""
         try:
             return self._create_level_badge(obj.food_level, '🍖')
         except Exception as e:
@@ -109,7 +112,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
     food_badge.short_description = 'Comida'
     
     def hygiene_badge(self, obj):
-        """Badge colorizado para nivel de higiene"""
+        """Colored badge for hygiene level"""
         try:
             return self._create_level_badge(obj.hygiene_level, '🧼')
         except Exception as e:
@@ -117,7 +120,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
     hygiene_badge.short_description = 'Higiene'
     
     def health_badge(self, obj):
-        """Badge colorizado para nivel de salud"""
+        """Colored badge for health level"""
         try:
             return self._create_level_badge(obj.health_level, '❤️')
         except Exception as e:
@@ -125,7 +128,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
     health_badge.short_description = 'Salud'
     
     def overall_badge(self, obj):
-        """Badge para estado general"""
+        """Badge for general status"""
         try:
             status = obj.overall_status
             color = self._get_color_by_level(status)
@@ -140,7 +143,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
     overall_badge.short_description = 'Estado General'
     
     def needs_attention_icon(self, obj):
-        """Icono de alerta si necesita atención"""
+        """Alert icon if you need attention"""
         try:
             if obj.needs_attention():
                 return format_html(
@@ -152,7 +155,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
     needs_attention_icon.short_description = 'Alerta'
     
     def has_health_events_icon(self, obj):
-        """Muestra si el animal tiene eventos de salud pendientes"""
+        """It shows if the animal has any pending health events."""
         try:
             from animals.models import History
             
@@ -174,7 +177,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
     has_health_events_icon.short_description = '🏥 Eventos'
     
     def _create_level_badge(self, level, icon):
-        """Crea un badge colorizado según el nivel"""
+        """Create a color-coded badge according to the level"""
         try:
             level = int(level) if level is not None else 0
             color = self._get_color_by_level(level)
@@ -193,7 +196,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
             )
     
     def _get_color_by_level(self, level):
-        """Retorna color según el nivel"""
+        """Returns color according to level"""
         try:
             level = int(level) if level is not None else 0
             if level >= 70:
@@ -205,7 +208,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
         except:
             return '#6b7280' 
     def reset_indicators(self, request, queryset):
-        """Resetea todos los indicadores a 100%"""
+        """Reset all indicators to 100%"""
         try:
             count = queryset.count()
             queryset.update(
@@ -229,7 +232,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
     reset_indicators.short_description = 'Resetear al 100%%'
     
     def get_queryset(self, request):
-        """Filtrar según permisos"""
+        """Filter by permissions"""
         qs = super().get_queryset(request)
         
         if request.user.is_superuser:
@@ -243,11 +246,6 @@ class CareIndicatorAdmin(admin.ModelAdmin):
                 return qs.filter(engagement__animal__shelter=request.user.shelter)
         
         return qs.none()
-
-
-# ============================================
-# ADMIN 2: CARE ACTION
-# ============================================
 
 @admin.register(CareAction)
 class CareActionAdmin(admin.ModelAdmin):
@@ -292,17 +290,17 @@ class CareActionAdmin(admin.ModelAdmin):
     )
     
     def user_display(self, obj):
-        """Usuario que realizó la acción"""
+        """User who performed the action"""
         return obj.user.username
     user_display.short_description = 'Usuario'
     
     def animal_display(self, obj):
-        """Animal que fue cuidado"""
+        """Animal that was cared for"""
         return obj.animal.name
     animal_display.short_description = 'Animal'
     
     def action_badge(self, obj):
-        """Badge colorizado según el tipo de acción"""
+        """Badge color according to the type of action"""
         colors = {
             'F': '#10b981', 
             'H': '#3b82f6', 
@@ -328,7 +326,7 @@ class CareActionAdmin(admin.ModelAdmin):
         return False
     
     def has_delete_permission(self, request, obj=None):
-        """Solo Super Admin puede eliminar acciones"""
+        """Only Super Admin can delete actions"""
         if request.user.is_superuser:
             return True
         if hasattr(request.user, 'is_superadmin') and request.user.is_superadmin():
@@ -336,7 +334,7 @@ class CareActionAdmin(admin.ModelAdmin):
         return False
     
     def get_queryset(self, request):
-        """Filtrar según permisos"""
+        """Filter by permissions"""
         qs = super().get_queryset(request)
         
         if request.user.is_superuser:
@@ -351,10 +349,6 @@ class CareActionAdmin(admin.ModelAdmin):
         
         return qs.none()
 
-
-# ============================================
-# ADMIN 3: VIRTUAL WALLET
-# ============================================
 
 @admin.register(VirtualWallet)
 class VirtualWalletAdmin(admin.ModelAdmin):
@@ -396,7 +390,7 @@ class VirtualWalletAdmin(admin.ModelAdmin):
     )
     
     def balance_display(self, obj):
-        """Muestra el saldo con estilo"""
+        """Show off your balance in style"""
         color = '#10b981' if obj.balance > 0 else '#ef4444'
         return format_html(
             '<span style="color: {}; font-weight: bold; font-size: 14px;">🪙 {} monedas</span>',
@@ -405,21 +399,16 @@ class VirtualWalletAdmin(admin.ModelAdmin):
     balance_display.short_description = 'Saldo'
     
     def has_add_permission(self, request):
-        """No se pueden crear billeteras manualmente"""
+        """Wallets cannot be created manually"""
         return False
     
     def has_delete_permission(self, request, obj=None):
-        """Solo Super Admin puede eliminar billeteras"""
+        """Only Super Admin can delete wallets"""
         if request.user.is_superuser:
             return True
         if hasattr(request.user, 'is_superadmin') and request.user.is_superadmin():
             return True
         return False
-
-
-# ============================================
-# ADMIN 4: WALLET TRANSACTION
-# ============================================
 
 @admin.register(WalletTransaction)
 class WalletTransactionAdmin(admin.ModelAdmin):
@@ -457,12 +446,12 @@ class WalletTransactionAdmin(admin.ModelAdmin):
     )
     
     def user_display(self, obj):
-        """Usuario de la transacción"""
+        """Transaction user"""
         return obj.wallet.user.username
     user_display.short_description = 'Usuario'
     
     def transaction_badge(self, obj):
-        """Badge según el tipo de transacción"""
+        """Badge according to transaction type"""
         if obj.transaction_type == 'E':
             color = '#10b981'
             icon = '💰'
@@ -480,7 +469,7 @@ class WalletTransactionAdmin(admin.ModelAdmin):
     transaction_badge.short_description = 'Tipo'
     
     def amount_display(self, obj):
-        """Muestra el monto con signo"""
+        """Show the signed amount"""
         symbol = '+' if obj.transaction_type == 'E' else '-'
         color = '#10b981' if obj.transaction_type == 'E' else '#ef4444'
         return format_html(
@@ -490,21 +479,16 @@ class WalletTransactionAdmin(admin.ModelAdmin):
     amount_display.short_description = 'Monto'
     
     def has_add_permission(self, request):
-        """No se pueden crear transacciones manualmente"""
+        """Transactions cannot be created manually"""
         return False
     
     def has_delete_permission(self, request, obj=None):
-        """Solo Super Admin puede eliminar transacciones"""
+        """Only Super Admin can delete transactions"""
         if request.user.is_superuser:
             return True
         if hasattr(request.user, 'is_superadmin') and request.user.is_superadmin():
             return True
         return False
-
-
-# ============================================
-# ADMIN 5: WALLET RECHARGE
-# ============================================
 
 @admin.register(WalletRecharge)
 class WalletRechargeAdmin(admin.ModelAdmin):
@@ -560,12 +544,12 @@ class WalletRechargeAdmin(admin.ModelAdmin):
     actions = ['approve_recharges', 'reject_recharges']
     
     def user_display(self, obj):
-        """Usuario que realizó la recarga"""
+        """User who made the recharge"""
         return obj.wallet.user.username
     user_display.short_description = 'Usuario'
     
     def status_badge(self, obj):
-        """Badge colorizado según el estado"""
+        """Badge color according to state"""
         colors = {
             'P': '#f59e0b',  
             'A': '#10b981',  
@@ -582,7 +566,7 @@ class WalletRechargeAdmin(admin.ModelAdmin):
     status_badge.short_description = 'Estado'
     
     def approve_button(self, obj):
-        """Botón para aprobar rápidamente"""
+        """Button for quick approval"""
         if obj.status == 'P':
             return format_html(
                 '<a class="button" href="#" onclick="return false;" '
@@ -603,7 +587,7 @@ class WalletRechargeAdmin(admin.ModelAdmin):
     approve_recharges.short_description = 'Aprobar recargas seleccionadas'
     
     def reject_recharges(self, request, queryset):
-        """Rechaza recargas pendientes"""
+        """Approve pending recharges"""
         count = 0
         for recharge in queryset.filter(status='P'):
             if recharge.reject():
@@ -613,7 +597,7 @@ class WalletRechargeAdmin(admin.ModelAdmin):
     reject_recharges.short_description = 'Rechazar recargas seleccionadas'
     
     def get_queryset(self, request):
-        """Filtrar según permisos"""
+        """Filter by permissions"""
         qs = super().get_queryset(request)
         
         if request.user.is_superuser:
@@ -627,3 +611,134 @@ class WalletRechargeAdmin(admin.ModelAdmin):
                 return qs.filter(shelter=request.user.shelter)
         
         return qs.none()
+
+@admin.register(CoinUsage)
+class CoinUsageAdmin(admin.ModelAdmin):
+    list_display = ['id', 'wallet_user', 'animal', 'shelter', 'coins_used', 'amount_cop', 'action_type', 'created_at']
+    list_filter = ['action_type', 'shelter', 'created_at']
+    search_fields = ['wallet__user__username', 'animal__name', 'shelter__name']
+    readonly_fields = ['wallet', 'shelter', 'animal', 'care_action', 'coins_used', 'amount_cop', 'action_type', 'created_at']
+    date_hierarchy = 'created_at'
+    
+    def wallet_user(self, obj):
+        return obj.wallet.user.username
+    wallet_user.short_description = 'Usuario'
+    
+    def has_add_permission(self, request):
+        return False 
+    
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+
+@admin.register(MonthlyDistribution)
+class MonthlyDistributionAdmin(admin.ModelAdmin):
+    list_display = ['id', 'shelter', 'month', 'total_coins_used', 'amount_cop_formatted', 'status_badge', 'paid_at']
+    list_filter = ['status', 'month', 'shelter']
+    search_fields = ['shelter__name']
+    readonly_fields = ['shelter', 'month', 'total_coins_used', 'amount_cop', 'wompi_payout_id', 'paid_at', 'created_at', 'updated_at']
+    date_hierarchy = 'month'
+    
+    fieldsets = (
+        ('Información de Distribución', {
+            'fields': ('shelter', 'month', 'total_coins_used', 'amount_cop', 'status')
+        }),
+        ('Información de Pago', {
+            'fields': ('wompi_payout_id', 'paid_at', 'error_message')
+        }),
+        ('Fechas', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def amount_cop_formatted(self, obj):
+        return f"${obj.amount_cop:,.2f}"
+    amount_cop_formatted.short_description = 'Monto COP'
+    
+    def status_badge(self, obj):
+        colors = {
+            'P': '#f59e0b',   
+            'PR': '#3b82f6',  
+            'PA': '#10b981',  
+            'F': '#ef4444'    
+        }
+        color = colors.get(obj.status, '#6b7280')
+        return format_html(
+            '<span style="background-color: {}; color: white; padding: 3px 10px; border-radius: 10px; font-size: 12px;">{}</span>',
+            color, obj.get_status_display()
+        )
+    status_badge.short_description = 'Estado'
+    
+    def has_add_permission(self, request):
+        return False  
+    
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+@admin.register(DirectPayment)
+class DirectPaymentAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'animal', 'shelter', 'amount_cop_formatted', 'status_badge', 'created_at', 'transfer_action']
+    list_filter = ['status', 'shelter', 'created_at']
+    search_fields = ['user__username', 'history__animal__name', 'shelter__name', 'transaction_id']
+    readonly_fields = ['user', 'history', 'shelter', 'amount_cop', 'payment_reference', 'transaction_id', 'created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Información del Pago', {
+            'fields': ('user', 'history', 'shelter', 'amount_cop', 'status')
+        }),
+        ('Información de Transacción', {
+            'fields': ('payment_reference', 'transaction_id')
+        }),
+        ('Transferencia al Albergue', {
+            'fields': ('transferred_at', 'transfer_reference', 'admin_notes')
+        }),
+        ('Fechas', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def amount_cop_formatted(self, obj):
+        return f"${obj.amount_cop:,.2f}"
+    amount_cop_formatted.short_description = 'Monto'
+    
+    def animal(self, obj):
+        return obj.history.animal.name
+    animal.short_description = 'Animal'
+    
+    def status_badge(self, obj):
+        colors = {
+            'P': '#f59e0b',  
+            'A': '#10b981',  
+            'T': '#3b82f6',  
+            'R': '#ef4444'   
+        }
+        color = colors.get(obj.status, '#6b7280')
+        return format_html(
+            '<span style="background-color: {}; color: white; padding: 3px 10px; border-radius: 10px; font-size: 12px;">{}</span>',
+            color, obj.get_status_display()
+        )
+    status_badge.short_description = 'Estado'
+    
+    def transfer_action(self, obj):
+        """Botón para marcar como transferido"""
+        if obj.status == 'A': 
+            return format_html(
+                '<a href="/admin/gamifications/directpayment/{}/mark-transferred/" '
+                'style="background-color:#10b981; color:white; padding:6px 12px; '
+                'border-radius:6px; text-decoration:none; font-size:11px;">✓ Marcar Transferido</a>',
+                obj.id
+            )
+        elif obj.status == 'T':
+            return format_html(
+                '<span style="color:#10b981; font-weight:bold;">✓ Transferido</span>'
+            )
+        return '-'
+    transfer_action.short_description = 'Acción'
+    
+    def has_add_permission(self, request):
+        return False 
+    
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser

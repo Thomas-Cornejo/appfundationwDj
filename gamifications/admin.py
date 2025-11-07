@@ -11,10 +11,6 @@ from .models import (
     CoinUsage,
     MonthlyDistribution,
     DirectPayment, 
-    CareAction, 
-    VirtualWallet, 
-    WalletTransaction, 
-    WalletRecharge
 )
 
 @admin.register(CareIndicator)

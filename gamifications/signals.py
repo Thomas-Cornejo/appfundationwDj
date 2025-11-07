@@ -6,8 +6,8 @@ from .models import CareIndicator, VirtualWallet
 @receiver(post_save, sender=AnimalEngagement)
 def create_care_indicator_on_sponsorship_approval(sender, instance, created, **kwargs):
     """
-    Cuando se APRUEBA un apadrinamiento (engagements_type='S', status='A'),
-    crea automáticamente un CareIndicator con todos los indicadores en 100%.
+    When a sponsorship is approved (engagements_type='S', status='A'),
+    it automatically creates a CareIndicator with all indicators at 100%.
     """
     if instance.engagements_type != 'S':
         return
@@ -24,8 +24,6 @@ def create_care_indicator_on_sponsorship_approval(sender, instance, created, **k
             hygiene_level=100,
             health_level=100
         )
-        print(f"CareIndicator creado: {instance.user.username} → {instance.animal.name}")
-        
         
     except Exception as e:
         print(f"Error creando CareIndicator: {e}")
@@ -33,9 +31,9 @@ def create_care_indicator_on_sponsorship_approval(sender, instance, created, **k
 @receiver(post_save, sender=CareIndicator)
 def ensure_user_has_wallet(sender, instance, created, **kwargs):
     """
-    Cuando se crea un CareIndicator (usuario está apadrinando),
-    asegura que el usuario tenga una VirtualWallet.
-    Si no existe, la crea con 1000 monedas iniciales.
+    When a CareIndicator is created (a user is sponsoring a friend),
+    it ensures the user has a VirtualWallet.
+    If one doesn't exist, it creates one with an initial 1000 coins.
     """
     
     if not created:

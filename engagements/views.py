@@ -82,7 +82,6 @@ def sponsor_animal(request, animal_id):
                 engagements_type='S',
                 status='P',
                 form_data=form_data,
-                amount=form_data.get('monthly_contribution') 
             )
             
             pdf_buffer = generate_sponsorship_pdf(engagement, form_data)
@@ -110,7 +109,8 @@ def engagement_success(request, engagement_id):
     
     return render(request, 'engagements/engagement_success.html', {
         'engagement': engagement,
-        'engagement_type': engagement_type
+        'engagement_type': engagement_type,
+        'animal': engagement.animal
     })
 
 

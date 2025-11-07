@@ -27,6 +27,6 @@ class Command(BaseCommand):
         
         self.stdout.write(
             self.style.SUCCESS(
-                f'✅ Completado: {degraded_count}/{total_count} indicadores degradados'
+                f'Completado: {degraded_count}/{total_count} indicadores degradados'
             )
         )

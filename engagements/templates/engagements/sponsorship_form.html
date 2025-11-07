@@ -4,109 +4,361 @@
 {% block title %}Apadrinar a {{ animal.name }}{% endblock %}
 
 {% block content %}
-<div class="bg-gray-50 min-h-screen py-10">
-  <div class="max-w-3xl mx-auto px-4">
-    <a href="{% url 'animal_detail' animal.id %}" class="flex items-center text-purple-600 hover:text-purple-800 mb-6">
+<div class="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 min-h-screen py-10">
+  <div class="max-w-4xl mx-auto px-4">
+    <a href="{% url 'animal_detail' animal.id %}" class="flex items-center text-purple-600 hover:text-purple-800 mb-6 font-medium">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
       Volver
     </a>
 
-    <div class="bg-white rounded-3xl shadow-lg p-8">
+    <div class="bg-white rounded-3xl shadow-2xl p-8 md:p-10">
+      <!-- Header -->
       <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold text-purple-700 mb-2">Solicitud de Apadrinamiento</h1>
-        <p class="text-gray-600">Completa el formulario para apadrinar a <strong>{{ animal.name }}</strong></p>
+        <div class="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-full text-sm font-semibold mb-4">
+          🎮 Apadrinamiento Gamificado
+        </div>
+        <h1 class="text-4xl font-bold text-gray-800 mb-3">
+          Conviértete en Guardian de <span class="text-purple-600">{{ animal.name }}</span>
+        </h1>
+        <p class="text-gray-600 text-lg">
+          Cuida virtualmente, gana logros, y marca la diferencia real 🌟
+        </p>
       </div>
 
       {% if animal.imagen %}
       <div class="flex justify-center mb-8">
-        <img src="{{ animal.imagen.url }}" alt="{{ animal.name }}" class="w-32 h-32 rounded-full object-cover shadow-md" />
+        <div class="relative">
+          <img src="{{ animal.imagen.url }}" alt="{{ animal.name }}" class="w-40 h-40 rounded-full object-cover shadow-xl border-4 border-purple-200" />
+          <div class="absolute -bottom-2 -right-2 bg-yellow-400 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-lg">
+            ⭐
+          </div>
+        </div>
       </div>
       {% endif %}
 
-      <form method="post" class="space-y-6">
+      <form method="post" action="{% url 'sponsor_animal' animal.id %}" class="space-y-8">
         {% csrf_token %}
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.full_name.label }}</label>
-            {{ form.full_name }}
-            {% if form.full_name.errors %}
-              <p class="text-red-500 text-sm mt-1">{{ form.full_name.errors.0 }}</p>
-            {% endif %}
+        {% if form.non_field_errors %}
+          <div class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 mb-4">
+            {% for error in form.non_field_errors %}
+              <p class="text-red-700 text-sm font-medium">{{ error }}</p>
+            {% endfor %}
           </div>
+        {% endif %}
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.phone.label }}</label>
-            {{ form.phone }}
-            {% if form.phone.errors %}
-              <p class="text-red-500 text-sm mt-1">{{ form.phone.errors.0 }}</p>
-            {% endif %}
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.email.label }}</label>
-          {{ form.email }}
-          {% if form.email.errors %}
-            <p class="text-red-500 text-sm mt-1">{{ form.email.errors.0 }}</p>
-          {% endif %}
-        </div>
-
-        <div class="bg-purple-50 rounded-lg p-6 border border-purple-200">
-          <h3 class="font-semibold text-purple-900 mb-4">💰 Detalles del Apadrinamiento</h3>
+        <!-- Sección 1: Información Personal -->
+        <div class="space-y-6">
+          <h2 class="text-2xl font-bold text-gray-800 flex items-center border-b-2 border-purple-200 pb-3">
+            <span class="bg-purple-100 text-purple-600 rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">1</span>
+            Cuéntanos sobre ti
+          </h2>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.monthly_contribution.label }}</label>
-              {{ form.monthly_contribution }}
-              <p class="text-xs text-gray-500 mt-1">{{ form.monthly_contribution.help_text }}</p>
-              {% if form.monthly_contribution.errors %}
-                <p class="text-red-500 text-sm mt-1">{{ form.monthly_contribution.errors.0 }}</p>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">{{ form.full_name.label }} *</label>
+              <input type="text" 
+                     name="{{ form.full_name.name }}" 
+                     value="{{ form.full_name.value|default:'' }}"
+                     class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+                     placeholder="Tu nombre completo"
+                     required>
+              {% if form.full_name.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ form.full_name.errors.0 }}</p>
               {% endif %}
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.sponsorship_duration.label }}</label>
-              {{ form.sponsorship_duration }}
-              {% if form.sponsorship_duration.errors %}
-                <p class="text-red-500 text-sm mt-1">{{ form.sponsorship_duration.errors.0 }}</p>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">{{ form.email.label }} *</label>
+              <input type="email" 
+                     name="{{ form.email.name }}" 
+                     value="{{ form.email.value|default:'' }}"
+                     class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+                     placeholder="tu@email.com"
+                     required>
+              {% if form.email.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ form.email.errors.0 }}</p>
+              {% else %}
+                <p class="text-gray-500 text-xs mt-1">{{ form.email.help_text }}</p>
+              {% endif %}
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">{{ form.phone.label }} *</label>
+              <input type="tel" 
+                     name="{{ form.phone.name }}" 
+                     value="{{ form.phone.value|default:'' }}"
+                     class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+                     placeholder="+57 300 123 4567"
+                     required>
+              {% if form.phone.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ form.phone.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">{{ form.age_range.label }} *</label>
+              <select name="{{ form.age_range.name }}" 
+                      class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+                      required>
+                <option value="">Selecciona tu rango</option>
+                {% for value, label in form.age_range.field.choices %}
+                  <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+              {% if form.age_range.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ form.age_range.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-sm font-semibold text-gray-700 mb-2">{{ form.occupation.label }} *</label>
+              <input type="text" 
+                     name="{{ form.occupation.name }}" 
+                     value="{{ form.occupation.value|default:'' }}"
+                     class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+                     placeholder="Ej: Estudiante, Ingeniero, Profesor, etc."
+                     required>
+              {% if form.occupation.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ form.occupation.errors.0 }}</p>
+              {% else %}
+                <p class="text-gray-500 text-xs mt-1">{{ form.occupation.help_text }}</p>
               {% endif %}
             </div>
           </div>
         </div>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.reason_for_sponsorship.label }}</label>
-          {{ form.reason_for_sponsorship }}
-          {% if form.reason_for_sponsorship.errors %}
-            <p class="text-red-500 text-sm mt-1">{{ form.reason_for_sponsorship.errors.0 }}</p>
+        <!-- Sección 2: Experiencia -->
+        <div class="space-y-6">
+          <h2 class="text-2xl font-bold text-gray-800 flex items-center border-b-2 border-pink-200 pb-3">
+            <span class="bg-pink-100 text-pink-600 rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">2</span>
+            Tu experiencia con animales
+          </h2>
+          
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-3">{{ form.has_pet_experience.label }} *</label>
+            <div class="space-y-3">
+              {% for value, label in form.has_pet_experience.field.choices %}
+                <label class="flex items-center p-4 border-2 border-gray-200 rounded-xl hover:border-pink-300 hover:bg-pink-50 cursor-pointer transition">
+                  <input type="radio" 
+                         name="{{ form.has_pet_experience.name }}" 
+                         value="{{ value }}"
+                         class="w-4 h-4 text-pink-600 focus:ring-pink-500"
+                         required>
+                  <span class="ml-3 text-gray-700">{{ label }}</span>
+                </label>
+              {% endfor %}
+            </div>
+            {% if form.has_pet_experience.errors %}
+              <p class="text-red-500 text-sm mt-1">{{ form.has_pet_experience.errors.0 }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Sección 3: Motivación -->
+        <div class="space-y-6">
+          <h2 class="text-2xl font-bold text-gray-800 flex items-center border-b-2 border-blue-200 pb-3">
+            <span class="bg-blue-100 text-blue-600 rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">3</span>
+            Tu motivación y compromiso
+          </h2>
+          
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">{{ form.reason_for_sponsorship.label }} *</label>
+            <textarea name="{{ form.reason_for_sponsorship.name }}" 
+                      rows="4"
+                      class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                      placeholder="Cuéntanos qué te motiva a apadrinar a este animal y cómo imaginas tu relación con él..."
+                      required>{{ form.reason_for_sponsorship.value|default:'' }}</textarea>
+            {% if form.reason_for_sponsorship.errors %}
+              <p class="text-red-500 text-sm mt-1">{{ form.reason_for_sponsorship.errors.0 }}</p>
+            {% else %}
+              <p class="text-gray-500 text-xs mt-1">{{ form.reason_for_sponsorship.help_text }}</p>
+            {% endif %}
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-3">{{ form.interaction_goals.label }}</label>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {% for value, label in form.interaction_goals.field.choices %}
+                <label class="flex items-start p-3 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 cursor-pointer transition">
+                  <input type="checkbox" 
+                         name="{{ form.interaction_goals.name }}" 
+                         value="{{ value }}"
+                         class="mt-1 w-4 h-4 text-blue-600 focus:ring-blue-500 rounded">
+                  <span class="ml-3 text-sm text-gray-700">{{ label }}</span>
+                </label>
+              {% endfor %}
+            </div>
+            {% if form.interaction_goals.errors %}
+              <p class="text-red-500 text-sm mt-1">{{ form.interaction_goals.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">{{ form.availability_hours.label }} *</label>
+              <select name="{{ form.availability_hours.name }}" 
+                      class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                      required>
+                <option value="">Selecciona una opción</option>
+                {% for value, label in form.availability_hours.field.choices %}
+                  <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+              {% if form.availability_hours.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ form.availability_hours.errors.0 }}</p>
+              {% else %}
+                <p class="text-gray-500 text-xs mt-1">{{ form.availability_hours.help_text }}</p>
+              {% endif %}
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">{{ form.notification_preferences.label }} *</label>
+              <select name="{{ form.notification_preferences.name }}" 
+                      class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                      required>
+                <option value="">Selecciona una opción</option>
+                {% for value, label in form.notification_preferences.field.choices %}
+                  <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+              {% if form.notification_preferences.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ form.notification_preferences.errors.0 }}</p>
+              {% endif %}
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-3">{{ form.motivation_level.label }} *</label>
+            <div class="space-y-3">
+              {% for value, label in form.motivation_level.field.choices %}
+                <label class="flex items-center p-4 border-2 border-gray-200 rounded-xl hover:border-purple-300 hover:bg-purple-50 cursor-pointer transition">
+                  <input type="radio" 
+                         name="{{ form.motivation_level.name }}" 
+                         value="{{ value }}"
+                         class="w-4 h-4 text-purple-600 focus:ring-purple-500"
+                         required>
+                  <span class="ml-3 text-gray-700 font-medium">{{ label }}</span>
+                </label>
+              {% endfor %}
+            </div>
+            {% if form.motivation_level.errors %}
+              <p class="text-red-500 text-sm mt-1">{{ form.motivation_level.errors.0 }}</p>
+            {% else %}
+              <p class="text-gray-500 text-xs mt-1">{{ form.motivation_level.help_text }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Sección 4: Personalización -->
+        <div class="space-y-6">
+          <h2 class="text-2xl font-bold text-gray-800 flex items-center border-b-2 border-green-200 pb-3">
+            <span class="bg-green-100 text-green-600 rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">4</span>
+            Personaliza tu experiencia
+          </h2>
+          
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-3">{{ form.preferred_activities.label }}</label>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {% for value, label in form.preferred_activities.field.choices %}
+                <label class="flex items-start p-3 border-2 border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 cursor-pointer transition">
+                  <input type="checkbox" 
+                         name="{{ form.preferred_activities.name }}" 
+                         value="{{ value }}"
+                         class="mt-1 w-4 h-4 text-green-600 focus:ring-green-500 rounded">
+                  <span class="ml-2 text-sm text-gray-700">{{ label }}</span>
+                </label>
+              {% endfor %}
+            </div>
+            {% if form.preferred_activities.errors %}
+              <p class="text-red-500 text-sm mt-1">{{ form.preferred_activities.errors.0 }}</p>
+            {% else %}
+              <p class="text-gray-500 text-xs mt-1">{{ form.preferred_activities.help_text }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Contribución Opcional -->
+        <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl p-6 border-2 border-yellow-200">
+          <h3 class="font-bold text-gray-800 mb-4 flex items-center text-lg">
+            <span class="text-2xl mr-2">💝</span>
+            {{ form.willing_to_contribute.label }}
+          </h3>
+          <div class="space-y-3">
+            {% for value, label in form.willing_to_contribute.field.choices %}
+              <label class="flex items-start p-3 bg-white border-2 border-gray-200 rounded-xl hover:border-orange-300 cursor-pointer transition">
+                <input type="radio" 
+                       name="{{ form.willing_to_contribute.name }}" 
+                       value="{{ value }}"
+                       class="mt-1 w-4 h-4 text-orange-600 focus:ring-orange-500">
+                <span class="ml-3 text-sm text-gray-700">{{ label }}</span>
+              </label>
+            {% endfor %}
+          </div>
+          {% if form.willing_to_contribute.errors %}
+            <p class="text-red-500 text-sm mt-2">{{ form.willing_to_contribute.errors.0 }}</p>
+          {% else %}
+            <p class="text-gray-600 text-xs mt-3">{{ form.willing_to_contribute.help_text }}</p>
           {% endif %}
         </div>
 
-        <div class="flex items-start">
-          {{ form.accept_terms }}
-          <label class="ml-2 text-sm text-gray-700">{{ form.accept_terms.label }}</label>
+        <!-- Términos -->
+        <div class="space-y-4 bg-gray-50 rounded-2xl p-6">
+          <div class="flex items-start">
+            <input type="checkbox" 
+                   name="{{ form.accept_terms.name }}" 
+                   id="id_accept_terms"
+                   class="mt-1 w-5 h-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                   required>
+            <label for="id_accept_terms" class="ml-3 text-sm text-gray-700 font-medium">
+              {{ form.accept_terms.label }}
+            </label>
+          </div>
           {% if form.accept_terms.errors %}
-            <p class="text-red-500 text-sm mt-1 ml-2">{{ form.accept_terms.errors.0 }}</p>
+            <p class="text-red-500 text-sm">{{ form.accept_terms.errors.0 }}</p>
+          {% endif %}
+
+          <div class="flex items-start">
+            <input type="checkbox" 
+                   name="{{ form.accept_data_usage.name }}" 
+                   id="id_accept_data"
+                   class="mt-1 w-5 h-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                   required>
+            <label for="id_accept_data" class="ml-3 text-sm text-gray-700 font-medium">
+              {{ form.accept_data_usage.label }}
+            </label>
+          </div>
+          {% if form.accept_data_usage.errors %}
+            <p class="text-red-500 text-sm">{{ form.accept_data_usage.errors.0 }}</p>
           {% endif %}
         </div>
 
-        <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
-          <p class="text-sm text-blue-800">
-            <strong>ℹ️ Nota:</strong> El apadrinamiento es un compromiso de apoyo económico mensual 
-            que ayuda a cubrir los gastos de alimentación, atención veterinaria y cuidado de {{ animal.name }}. 
-            Recibirás actualizaciones periódicas sobre su estado.
-          </p>
+        <!-- Info Box -->
+        <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border-2 border-blue-200">
+          <div class="flex items-start">
+            <span class="text-3xl mr-4">🎮</span>
+            <div>
+              <h3 class="font-bold text-gray-800 mb-2">¿Cómo funciona el apadrinamiento gamificado?</h3>
+              <ul class="text-sm text-gray-700 space-y-1">
+                <li>✅ Recibirás un perfil de guardián con tu nivel y logros</li>
+                <li>✅ Podrás interactuar virtualmente con {{ animal.name }} diariamente</li>
+                <li>✅ Ganarás puntos y insignias por tu dedicación</li>
+                <li>✅ Recibirás actualizaciones reales sobre su estado de salud</li>
+                <li>✅ Podrás visitar el refugio y conocerle en persona</li>
+              </ul>
+            </div>
+          </div>
         </div>
 
-        <div class="flex justify-end gap-4 pt-6">
-          <a href="{% url 'animal_detail' animal.id %}" class="px-6 py-3 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-50 transition">
+        <!-- Botones -->
+        <div class="flex flex-col sm:flex-row justify-end gap-4 pt-6">
+          <a href="{% url 'animal_detail' animal.id %}" class="px-8 py-4 border-2 border-gray-300 rounded-full text-gray-700 hover:bg-gray-50 transition text-center font-medium">
             Cancelar
           </a>
-          <button type="submit" class="px-6 py-3 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition font-medium">
-            Enviar Solicitud
+          <button type="submit" class="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full hover:from-purple-700 hover:to-pink-700 transition font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+            🚀 ¡Comenzar Aventura!
           </button>
         </div>
       </form>

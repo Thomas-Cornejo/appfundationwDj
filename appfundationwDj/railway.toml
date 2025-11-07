@@ -2,8 +2,14 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "python manage.py migrate && gunicorn config.wsgi:application"
+startCommand = "python manage.py migrate && gunicorn appfundationwDj.wsgi:application"
 
+# Degradar indicadores cada hora
 [[crons]]
   schedule = "0 * * * *"
   command = "python manage.py degrade_indicators"
+
+# Pagos semanales cada lunes a las 9 AM (hora del servidor)
+[[crons]]
+  schedule = "0 9 * * 1"
+  command = "python manage.py weekly_payout --execute"

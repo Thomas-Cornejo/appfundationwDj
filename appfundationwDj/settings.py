@@ -33,6 +33,17 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 
 DEBUG = True  # Debo de cambiar a False cuando cambie a produccion
 
+CORS_ALLOW_ALL_ORIGINS = True
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+
 if DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 else:
@@ -58,6 +69,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'corsheaders',
     "crispy_forms",
     "crispy_tailwind",
     "cloudinary",
@@ -72,6 +84,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -174,3 +187,9 @@ DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 LOGIN_REDIRECT_URL = "/users/home/"
 
 LOGOUT_REDIRECT_URL = "/users/home/"
+
+# Wompi Payment Gateway Configuration
+WOMPI_PUBLIC_KEY = os.getenv("WOMPI_PUBLIC_KEY")
+WOMPI_PRIVATE_KEY = os.getenv("WOMPI_PRIVATE_KEY")
+WOMPI_EVENT_SECRET = os.getenv("WOMPI_EVENT_SECRET")
+WOMPI_INTEGRITY_SECRET = os.getenv("WOMPI_INTEGRITY_SECRET")

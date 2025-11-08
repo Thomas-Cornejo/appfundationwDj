@@ -11,102 +11,326 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('engagements', '0001_initial'),
-        ('shelters', '0002_rename_food_degradation_percentag_shelter_food_degradation_percentage'),
+        ("engagements", "0001_initial"),
+        (
+            "shelters",
+            "0002_rename_food_degradation_percentag_shelter_food_degradation_percentage",
+        ),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='CareIndicator',
+            name="CareIndicator",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('food_level', models.IntegerField(default=100, help_text='0 = Hambriento, 100 = Bien alimentado', verbose_name='Nivel de alimentación (%)')),
-                ('hygiene_level', models.IntegerField(default=100, help_text='0 = Sucio, 100 = Limpio', verbose_name='Nivel de higiene (%)')),
-                ('health_level', models.IntegerField(default=100, help_text='0 = Enfermo, 100 = Saludable', verbose_name='Nivel de salud (%)')),
-                ('last_food_update', models.DateTimeField(default=django.utils.timezone.now)),
-                ('last_hygiene_update', models.DateTimeField(default=django.utils.timezone.now)),
-                ('last_health_update', models.DateTimeField(default=django.utils.timezone.now)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('engagement', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='care_indicator', to='engagements.animalengagement', verbose_name='Apadrinamiento')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "food_level",
+                    models.IntegerField(
+                        default=100,
+                        help_text="0 = Hambriento, 100 = Bien alimentado",
+                        verbose_name="Nivel de alimentación (%)",
+                    ),
+                ),
+                (
+                    "hygiene_level",
+                    models.IntegerField(
+                        default=100,
+                        help_text="0 = Sucio, 100 = Limpio",
+                        verbose_name="Nivel de higiene (%)",
+                    ),
+                ),
+                (
+                    "health_level",
+                    models.IntegerField(
+                        default=100,
+                        help_text="0 = Enfermo, 100 = Saludable",
+                        verbose_name="Nivel de salud (%)",
+                    ),
+                ),
+                (
+                    "last_food_update",
+                    models.DateTimeField(default=django.utils.timezone.now),
+                ),
+                (
+                    "last_hygiene_update",
+                    models.DateTimeField(default=django.utils.timezone.now),
+                ),
+                (
+                    "last_health_update",
+                    models.DateTimeField(default=django.utils.timezone.now),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "engagement",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="care_indicator",
+                        to="engagements.animalengagement",
+                        verbose_name="Apadrinamiento",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Indicador de Cuidado',
-                'verbose_name_plural': 'Indicadores de Cuidado',
-                'ordering': ['-created_at'],
+                "verbose_name": "Indicador de Cuidado",
+                "verbose_name_plural": "Indicadores de Cuidado",
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='CareAction',
+            name="CareAction",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('action_type', models.CharField(choices=[('F', 'Feed'), ('H', 'Hygiene'), ('M', 'Medical')], max_length=1, verbose_name='Tipo de acción')),
-                ('amount_increased', models.IntegerField(help_text='Cuánto subió el indicador', verbose_name='Cantidad aumentada (%)')),
-                ('coins_spent', models.IntegerField(default=0, verbose_name='Monedas gastadas')),
-                ('xp_earned', models.IntegerField(default=0, verbose_name='XP ganado')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('care_indicator', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='actions', to='gamifications.careindicator', verbose_name='Indicador de cuidado')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "action_type",
+                    models.CharField(
+                        choices=[("F", "Feed"), ("H", "Hygiene"), ("M", "Medical")],
+                        max_length=1,
+                        verbose_name="Tipo de acción",
+                    ),
+                ),
+                (
+                    "amount_increased",
+                    models.IntegerField(
+                        help_text="Cuánto subió el indicador",
+                        verbose_name="Cantidad aumentada (%)",
+                    ),
+                ),
+                (
+                    "coins_spent",
+                    models.IntegerField(default=0, verbose_name="Monedas gastadas"),
+                ),
+                ("xp_earned", models.IntegerField(default=0, verbose_name="XP ganado")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "care_indicator",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="actions",
+                        to="gamifications.careindicator",
+                        verbose_name="Indicador de cuidado",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Acción de Cuidado',
-                'verbose_name_plural': 'Acciones de Cuidado',
-                'ordering': ['-created_at'],
+                "verbose_name": "Acción de Cuidado",
+                "verbose_name_plural": "Acciones de Cuidado",
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='VirtualWallet',
+            name="VirtualWallet",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('balance', models.IntegerField(default=1000, verbose_name='Saldo de monedas')),
-                ('total_earned', models.IntegerField(default=0, verbose_name='Total ganado (histórico)')),
-                ('total_spent', models.IntegerField(default=0, verbose_name='Total gastado (histórico)')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='wallet', to=settings.AUTH_USER_MODEL, verbose_name='Usuario')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "balance",
+                    models.IntegerField(default=1000, verbose_name="Saldo de monedas"),
+                ),
+                (
+                    "total_earned",
+                    models.IntegerField(
+                        default=0, verbose_name="Total ganado (histórico)"
+                    ),
+                ),
+                (
+                    "total_spent",
+                    models.IntegerField(
+                        default=0, verbose_name="Total gastado (histórico)"
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="wallet",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Usuario",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Billetera Virtual',
-                'verbose_name_plural': 'Billeteras Virtuales',
-                'ordering': ['-created_at'],
+                "verbose_name": "Billetera Virtual",
+                "verbose_name_plural": "Billeteras Virtuales",
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='WalletRecharge',
+            name="WalletRecharge",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('amount_cop', models.DecimalField(decimal_places=2, help_text='Dinero real donado', max_digits=10, verbose_name='Monto en COP')),
-                ('coins_received', models.IntegerField(help_text='Monedas virtuales a agregar (1 COP = 0.1 monedas)', verbose_name='Monedas recibidas')),
-                ('payment_method', models.CharField(choices=[('PSE', 'PSE'), ('CARD', 'Tarjeta de Crédito/Débito'), ('TRANSFER', 'Transferencia Bancaria'), ('CASH', 'Efectivo')], max_length=10, verbose_name='Método de pago')),
-                ('status', models.CharField(choices=[('P', 'Pending'), ('A', 'Approved'), ('R', 'Rejected'), ('F', 'Failed')], default='P', max_length=1, verbose_name='Estado')),
-                ('transaction_id', models.CharField(blank=True, help_text='ID del banco o pasarela de pago', max_length=255, null=True, verbose_name='ID de transacción externa')),
-                ('payment_reference', models.CharField(blank=True, max_length=255, null=True, verbose_name='Referencia de pago')),
-                ('admin_notes', models.TextField(blank=True, null=True, verbose_name='Notas del administrador')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('approved_at', models.DateTimeField(blank=True, null=True)),
-                ('shelter', models.ForeignKey(help_text='La donación va a este albergue', on_delete=django.db.models.deletion.CASCADE, related_name='recharges', to='shelters.shelter', verbose_name='Albergue destino')),
-                ('wallet', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='recharges', to='gamifications.virtualwallet', verbose_name='Billetera')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "amount_cop",
+                    models.DecimalField(
+                        decimal_places=2,
+                        help_text="Dinero real donado",
+                        max_digits=10,
+                        verbose_name="Monto en COP",
+                    ),
+                ),
+                (
+                    "coins_received",
+                    models.IntegerField(
+                        help_text="Monedas virtuales a agregar (1 COP = 0.1 monedas)",
+                        verbose_name="Monedas recibidas",
+                    ),
+                ),
+                (
+                    "payment_method",
+                    models.CharField(
+                        choices=[
+                            ("PSE", "PSE"),
+                            ("CARD", "Tarjeta de Crédito/Débito"),
+                            ("TRANSFER", "Transferencia Bancaria"),
+                            ("CASH", "Efectivo"),
+                        ],
+                        max_length=10,
+                        verbose_name="Método de pago",
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("P", "Pending"),
+                            ("A", "Approved"),
+                            ("R", "Rejected"),
+                            ("F", "Failed"),
+                        ],
+                        default="P",
+                        max_length=1,
+                        verbose_name="Estado",
+                    ),
+                ),
+                (
+                    "transaction_id",
+                    models.CharField(
+                        blank=True,
+                        help_text="ID del banco o pasarela de pago",
+                        max_length=255,
+                        null=True,
+                        verbose_name="ID de transacción externa",
+                    ),
+                ),
+                (
+                    "payment_reference",
+                    models.CharField(
+                        blank=True,
+                        max_length=255,
+                        null=True,
+                        verbose_name="Referencia de pago",
+                    ),
+                ),
+                (
+                    "admin_notes",
+                    models.TextField(
+                        blank=True, null=True, verbose_name="Notas del administrador"
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("approved_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "shelter",
+                    models.ForeignKey(
+                        help_text="La donación va a este albergue",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="recharges",
+                        to="shelters.shelter",
+                        verbose_name="Albergue destino",
+                    ),
+                ),
+                (
+                    "wallet",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="recharges",
+                        to="gamifications.virtualwallet",
+                        verbose_name="Billetera",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Recarga de Billetera',
-                'verbose_name_plural': 'Recargas de Billetera',
-                'ordering': ['-created_at'],
+                "verbose_name": "Recarga de Billetera",
+                "verbose_name_plural": "Recargas de Billetera",
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='WalletTransaction',
+            name="WalletTransaction",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('transaction_type', models.CharField(choices=[('E', 'Earn'), ('S', 'Spend')], max_length=1, verbose_name='Tipo')),
-                ('amount', models.IntegerField(verbose_name='Cantidad')),
-                ('description', models.CharField(blank=True, max_length=255, verbose_name='Descripción')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('wallet', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='transactions', to='gamifications.virtualwallet', verbose_name='Billetera')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "transaction_type",
+                    models.CharField(
+                        choices=[("E", "Earn"), ("S", "Spend")],
+                        max_length=1,
+                        verbose_name="Tipo",
+                    ),
+                ),
+                ("amount", models.IntegerField(verbose_name="Cantidad")),
+                (
+                    "description",
+                    models.CharField(
+                        blank=True, max_length=255, verbose_name="Descripción"
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "wallet",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="transactions",
+                        to="gamifications.virtualwallet",
+                        verbose_name="Billetera",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Transacción de Billetera',
-                'verbose_name_plural': 'Transacciones de Billetera',
-                'ordering': ['-created_at'],
+                "verbose_name": "Transacción de Billetera",
+                "verbose_name_plural": "Transacciones de Billetera",
+                "ordering": ["-created_at"],
             },
         ),
     ]

@@ -81,13 +81,16 @@ def create_recharge(request):
             shelter=shelter,
         )
         import time
+
         timestamp = int(time.time())
         reference = f"RCG{recharge.id}U{request.user.id}T{timestamp}"
         recharge.payment_reference = reference
         recharge.save()
         amount_in_cents = amount_cop * 100
         currency = "COP"
-        concatenated_string = f"{reference}{amount_in_cents}{currency}{settings.WOMPI_INTEGRITY_SECRET}"
+        concatenated_string = (
+            f"{reference}{amount_in_cents}{currency}{settings.WOMPI_INTEGRITY_SECRET}"
+        )
         integrity_signature = hashlib.sha256(
             concatenated_string.encode("utf-8")
         ).hexdigest()
@@ -200,99 +203,117 @@ def recharge_callback(request):
     Return page after payment.
     Wompi redirects here with the result.
     """
-    transaction_id = request.GET.get('id')
-    
+    transaction_id = request.GET.get("id")
+
     if not transaction_id:
-        messages.warning(request, 'No se pudo verificar el estado de tu pago.')
-        return redirect('gamifications:recharge_wallet')
-    
+        messages.warning(request, "No se pudo verificar el estado de tu pago.")
+        return redirect("gamifications:recharge_wallet")
+
     try:
-        is_sandbox = settings.WOMPI_PUBLIC_KEY.startswith('pub_test')
-        api_url = 'https://sandbox.wompi.co/v1/transactions' if is_sandbox else 'https://production.wompi.co/v1/transactions'
-        response = requests.get(
-            f'{api_url}/{transaction_id}',
-            headers={
-                'Authorization': f'Bearer {settings.WOMPI_PUBLIC_KEY}'
-            }
+        is_sandbox = settings.WOMPI_PUBLIC_KEY.startswith("pub_test")
+        api_url = (
+            "https://sandbox.wompi.co/v1/transactions"
+            if is_sandbox
+            else "https://production.wompi.co/v1/transactions"
         )
-        
+        response = requests.get(
+            f"{api_url}/{transaction_id}",
+            headers={"Authorization": f"Bearer {settings.WOMPI_PUBLIC_KEY}"},
+        )
+
         if response.status_code == 200:
-            transaction_data = response.json()['data']
-            reference = transaction_data.get('reference')
-            status = transaction_data.get('status')
-            amount_cents = transaction_data.get('amount_in_cents')
-            
-            if reference and reference.startswith('RCG'):
+            transaction_data = response.json()["data"]
+            reference = transaction_data.get("reference")
+            status = transaction_data.get("status")
+            amount_cents = transaction_data.get("amount_in_cents")
+
+            if reference and reference.startswith("RCG"):
                 try:
-                    recharge_id = reference.split('U')[0].replace('RCG', '')
+                    recharge_id = reference.split("U")[0].replace("RCG", "")
                     recharge = WalletRecharge.objects.get(
-                        id=recharge_id,
-                        wallet__user=request.user
+                        id=recharge_id, wallet__user=request.user
                     )
-                    
+
                     context = {
-                        'recharge': recharge,
-                        'status': status,
-                        'transaction_id': transaction_id,
-                        'transaction_data': transaction_data
+                        "recharge": recharge,
+                        "status": status,
+                        "transaction_id": transaction_id,
+                        "transaction_data": transaction_data,
                     }
-                    
-                    if status == 'APPROVED':
-                        if recharge.status != 'A': 
+
+                    if status == "APPROVED":
+                        if recharge.status != "A":
                             recharge.transaction_id = transaction_id
-                            recharge.approve() 
+                            recharge.approve()
                             messages.success(
-                                request, 
-                                f'¡Recarga exitosa! Se han agregado {recharge.coins_received} monedas a tu wallet. '
-                                f'Tu nuevo saldo es: {recharge.wallet.balance} monedas.'
+                                request,
+                                f"¡Recarga exitosa! Se han agregado {recharge.coins_received} monedas a tu wallet. "
+                                f"Tu nuevo saldo es: {recharge.wallet.balance} monedas.",
                             )
                         else:
-                            messages.info(request, 'Esta recarga ya fue procesada anteriormente.')
-                    
-                    elif status == 'DECLINED':
-                        recharge.status = 'R'
+                            messages.info(
+                                request, "Esta recarga ya fue procesada anteriormente."
+                            )
+
+                    elif status == "DECLINED":
+                        recharge.status = "R"
                         recharge.transaction_id = transaction_id
                         recharge.save()
                         print(f"Pago rechazado")
-                        messages.error(request, 'El pago fue rechazado. Por favor, intenta nuevamente.')
-                    
-                    elif status == 'PENDING':
+                        messages.error(
+                            request,
+                            "El pago fue rechazado. Por favor, intenta nuevamente.",
+                        )
+
+                    elif status == "PENDING":
                         recharge.transaction_id = transaction_id
                         recharge.save()
                         print(f"Pago pendiente")
-                        messages.info(request, 'Tu pago está siendo procesado. Te notificaremos cuando esté aprobado.')
-                    
-                    elif status == 'ERROR':
-                        recharge.status = 'F'
+                        messages.info(
+                            request,
+                            "Tu pago está siendo procesado. Te notificaremos cuando esté aprobado.",
+                        )
+
+                    elif status == "ERROR":
+                        recharge.status = "F"
                         recharge.transaction_id = transaction_id
                         recharge.save()
                         print(f"Error en el pago")
-                        messages.error(request, 'Ocurrió un error al procesar tu pago.')
-                    
-                    return render(request, 'gamifications/recharge_callback.html', context)
-                
+                        messages.error(request, "Ocurrió un error al procesar tu pago.")
+
+                    return render(
+                        request, "gamifications/recharge_callback.html", context
+                    )
+
                 except WalletRecharge.DoesNotExist:
                     print(f"Recarga no encontrada para referencia: {reference}")
-                    messages.error(request, 'No se encontró la recarga asociada a esta transacción.')
+                    messages.error(
+                        request,
+                        "No se encontró la recarga asociada a esta transacción.",
+                    )
                 except Exception as e:
                     print(f"Error procesando recarga: {e}")
                     import traceback
+
                     traceback.print_exc()
-                    messages.error(request, f'Error al procesar la recarga: {str(e)}')
+                    messages.error(request, f"Error al procesar la recarga: {str(e)}")
             else:
-                messages.warning(request, 'Referencia de pago inválida.')
-        
+                messages.warning(request, "Referencia de pago inválida.")
+
         else:
-            messages.error(request, 'No se pudo verificar el estado del pago con Wompi.')
-    
+            messages.error(
+                request, "No se pudo verificar el estado del pago con Wompi."
+            )
+
     except requests.RequestException as e:
-        messages.error(request, 'Error de conexión al verificar el pago.')
+        messages.error(request, "Error de conexión al verificar el pago.")
     except Exception as e:
         import traceback
+
         traceback.print_exc()
-        messages.error(request, f'Error inesperado: {str(e)}')
-    
-    return redirect('gamifications:recharge_wallet')
+        messages.error(request, f"Error inesperado: {str(e)}")
+
+    return redirect("gamifications:recharge_wallet")
 
 
 @login_required

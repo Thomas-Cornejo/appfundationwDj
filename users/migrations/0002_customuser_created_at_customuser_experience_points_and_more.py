@@ -8,30 +8,41 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('shelters', '0001_initial'),
-        ('users', '0001_initial'),
+        ("shelters", "0001_initial"),
+        ("users", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='customuser',
-            name='created_at',
-            field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now),
+            model_name="customuser",
+            name="created_at",
+            field=models.DateTimeField(
+                auto_now_add=True, default=django.utils.timezone.now
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='customuser',
-            name='experience_points',
-            field=models.SmallIntegerField(default=0, verbose_name='Puntos de experiencia'),
+            model_name="customuser",
+            name="experience_points",
+            field=models.SmallIntegerField(
+                default=0, verbose_name="Puntos de experiencia"
+            ),
         ),
         migrations.AddField(
-            model_name='customuser',
-            name='shelter',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='staff_members', to='shelters.shelter', verbose_name='Albergue asignado'),
+            model_name="customuser",
+            name="shelter",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="staff_members",
+                to="shelters.shelter",
+                verbose_name="Albergue asignado",
+            ),
         ),
         migrations.AddField(
-            model_name='customuser',
-            name='updated_at',
+            model_name="customuser",
+            name="updated_at",
             field=models.DateTimeField(auto_now=True),
         ),
     ]

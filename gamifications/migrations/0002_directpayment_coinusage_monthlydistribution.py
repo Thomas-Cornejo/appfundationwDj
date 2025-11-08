@@ -8,77 +8,298 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('animals', '0007_alter_history_location_found'),
-        ('gamifications', '0001_initial'),
-        ('shelters', '0003_shelter_bank_account_number_and_more'),
+        ("animals", "0007_alter_history_location_found"),
+        ("gamifications", "0001_initial"),
+        ("shelters", "0003_shelter_bank_account_number_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='DirectPayment',
+            name="DirectPayment",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('amount_cop', models.DecimalField(decimal_places=2, max_digits=10, verbose_name='Monto en COP')),
-                ('status', models.CharField(choices=[('P', 'Pendiente'), ('A', 'Aprobado'), ('T', 'Transferido'), ('R', 'Rechazado')], default='P', max_length=1, verbose_name='Estado')),
-                ('payment_reference', models.CharField(blank=True, max_length=255, null=True, verbose_name='Referencia de pago')),
-                ('transaction_id', models.CharField(blank=True, max_length=255, null=True, verbose_name='ID de transacción Wompi')),
-                ('transferred_at', models.DateTimeField(blank=True, null=True, verbose_name='Fecha de transferencia')),
-                ('transfer_reference', models.CharField(blank=True, help_text='Referencia del pago al albergue', max_length=255, null=True, verbose_name='Referencia de transferencia')),
-                ('admin_notes', models.TextField(blank=True, null=True, verbose_name='Notas del administrador')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('history', models.ForeignKey(help_text='Evento médico al que se contribuye', on_delete=django.db.models.deletion.CASCADE, related_name='direct_payments', to='animals.history')),
-                ('shelter', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='direct_payments', to='shelters.shelter')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='direct_payments', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "amount_cop",
+                    models.DecimalField(
+                        decimal_places=2, max_digits=10, verbose_name="Monto en COP"
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("P", "Pendiente"),
+                            ("A", "Aprobado"),
+                            ("T", "Transferido"),
+                            ("R", "Rechazado"),
+                        ],
+                        default="P",
+                        max_length=1,
+                        verbose_name="Estado",
+                    ),
+                ),
+                (
+                    "payment_reference",
+                    models.CharField(
+                        blank=True,
+                        max_length=255,
+                        null=True,
+                        verbose_name="Referencia de pago",
+                    ),
+                ),
+                (
+                    "transaction_id",
+                    models.CharField(
+                        blank=True,
+                        max_length=255,
+                        null=True,
+                        verbose_name="ID de transacción Wompi",
+                    ),
+                ),
+                (
+                    "transferred_at",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="Fecha de transferencia"
+                    ),
+                ),
+                (
+                    "transfer_reference",
+                    models.CharField(
+                        blank=True,
+                        help_text="Referencia del pago al albergue",
+                        max_length=255,
+                        null=True,
+                        verbose_name="Referencia de transferencia",
+                    ),
+                ),
+                (
+                    "admin_notes",
+                    models.TextField(
+                        blank=True, null=True, verbose_name="Notas del administrador"
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "history",
+                    models.ForeignKey(
+                        help_text="Evento médico al que se contribuye",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="direct_payments",
+                        to="animals.history",
+                    ),
+                ),
+                (
+                    "shelter",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="direct_payments",
+                        to="shelters.shelter",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="direct_payments",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Pago Directo',
-                'verbose_name_plural': 'Pagos Directos',
-                'ordering': ['-created_at'],
+                "verbose_name": "Pago Directo",
+                "verbose_name_plural": "Pagos Directos",
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='CoinUsage',
+            name="CoinUsage",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('coins_used', models.IntegerField(verbose_name='Monedas usadas')),
-                ('amount_cop', models.DecimalField(decimal_places=2, max_digits=10, verbose_name='Equivalente en COP')),
-                ('action_type', models.CharField(choices=[('FEED', 'Alimentar'), ('CLEAN', 'Limpiar'), ('HEALTH', 'Salud')], max_length=10, verbose_name='Tipo de acción')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('animal', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='coin_usages', to='animals.animal')),
-                ('care_action', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='coin_usage', to='gamifications.careaction')),
-                ('shelter', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='coin_usages', to='shelters.shelter')),
-                ('wallet', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='coin_usages', to='gamifications.virtualwallet')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("coins_used", models.IntegerField(verbose_name="Monedas usadas")),
+                (
+                    "amount_cop",
+                    models.DecimalField(
+                        decimal_places=2,
+                        max_digits=10,
+                        verbose_name="Equivalente en COP",
+                    ),
+                ),
+                (
+                    "action_type",
+                    models.CharField(
+                        choices=[
+                            ("FEED", "Alimentar"),
+                            ("CLEAN", "Limpiar"),
+                            ("HEALTH", "Salud"),
+                        ],
+                        max_length=10,
+                        verbose_name="Tipo de acción",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "animal",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="coin_usages",
+                        to="animals.animal",
+                    ),
+                ),
+                (
+                    "care_action",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="coin_usage",
+                        to="gamifications.careaction",
+                    ),
+                ),
+                (
+                    "shelter",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="coin_usages",
+                        to="shelters.shelter",
+                    ),
+                ),
+                (
+                    "wallet",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="coin_usages",
+                        to="gamifications.virtualwallet",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Uso de Monedas',
-                'verbose_name_plural': 'Usos de Monedas',
-                'ordering': ['-created_at'],
-                'indexes': [models.Index(fields=['shelter', 'created_at'], name='gamificatio_shelter_435695_idx'), models.Index(fields=['wallet', 'created_at'], name='gamificatio_wallet__c8ea9a_idx')],
+                "verbose_name": "Uso de Monedas",
+                "verbose_name_plural": "Usos de Monedas",
+                "ordering": ["-created_at"],
+                "indexes": [
+                    models.Index(
+                        fields=["shelter", "created_at"],
+                        name="gamificatio_shelter_435695_idx",
+                    ),
+                    models.Index(
+                        fields=["wallet", "created_at"],
+                        name="gamificatio_wallet__c8ea9a_idx",
+                    ),
+                ],
             },
         ),
         migrations.CreateModel(
-            name='MonthlyDistribution',
+            name="MonthlyDistribution",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('month', models.DateField(help_text='Primer día del mes correspondiente', verbose_name='Mes de distribución')),
-                ('total_coins_used', models.IntegerField(default=0, verbose_name='Monedas usadas en el mes')),
-                ('amount_cop', models.DecimalField(decimal_places=2, max_digits=12, verbose_name='Monto en COP')),
-                ('status', models.CharField(choices=[('P', 'Pendiente'), ('PR', 'Procesando'), ('PA', 'Pagado'), ('F', 'Fallido')], default='P', max_length=2, verbose_name='Estado')),
-                ('wompi_payout_id', models.CharField(blank=True, max_length=255, null=True, verbose_name='ID del desembolso en Wompi')),
-                ('error_message', models.TextField(blank=True, help_text='Si el pago falló, aquí se guarda el motivo', null=True, verbose_name='Mensaje de error')),
-                ('paid_at', models.DateTimeField(blank=True, null=True, verbose_name='Fecha de pago')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('shelter', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='monthly_distributions', to='shelters.shelter')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "month",
+                    models.DateField(
+                        help_text="Primer día del mes correspondiente",
+                        verbose_name="Mes de distribución",
+                    ),
+                ),
+                (
+                    "total_coins_used",
+                    models.IntegerField(
+                        default=0, verbose_name="Monedas usadas en el mes"
+                    ),
+                ),
+                (
+                    "amount_cop",
+                    models.DecimalField(
+                        decimal_places=2, max_digits=12, verbose_name="Monto en COP"
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("P", "Pendiente"),
+                            ("PR", "Procesando"),
+                            ("PA", "Pagado"),
+                            ("F", "Fallido"),
+                        ],
+                        default="P",
+                        max_length=2,
+                        verbose_name="Estado",
+                    ),
+                ),
+                (
+                    "wompi_payout_id",
+                    models.CharField(
+                        blank=True,
+                        max_length=255,
+                        null=True,
+                        verbose_name="ID del desembolso en Wompi",
+                    ),
+                ),
+                (
+                    "error_message",
+                    models.TextField(
+                        blank=True,
+                        help_text="Si el pago falló, aquí se guarda el motivo",
+                        null=True,
+                        verbose_name="Mensaje de error",
+                    ),
+                ),
+                (
+                    "paid_at",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="Fecha de pago"
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "shelter",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="monthly_distributions",
+                        to="shelters.shelter",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Distribución Mensual',
-                'verbose_name_plural': 'Distribuciones Mensuales',
-                'ordering': ['-month', 'shelter'],
-                'indexes': [models.Index(fields=['month', 'status'], name='gamificatio_month_078785_idx'), models.Index(fields=['shelter', 'month'], name='gamificatio_shelter_be61de_idx')],
-                'unique_together': {('shelter', 'month')},
+                "verbose_name": "Distribución Mensual",
+                "verbose_name_plural": "Distribuciones Mensuales",
+                "ordering": ["-month", "shelter"],
+                "indexes": [
+                    models.Index(
+                        fields=["month", "status"], name="gamificatio_month_078785_idx"
+                    ),
+                    models.Index(
+                        fields=["shelter", "month"],
+                        name="gamificatio_shelter_be61de_idx",
+                    ),
+                ],
+                "unique_together": {("shelter", "month")},
             },
         ),
     ]

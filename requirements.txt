@@ -5,3 +5,5 @@ django-crispy-forms==2.4
 Pillow==11.3.0
 cloudinary==1.44.1
 django-cloudinary-storage==0.3.0
+requests==2.31.0
+tzdata==2025.2

@@ -7,6 +7,7 @@ SPECIES_CHOICES = [
     ("F", "Felino"),
 ]
 
+
 class Breed(models.Model):
     name = models.CharField(max_length=127, verbose_name="Nombre de la raza")
     species = models.CharField(

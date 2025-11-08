@@ -91,7 +91,7 @@ class CustomUserAdmin(UserAdmin):
 
     def get_queryset(self, request):
         """
-        Filter users based on permissions. Super Admin sees everyone, 
+        Filter users based on permissions. Super Admin sees everyone,
         Shelter Admin only sees users in their shelter.
         """
         qs = super().get_queryset(request)

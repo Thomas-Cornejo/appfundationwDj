@@ -10,21 +10,58 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('breeds', '0001_initial'),
+        ("breeds", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Animal',
+            name="Animal",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200, verbose_name='Nombre')),
-                ('birth_date', models.DateField(verbose_name='Fecha de nacimiento aprox.')),
-                ('sex', models.CharField(choices=[('M', 'Macho'), ('H', 'Hembra')], max_length=1, verbose_name='Sexo')),
-                ('size', models.CharField(choices=[('G', 'Grande'), ('M', 'Mediano'), ('P', 'Pequeño')], max_length=1, verbose_name='Tamaño')),
-                ('color', models.CharField(max_length=20, verbose_name='Color')),
-                ('imagen', cloudinary.models.CloudinaryField(max_length=255, verbose_name='image')),
-                ('breed', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='breeds.breed', verbose_name='Raza')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=200, verbose_name="Nombre")),
+                (
+                    "birth_date",
+                    models.DateField(verbose_name="Fecha de nacimiento aprox."),
+                ),
+                (
+                    "sex",
+                    models.CharField(
+                        choices=[("M", "Macho"), ("H", "Hembra")],
+                        max_length=1,
+                        verbose_name="Sexo",
+                    ),
+                ),
+                (
+                    "size",
+                    models.CharField(
+                        choices=[("G", "Grande"), ("M", "Mediano"), ("P", "Pequeño")],
+                        max_length=1,
+                        verbose_name="Tamaño",
+                    ),
+                ),
+                ("color", models.CharField(max_length=20, verbose_name="Color")),
+                (
+                    "imagen",
+                    cloudinary.models.CloudinaryField(
+                        max_length=255, verbose_name="image"
+                    ),
+                ),
+                (
+                    "breed",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to="breeds.breed",
+                        verbose_name="Raza",
+                    ),
+                ),
             ],
         ),
     ]

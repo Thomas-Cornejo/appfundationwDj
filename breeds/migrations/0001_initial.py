@@ -7,16 +7,33 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Breed',
+            name="Breed",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=127, verbose_name='Nombre de la raza')),
-                ('species', models.CharField(choices=[('C', 'Canino'), ('F', 'Felino')], max_length=1, verbose_name='Especie')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(max_length=127, verbose_name="Nombre de la raza"),
+                ),
+                (
+                    "species",
+                    models.CharField(
+                        choices=[("C", "Canino"), ("F", "Felino")],
+                        max_length=1,
+                        verbose_name="Especie",
+                    ),
+                ),
             ],
         ),
     ]

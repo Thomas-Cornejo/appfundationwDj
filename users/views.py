@@ -16,6 +16,7 @@ class RegisterView(CreateView):
 class HomeView(TemplateView):
     template_name = "users/home.html"
 
+
 @login_required
 def perfil(request):
     """
@@ -23,33 +24,31 @@ def perfil(request):
     Muestra sus animales adoptados y apadrinados.
     """
     from engagements.models import AnimalEngagement
-    
+
     adoptions = AnimalEngagement.objects.filter(
-        user=request.user,
-        engagements_type='A',
-        status='A'
-    ).select_related('animal', 'animal__breed', 'animal__shelter')
-    
+        user=request.user, engagements_type="A", status="A"
+    ).select_related("animal", "animal__breed", "animal__shelter")
+
     sponsorships = AnimalEngagement.objects.filter(
-        user=request.user,
-        engagements_type='S',
-        status='A'
-    ).select_related('animal', 'animal__breed', 'animal__shelter')
-    
+        user=request.user, engagements_type="S", status="A"
+    ).select_related("animal", "animal__breed", "animal__shelter")
+
     sponsorships_with_care = []
     for sponsorship in sponsorships:
-        if hasattr(sponsorship, 'care_indicator'):
-            sponsorships_with_care.append({
-                'engagement': sponsorship,
-                'animal': sponsorship.animal,
-                'care_indicator': sponsorship.care_indicator
-            })
-    
+        if hasattr(sponsorship, "care_indicator"):
+            sponsorships_with_care.append(
+                {
+                    "engagement": sponsorship,
+                    "animal": sponsorship.animal,
+                    "care_indicator": sponsorship.care_indicator,
+                }
+            )
+
     context = {
-        'adoptions': adoptions,
-        'sponsorships': sponsorships_with_care,
-        'has_adoptions': adoptions.exists(),
-        'has_sponsorships': len(sponsorships_with_care) > 0
+        "adoptions": adoptions,
+        "sponsorships": sponsorships_with_care,
+        "has_adoptions": adoptions.exists(),
+        "has_sponsorships": len(sponsorships_with_care) > 0,
     }
-    
+
     return render(request, "users/perfil.html", context)

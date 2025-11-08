@@ -6,13 +6,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('animals', '0006_alter_history_options_history_contributed_coins_and_more'),
+        ("animals", "0006_alter_history_options_history_contributed_coins_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='history',
-            name='location_found',
-            field=models.CharField(blank=True, help_text='Solo llenar si es un ingreso. Dejar vacío para eventos médicos.', max_length=255, null=True, verbose_name='Dónde se encontró'),
+            model_name="history",
+            name="location_found",
+            field=models.CharField(
+                blank=True,
+                help_text="Solo llenar si es un ingreso. Dejar vacío para eventos médicos.",
+                max_length=255,
+                null=True,
+                verbose_name="Dónde se encontró",
+            ),
         ),
     ]

@@ -20,9 +20,7 @@ class Command(BaseCommand):
 
         all_permissions = Permission.objects.all()
         super_admin_group.permissions.set(all_permissions)
-        self.stdout.write(
-            self.style.SUCCESS("Super Admin: All permissions assigned")
-        )
+        self.stdout.write(self.style.SUCCESS("Super Admin: All permissions assigned"))
 
         shelter_admin_permissions = [
             "view_animal",
@@ -62,7 +60,5 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("Regular User: Assigned Permissions"))
 
         self.stdout.write(
-            self.style.SUCCESS(
-                "\nAll groups and permissions configured correctly"
-            )
+            self.style.SUCCESS("\nAll groups and permissions configured correctly")
         )

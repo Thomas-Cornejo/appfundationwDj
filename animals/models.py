@@ -53,21 +53,23 @@ class Animal(models.Model):
     def ingreso_history(self):
         return self.history.filter(history_type="I").first()
 
+
 HISTORY_TYPE_CHOICES = [
     ("V", "Vacunación"),
     ("E", "Esterilización"),
     ("C", "Cirugía"),
-    ("T", "Tratamiento"), 
-    ("U", "Urgencia"),      
+    ("T", "Tratamiento"),
+    ("U", "Urgencia"),
     ("I", "Ingreso"),
     ("O", "Otro"),
 ]
 
 STATUS_CHOICES = [
-    ('P', 'Pendiente'),       
-    ('T', 'En tratamiento'),   
-    ('C', 'Completado'),      
+    ("P", "Pendiente"),
+    ("T", "En tratamiento"),
+    ("C", "Completado"),
 ]
+
 
 class History(models.Model):
     history_type = models.CharField(
@@ -78,51 +80,48 @@ class History(models.Model):
     )
     description = models.TextField(verbose_name="Descripción")
     location_found = models.CharField(
-        max_length=255, 
-        verbose_name="Dónde se encontró", 
-        blank=True, 
+        max_length=255,
+        verbose_name="Dónde se encontró",
+        blank=True,
         null=True,
-        help_text="Solo llenar si es un ingreso. Dejar vacío para eventos médicos."
+        help_text="Solo llenar si es un ingreso. Dejar vacío para eventos médicos.",
     )
     entry_date = models.DateTimeField(
-        default=timezone.now, 
-        verbose_name="Fecha de historia"
+        default=timezone.now, verbose_name="Fecha de historia"
     )
     exit_date = models.DateTimeField(
-        null=True, 
-        blank=True, 
-        verbose_name="Fecha de salida"
+        null=True, blank=True, verbose_name="Fecha de salida"
     )
     status = models.CharField(
         max_length=1,
         choices=STATUS_CHOICES,
-        default='C',
+        default="C",
         verbose_name="Estado",
     )
-    
+
     health_impact = models.IntegerField(
         default=0,
         verbose_name="Impacto en salud (%)",
     )
-    
+
     cost_coins = models.IntegerField(
         default=0,
         verbose_name="Costo en monedas virtuales",
     )
-    
+
     contributed_coins = models.IntegerField(
         default=0,
         verbose_name="Monedas contribuidas",
     )
-    
+
     is_urgent = models.BooleanField(
         default=False,
         verbose_name="¿Es urgente?",
     )
-    
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     animal = models.ForeignKey(
         Animal,
         on_delete=models.SET_NULL,
@@ -134,39 +133,38 @@ class History(models.Model):
     class Meta:
         verbose_name = "Historia"
         verbose_name_plural = "Historias"
-        ordering = ['-entry_date']
+        ordering = ["-entry_date"]
 
     def __str__(self):
         return f"{self.get_history_type_display()} - {self.animal.name if self.animal else 'Sin animal'}"
-    
-    
+
     @property
     def is_health_event(self):
         """Verifica si es un evento de salud que requiere contribución"""
-        return self.history_type in ['V', 'C', 'T', 'U'] and self.cost_coins > 0
-    
+        return self.history_type in ["V", "C", "T", "U"] and self.cost_coins > 0
+
     @property
     def needs_contribution(self):
         """Verifica si necesita contribuciones actualmente"""
-        return self.status == 'P' and self.cost_coins > 0
-    
+        return self.status == "P" and self.cost_coins > 0
+
     @property
     def progress_percentage(self):
         """Porcentaje de progreso en contribuciones (0-100)"""
         if self.cost_coins == 0:
             return 100
         return min(100, int((self.contributed_coins / self.cost_coins) * 100))
-    
+
     @property
     def remaining_coins(self):
         """Monedas que faltan para completar el tratamiento"""
         return max(0, self.cost_coins - self.contributed_coins)
-    
+
     @property
     def is_fully_funded(self):
         """Verifica si ya se completó el financiamiento"""
         return self.contributed_coins >= self.cost_coins
-    
+
     def apply_health_impact(self):
         """
         Aplica el impacto negativo en la salud del animal.
@@ -176,16 +174,16 @@ class History(models.Model):
             try:
                 from gamifications.models import CareIndicator
                 from engagements.models import AnimalEngagement
-                
+
                 engagement = AnimalEngagement.objects.filter(
-                    animal=self.animal,
-                    engagements_type='S',
-                    status='A'
+                    animal=self.animal, engagements_type="S", status="A"
                 ).first()
-                
-                if engagement and hasattr(engagement, 'care_indicator'):
+
+                if engagement and hasattr(engagement, "care_indicator"):
                     indicator = engagement.care_indicator
-                    indicator.health_level = max(0, indicator.health_level - self.health_impact)
+                    indicator.health_level = max(
+                        0, indicator.health_level - self.health_impact
+                    )
                     indicator.last_health_update = timezone.now()
                     indicator.save()
                     return True
@@ -196,30 +194,30 @@ class History(models.Model):
                 print(f"Error aplicando impacto de salud: {e}")
                 return False
         return False
-    
+
     def resolve_event(self):
         """
         Resuelve el evento y restaura la salud del animal.
         Se llama cuando el tratamiento está completamente financiado.
         """
-        self.status = 'C' 
+        self.status = "C"
         self.exit_date = timezone.now()
         self.save()
-        
+
         if self.health_impact > 0 and self.animal:
             try:
                 from gamifications.models import CareIndicator
                 from engagements.models import AnimalEngagement
-                
+
                 engagement = AnimalEngagement.objects.filter(
-                    animal=self.animal,
-                    engagements_type='S',
-                    status='A'
+                    animal=self.animal, engagements_type="S", status="A"
                 ).first()
-                
-                if engagement and hasattr(engagement, 'care_indicator'):
+
+                if engagement and hasattr(engagement, "care_indicator"):
                     indicator = engagement.care_indicator
-                    indicator.health_level = min(100, indicator.health_level + self.health_impact)
+                    indicator.health_level = min(
+                        100, indicator.health_level + self.health_impact
+                    )
                     indicator.last_health_update = timezone.now()
                     indicator.save()
                     return True
@@ -227,7 +225,7 @@ class History(models.Model):
                 print(f"Error resolviendo evento: {e}")
                 return False
         return False
-    
+
     def contribute(self, coins):
         """
         Registra una contribución de monedas al tratamiento.
@@ -235,13 +233,13 @@ class History(models.Model):
         """
         if coins <= 0:
             return False
-        
+
         self.contributed_coins += coins
         if self.is_fully_funded:
             self.resolve_event()
         else:
-            if self.status == 'P':
-                self.status = 'T'
-        
+            if self.status == "P":
+                self.status = "T"
+
         self.save()
         return True

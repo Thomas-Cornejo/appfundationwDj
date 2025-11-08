@@ -6,47 +6,75 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('animals', '0005_animal_created_at_animal_shelter_animal_updated_at'),
+        ("animals", "0005_animal_created_at_animal_shelter_animal_updated_at"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='history',
-            options={'ordering': ['-entry_date'], 'verbose_name': 'Historia', 'verbose_name_plural': 'Historias'},
+            name="history",
+            options={
+                "ordering": ["-entry_date"],
+                "verbose_name": "Historia",
+                "verbose_name_plural": "Historias",
+            },
         ),
         migrations.AddField(
-            model_name='history',
-            name='contributed_coins',
-            field=models.IntegerField(default=0, verbose_name='Monedas contribuidas'),
+            model_name="history",
+            name="contributed_coins",
+            field=models.IntegerField(default=0, verbose_name="Monedas contribuidas"),
         ),
         migrations.AddField(
-            model_name='history',
-            name='cost_coins',
-            field=models.IntegerField(default=0, verbose_name='Costo en monedas virtuales'),
+            model_name="history",
+            name="cost_coins",
+            field=models.IntegerField(
+                default=0, verbose_name="Costo en monedas virtuales"
+            ),
         ),
         migrations.AddField(
-            model_name='history',
-            name='health_impact',
-            field=models.IntegerField(default=0, verbose_name='Impacto en salud (%)'),
+            model_name="history",
+            name="health_impact",
+            field=models.IntegerField(default=0, verbose_name="Impacto en salud (%)"),
         ),
         migrations.AddField(
-            model_name='history',
-            name='is_urgent',
-            field=models.BooleanField(default=False, verbose_name='¿Es urgente?'),
+            model_name="history",
+            name="is_urgent",
+            field=models.BooleanField(default=False, verbose_name="¿Es urgente?"),
         ),
         migrations.AddField(
-            model_name='history',
-            name='status',
-            field=models.CharField(choices=[('P', 'Pendiente'), ('T', 'En tratamiento'), ('C', 'Completado')], default='C', max_length=1, verbose_name='Estado'),
+            model_name="history",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("P", "Pendiente"),
+                    ("T", "En tratamiento"),
+                    ("C", "Completado"),
+                ],
+                default="C",
+                max_length=1,
+                verbose_name="Estado",
+            ),
         ),
         migrations.AlterField(
-            model_name='history',
-            name='description',
-            field=models.TextField(verbose_name='Descripción'),
+            model_name="history",
+            name="description",
+            field=models.TextField(verbose_name="Descripción"),
         ),
         migrations.AlterField(
-            model_name='history',
-            name='history_type',
-            field=models.CharField(choices=[('V', 'Vacunación'), ('E', 'Esterilización'), ('C', 'Cirugía'), ('T', 'Tratamiento'), ('U', 'Urgencia'), ('I', 'Ingreso'), ('O', 'Otro')], default='I', max_length=1, verbose_name='Tipo de historia'),
+            model_name="history",
+            name="history_type",
+            field=models.CharField(
+                choices=[
+                    ("V", "Vacunación"),
+                    ("E", "Esterilización"),
+                    ("C", "Cirugía"),
+                    ("T", "Tratamiento"),
+                    ("U", "Urgencia"),
+                    ("I", "Ingreso"),
+                    ("O", "Otro"),
+                ],
+                default="I",
+                max_length=1,
+                verbose_name="Tipo de historia",
+            ),
         ),
     ]

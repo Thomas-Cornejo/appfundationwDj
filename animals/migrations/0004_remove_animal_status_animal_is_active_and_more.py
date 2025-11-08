@@ -7,22 +7,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('animals', '0003_rename_type_history_history_type_and_more'),
+        ("animals", "0003_rename_type_history_history_type_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='animal',
-            name='status',
+            model_name="animal",
+            name="status",
         ),
         migrations.AddField(
-            model_name='animal',
-            name='is_active',
-            field=models.BooleanField(default=True, verbose_name='Activo'),
+            model_name="animal",
+            name="is_active",
+            field=models.BooleanField(default=True, verbose_name="Activo"),
         ),
         migrations.AlterField(
-            model_name='history',
-            name='animal',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='history', to='animals.animal', verbose_name='Animal'),
+            model_name="history",
+            name="animal",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="history",
+                to="animals.animal",
+                verbose_name="Animal",
+            ),
         ),
     ]

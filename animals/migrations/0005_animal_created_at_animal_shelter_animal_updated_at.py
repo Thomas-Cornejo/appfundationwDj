@@ -8,25 +8,34 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('animals', '0004_remove_animal_status_animal_is_active_and_more'),
-        ('shelters', '0001_initial'),
+        ("animals", "0004_remove_animal_status_animal_is_active_and_more"),
+        ("shelters", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='animal',
-            name='created_at',
-            field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now),
+            model_name="animal",
+            name="created_at",
+            field=models.DateTimeField(
+                auto_now_add=True, default=django.utils.timezone.now
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='animal',
-            name='shelter',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='animals', to='shelters.shelter', verbose_name='Albergue'),
+            model_name="animal",
+            name="shelter",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="animals",
+                to="shelters.shelter",
+                verbose_name="Albergue",
+            ),
         ),
         migrations.AddField(
-            model_name='animal',
-            name='updated_at',
+            model_name="animal",
+            name="updated_at",
             field=models.DateTimeField(auto_now=True),
         ),
     ]

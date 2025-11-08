@@ -3,15 +3,16 @@ from django.core.paginator import Paginator
 from .models import Animal, Breed
 from datetime import date
 
+
 def animal_list(request, *args, **kwargs):
     type = kwargs.get("type")
 
     breeds = Breed.objects.all()
-    selected_breed = request.GET.get('breed')
-    selected_birth_date = request.GET.get('birth_date')
-    selected_size = request.GET.get('size')
+    selected_breed = request.GET.get("breed")
+    selected_birth_date = request.GET.get("birth_date")
+    selected_size = request.GET.get("size")
 
-    if type == "adoption":  
+    if type == "adoption":
         animals = Animal.objects.filter(is_active=True, availability__in=["A", "B"])
         template_name = "animals/adoption.html"
     elif type == "sponsorship":
@@ -31,8 +32,10 @@ def animal_list(request, *args, **kwargs):
         today = date.today()
         filtered_animals = []
         for a in animals:
-            age = today.year - a.birth_date.year - (
-                (today.month, today.day) < (a.birth_date.month, a.birth_date.day)
+            age = (
+                today.year
+                - a.birth_date.year
+                - ((today.month, today.day) < (a.birth_date.month, a.birth_date.day))
             )
             if selected_birth_date == "joven" and age <= 2:
                 filtered_animals.append(a)
@@ -41,11 +44,11 @@ def animal_list(request, *args, **kwargs):
             elif selected_birth_date == "senior" and age >= 8:
                 filtered_animals.append(a)
         animals = filtered_animals
-    
+
     if not selected_birth_date:
         animals = list(animals)
 
-    paginator = Paginator(animals, 8) 
+    paginator = Paginator(animals, 8)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 

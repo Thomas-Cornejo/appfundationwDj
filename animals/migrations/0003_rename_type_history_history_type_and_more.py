@@ -8,23 +8,30 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('animals', '0002_animal_availability_animal_status_history'),
+        ("animals", "0002_animal_availability_animal_status_history"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='history',
-            old_name='type',
-            new_name='history_type',
+            model_name="history",
+            old_name="type",
+            new_name="history_type",
         ),
         migrations.AlterField(
-            model_name='history',
-            name='animal',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='animals.animal', verbose_name='Animal'),
+            model_name="history",
+            name="animal",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="animals.animal",
+                verbose_name="Animal",
+            ),
         ),
         migrations.AlterField(
-            model_name='history',
-            name='entry_date',
-            field=models.DateTimeField(default=django.utils.timezone.now, verbose_name='Fecha de historia'),
+            model_name="history",
+            name="entry_date",
+            field=models.DateTimeField(
+                default=django.utils.timezone.now, verbose_name="Fecha de historia"
+            ),
         ),
     ]

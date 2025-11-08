@@ -4,7 +4,8 @@ from django.db import models
 class Shelter(models.Model):
     name = models.CharField(max_length=255, verbose_name="Nombre del albergue")
     email = models.CharField(max_length=255, verbose_name="Email del albergue")
-    description = models.TextField(blank=True, null=True, verbose_name="Descripcion")
+    description = models.TextField(
+        blank=True, null=True, verbose_name="Descripcion")
     is_active = models.BooleanField(default=True, verbose_name="Activo")
     food_unit_cost = models.DecimalField(
         max_digits=8,

@@ -6,7 +6,8 @@ from .models import Shelter
 
 @admin.register(Shelter)
 class ShelterAdmin(admin.ModelAdmin):
-    list_display = ["name", "email", "is_active", "payment_status", "created_at"]
+    list_display = ["name", "email", "is_active",
+                    "payment_status", "created_at"]
     list_filter = ["is_active", "payment_method", "created_at"]
     search_fields = ["name", "email", "legal_name"]
     readonly_fields = ["created_at", "updated_at"]

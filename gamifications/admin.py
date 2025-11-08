@@ -219,9 +219,11 @@ class CareIndicatorAdmin(admin.ModelAdmin):
                 last_hygiene_update=timezone.now(),
                 last_health_update=timezone.now(),
             )
-            self.message_user(request, f"{count} indicador(es) reseteado(s) al 100%%.")
+            self.message_user(
+                request, f"{count} indicador(es) reseteado(s) al 100%%.")
         except Exception as e:
-            self.message_user(request, f"Error al resetear: {str(e)}", level="error")
+            self.message_user(
+                request, f"Error al resetear: {str(e)}", level="error")
 
     reset_indicators.short_description = "Resetear al 100%%"
 
@@ -283,7 +285,8 @@ class CareActionAdmin(admin.ModelAdmin):
             "Información de la Acción",
             {"fields": ("care_indicator", "action_type", "created_at")},
         ),
-        ("Detalles", {"fields": ("amount_increased", "coins_spent", "xp_earned")}),
+        ("Detalles", {
+         "fields": ("amount_increased", "coins_spent", "xp_earned")}),
     )
 
     def user_display(self, obj):
@@ -517,7 +520,8 @@ class WalletRechargeAdmin(admin.ModelAdmin):
 
     list_filter = ["status", "payment_method", "shelter", "created_at"]
 
-    search_fields = ["wallet__user__username", "transaction_id", "payment_reference"]
+    search_fields = ["wallet__user__username",
+                     "transaction_id", "payment_reference"]
 
     readonly_fields = [
         "wallet",
@@ -532,9 +536,11 @@ class WalletRechargeAdmin(admin.ModelAdmin):
             "Información de la Recarga",
             {"fields": ("wallet", "amount_cop", "coins_received", "shelter")},
         ),
-        ("Pago", {"fields": ("payment_method", "transaction_id", "payment_reference")}),
+        ("Pago", {"fields": ("payment_method",
+         "transaction_id", "payment_reference")}),
         ("Estado", {"fields": ("status", "admin_notes")}),
-        ("Fechas", {"fields": ("created_at", "approved_at"), "classes": ("collapse",)}),
+        ("Fechas", {"fields": ("created_at", "approved_at"),
+         "classes": ("collapse",)}),
     )
 
     actions = ["approve_recharges", "reject_recharges"]
@@ -583,7 +589,8 @@ class WalletRechargeAdmin(admin.ModelAdmin):
             if recharge.approve():
                 count += 1
 
-        self.message_user(request, f"{count} recarga(s) aprobada(s) exitosamente.")
+        self.message_user(
+            request, f"{count} recarga(s) aprobada(s) exitosamente.")
 
     approve_recharges.short_description = "Aprobar recargas seleccionadas"
 
@@ -698,7 +705,8 @@ class MonthlyDistributionAdmin(admin.ModelAdmin):
             "Información de Pago",
             {"fields": ("wompi_payout_id", "paid_at", "error_message")},
         ),
-        ("Fechas", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
+        ("Fechas", {"fields": ("created_at", "updated_at"),
+         "classes": ("collapse",)}),
     )
 
     def amount_cop_formatted(self, obj):
@@ -707,7 +715,8 @@ class MonthlyDistributionAdmin(admin.ModelAdmin):
     amount_cop_formatted.short_description = "Monto COP"
 
     def status_badge(self, obj):
-        colors = {"P": "#f59e0b", "PR": "#3b82f6", "PA": "#10b981", "F": "#ef4444"}
+        colors = {"P": "#f59e0b", "PR": "#3b82f6",
+                  "PA": "#10b981", "F": "#ef4444"}
         color = colors.get(obj.status, "#6b7280")
         return format_html(
             '<span style="background-color: {}; color: white; padding: 3px 10px; border-radius: 10px; font-size: 12px;">{}</span>',
@@ -767,7 +776,8 @@ class DirectPaymentAdmin(admin.ModelAdmin):
             "Transferencia al Albergue",
             {"fields": ("transferred_at", "transfer_reference", "admin_notes")},
         ),
-        ("Fechas", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
+        ("Fechas", {"fields": ("created_at", "updated_at"),
+         "classes": ("collapse",)}),
     )
 
     def amount_cop_formatted(self, obj):
@@ -781,7 +791,8 @@ class DirectPaymentAdmin(admin.ModelAdmin):
     animal.short_description = "Animal"
 
     def status_badge(self, obj):
-        colors = {"P": "#f59e0b", "A": "#10b981", "T": "#3b82f6", "R": "#ef4444"}
+        colors = {"P": "#f59e0b", "A": "#10b981",
+                  "T": "#3b82f6", "R": "#ef4444"}
         color = colors.get(obj.status, "#6b7280")
         return format_html(
             '<span style="background-color: {}; color: white; padding: 3px 10px; border-radius: 10px; font-size: 12px;">{}</span>',

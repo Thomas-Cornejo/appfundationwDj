@@ -101,6 +101,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="shelter",
             name="email",
-            field=models.CharField(max_length=255, verbose_name="Email del albergue"),
+            field=models.CharField(
+                max_length=255, verbose_name="Email del albergue"),
         ),
     ]

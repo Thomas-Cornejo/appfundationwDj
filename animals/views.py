@@ -15,10 +15,12 @@ def animal_list(request, *args, **kwargs):
     selected_size = request.GET.get("size")
 
     if type == "adoption":
-        animals = Animal.objects.filter(is_active=True, availability__in=["A", "B"])
+        animals = Animal.objects.filter(
+            is_active=True, availability__in=["A", "B"])
         template_name = "animals/adoption.html"
     elif type == "sponsorship":
-        animals = Animal.objects.filter(is_active=True, availability__in=["S", "B"])
+        animals = Animal.objects.filter(
+            is_active=True, availability__in=["S", "B"])
         template_name = "animals/sponsorship.html"
     else:
         animals = Animal.objects.none()
@@ -37,7 +39,8 @@ def animal_list(request, *args, **kwargs):
             age = (
                 today.year
                 - a.birth_date.year
-                - ((today.month, today.day) < (a.birth_date.month, a.birth_date.day))
+                - ((today.month, today.day) <
+                   (a.birth_date.month, a.birth_date.day))
             )
             if selected_birth_date == "joven" and age <= 2:
                 filtered_animals.append(a)

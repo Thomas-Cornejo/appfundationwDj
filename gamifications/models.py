@@ -103,9 +103,11 @@ class CareIndicator(models.Model):
             self.last_food_update = now
             changed = True
 
-        hours_since_hygiene = (now - self.last_hygiene_update).total_seconds() / 3600
+        hours_since_hygiene = (
+            now - self.last_hygiene_update).total_seconds() / 3600
         if hours_since_hygiene >= shelter.hygiene_degradation_hours:
-            cycles = int(hours_since_hygiene / shelter.hygiene_degradation_hours)
+            cycles = int(hours_since_hygiene /
+                         shelter.hygiene_degradation_hours)
             degradation = shelter.hygiene_degradation_percentage * cycles
             self.hygiene_level = max(0, self.hygiene_level - degradation)
             self.last_hygiene_update = now
@@ -149,7 +151,8 @@ class CareAction(models.Model):
         verbose_name="Cantidad aumentada (%)", help_text="Cuánto subió el indicador"
     )
 
-    coins_spent = models.IntegerField(default=0, verbose_name="Monedas gastadas")
+    coins_spent = models.IntegerField(
+        default=0, verbose_name="Monedas gastadas")
 
     xp_earned = models.IntegerField(default=0, verbose_name="XP ganado")
 
@@ -187,7 +190,8 @@ class VirtualWallet(models.Model):
         verbose_name="Usuario",
     )
 
-    balance = models.IntegerField(default=1000, verbose_name="Saldo de monedas")
+    balance = models.IntegerField(
+        default=1000, verbose_name="Saldo de monedas")
 
     total_earned = models.IntegerField(
         default=0, verbose_name="Total ganado (histórico)"
@@ -515,7 +519,8 @@ class MonthlyDistribution(models.Model):
         help_text="Si el pago falló, aquí se guarda el motivo",
     )
 
-    paid_at = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de pago")
+    paid_at = models.DateTimeField(
+        null=True, blank=True, verbose_name="Fecha de pago")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

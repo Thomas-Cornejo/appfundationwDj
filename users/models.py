@@ -36,7 +36,8 @@ class CustomUser(AbstractUser):
     def is_regular_user(self):
         """Check if they are a regular user (they can adopt/sponsor)"""
         return (
-            self.groups.filter(name="Regular User").exists() or not self.groups.exists()
+            self.groups.filter(name="Regular User").exists(
+            ) or not self.groups.exists()
         )
 
     def can_manage_shelter(self, shelter):

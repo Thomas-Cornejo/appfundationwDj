@@ -36,9 +36,11 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "description",
-                    models.TextField(blank=True, null=True, verbose_name="Descripcion"),
+                    models.TextField(blank=True, null=True,
+                                     verbose_name="Descripcion"),
                 ),
-                ("is_active", models.BooleanField(default=True, verbose_name="Activo")),
+                ("is_active", models.BooleanField(
+                    default=True, verbose_name="Activo")),
                 (
                     "food_unit_cost",
                     models.DecimalField(

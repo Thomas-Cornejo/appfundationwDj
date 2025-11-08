@@ -27,7 +27,8 @@ def adopt_animal(request, animal_id):
         return render(
             request,
             "engagements/already_applied.html",
-            {"engagement": existing, "animal": animal, "engagement_type": "adopción"},
+            {"engagement": existing, "animal": animal,
+                "engagement_type": "adopción"},
         )
 
     if request.method == "POST":
@@ -46,7 +47,8 @@ def adopt_animal(request, animal_id):
             pdf_buffer = generate_adoption_pdf(engagement, form_data)
 
             filename = f"Solicitud_Adopcion_{user.username}_para_{animal.name}.pdf"
-            filename = filename.replace(" ", "_").replace("/", "_").replace("\\", "_")
+            filename = filename.replace(" ", "_").replace(
+                "/", "_").replace("\\", "_")
 
             engagement.pdf_file.save(
                 filename, ContentFile(pdf_buffer.read()), save=True
@@ -60,7 +62,8 @@ def adopt_animal(request, animal_id):
         form = AdoptionForm()
 
     return render(
-        request, "engagements/adoption_form.html", {"form": form, "animal": animal}
+        request, "engagements/adoption_form.html", {
+            "form": form, "animal": animal}
     )
 
 
@@ -102,7 +105,8 @@ def sponsor_animal(request, animal_id):
             filename = (
                 f"Solicitud_Apadrinamiento_{user.username}_para_{animal.name}.pdf"
             )
-            filename = filename.replace(" ", "_").replace("/", "_").replace("\\", "_")
+            filename = filename.replace(" ", "_").replace(
+                "/", "_").replace("\\", "_")
 
             engagement.pdf_file.save(
                 filename, ContentFile(pdf_buffer.read()), save=True
@@ -116,7 +120,8 @@ def sponsor_animal(request, animal_id):
         form = SponsorshipForm()
 
     return render(
-        request, "engagements/sponsorship_form.html", {"form": form, "animal": animal}
+        request, "engagements/sponsorship_form.html", {
+            "form": form, "animal": animal}
     )
 
 

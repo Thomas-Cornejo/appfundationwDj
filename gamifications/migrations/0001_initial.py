@@ -101,7 +101,8 @@ class Migration(migrations.Migration):
                 (
                     "action_type",
                     models.CharField(
-                        choices=[("F", "Feed"), ("H", "Hygiene"), ("M", "Medical")],
+                        choices=[("F", "Feed"), ("H", "Hygiene"),
+                                 ("M", "Medical")],
                         max_length=1,
                         verbose_name="Tipo de acción",
                     ),
@@ -115,9 +116,11 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "coins_spent",
-                    models.IntegerField(default=0, verbose_name="Monedas gastadas"),
+                    models.IntegerField(
+                        default=0, verbose_name="Monedas gastadas"),
                 ),
-                ("xp_earned", models.IntegerField(default=0, verbose_name="XP ganado")),
+                ("xp_earned", models.IntegerField(
+                    default=0, verbose_name="XP ganado")),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 (
                     "care_indicator",
@@ -149,7 +152,8 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "balance",
-                    models.IntegerField(default=1000, verbose_name="Saldo de monedas"),
+                    models.IntegerField(
+                        default=1000, verbose_name="Saldo de monedas"),
                 ),
                 (
                     "total_earned",

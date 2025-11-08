@@ -147,7 +147,8 @@ class AnimalAdmin(admin.ModelAdmin):
             if request.user.is_superuser:
                 pass
             elif (
-                hasattr(request.user, "is_superadmin") and request.user.is_superadmin()
+                hasattr(request.user,
+                        "is_superadmin") and request.user.is_superadmin()
             ):
                 pass
             elif (

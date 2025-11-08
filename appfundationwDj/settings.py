@@ -53,7 +53,8 @@ else:
     EMAIL_PORT = 587
     EMAIL_USE_TLS = True
     EMAIL_HOST_USER = os.environ.get("EMAIL_USER", "dmnfndcnnml@gmail.com")
-    EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_PASSWORD", "uihm dwwd ifnh ygny")
+    EMAIL_HOST_PASSWORD = os.environ.get(
+        "EMAIL_PASSWORD", "uihm dwwd ifnh ygny")
     DEFAULT_FROM_EMAIL = os.environ.get("EMAIL_USER", "dmnfndcnnml@gmail.com")
 
 

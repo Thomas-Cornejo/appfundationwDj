@@ -29,7 +29,8 @@ class Migration(migrations.Migration):
                 ("name", models.CharField(max_length=200, verbose_name="Nombre")),
                 (
                     "birth_date",
-                    models.DateField(verbose_name="Fecha de nacimiento aprox."),
+                    models.DateField(
+                        verbose_name="Fecha de nacimiento aprox."),
                 ),
                 (
                     "sex",
@@ -42,7 +43,8 @@ class Migration(migrations.Migration):
                 (
                     "size",
                     models.CharField(
-                        choices=[("G", "Grande"), ("M", "Mediano"), ("P", "Pequeño")],
+                        choices=[("G", "Grande"), ("M", "Mediano"),
+                                 ("P", "Pequeño")],
                         max_length=1,
                         verbose_name="Tamaño",
                     ),

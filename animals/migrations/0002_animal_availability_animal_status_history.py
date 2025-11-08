@@ -17,7 +17,8 @@ class Migration(migrations.Migration):
             model_name="animal",
             name="availability",
             field=models.CharField(
-                choices=[("A", "Adoption"), ("S", "Sponsorship"), ("B", "Both")],
+                choices=[("A", "Adoption"),
+                         ("S", "Sponsorship"), ("B", "Both")],
                 default="A",
                 max_length=1,
                 verbose_name="Disponibilidad",

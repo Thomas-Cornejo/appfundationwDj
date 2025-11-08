@@ -21,7 +21,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="history",
             name="contributed_coins",
-            field=models.IntegerField(default=0, verbose_name="Monedas contribuidas"),
+            field=models.IntegerField(
+                default=0, verbose_name="Monedas contribuidas"),
         ),
         migrations.AddField(
             model_name="history",
@@ -33,12 +34,14 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="history",
             name="health_impact",
-            field=models.IntegerField(default=0, verbose_name="Impacto en salud (%)"),
+            field=models.IntegerField(
+                default=0, verbose_name="Impacto en salud (%)"),
         ),
         migrations.AddField(
             model_name="history",
             name="is_urgent",
-            field=models.BooleanField(default=False, verbose_name="¿Es urgente?"),
+            field=models.BooleanField(
+                default=False, verbose_name="¿Es urgente?"),
         ),
         migrations.AddField(
             model_name="history",

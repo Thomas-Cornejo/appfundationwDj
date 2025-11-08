@@ -282,14 +282,16 @@ def recharge_callback(request):
                         recharge.transaction_id = transaction_id
                         recharge.save()
                         print(f"Error en el pago")
-                        messages.error(request, "Ocurrió un error al procesar tu pago.")
+                        messages.error(
+                            request, "Ocurrió un error al procesar tu pago.")
 
                     return render(
                         request, "gamifications/recharge_callback.html", context
                     )
 
                 except WalletRecharge.DoesNotExist:
-                    print(f"Recarga no encontrada para referencia: {reference}")
+                    print(
+                        f"Recarga no encontrada para referencia: {reference}")
                     messages.error(
                         request,
                         "No se encontró la recarga asociada a esta transacción.",
@@ -299,7 +301,8 @@ def recharge_callback(request):
                     import traceback
 
                     traceback.print_exc()
-                    messages.error(request, f"Error al procesar la recarga: {str(e)}")
+                    messages.error(
+                        request, f"Error al procesar la recarga: {str(e)}")
             else:
                 messages.warning(request, "Referencia de pago inválida.")
 
@@ -325,7 +328,8 @@ def recharge_history(request):
     User recharge history.
     """
     wallet = get_object_or_404(VirtualWallet, user=request.user)
-    recharges = WalletRecharge.objects.filter(wallet=wallet).order_by("-created_at")
+    recharges = WalletRecharge.objects.filter(
+        wallet=wallet).order_by("-created_at")
 
     context = {"wallet": wallet, "recharges": recharges}
 

@@ -67,7 +67,8 @@ class Command(BaseCommand):
 
         if not usage_by_shelter:
             self.stdout.write(
-                self.style.WARNING("\n⚠️  No hay usos de monedas en esta semana")
+                self.style.WARNING(
+                    "\n⚠️  No hay usos de monedas en esta semana")
             )
             return
 
@@ -97,7 +98,8 @@ class Command(BaseCommand):
                     )
                 )
             else:
-                self.stdout.write(f"   Pagar a: {shelter.get_payment_info_display()}")
+                self.stdout.write(
+                    f"   Pagar a: {shelter.get_payment_info_display()}")
 
             distribution, created = MonthlyDistribution.objects.get_or_create(
                 shelter=shelter,
@@ -146,7 +148,8 @@ class Command(BaseCommand):
                 self.style.WARNING("🧪 MODO DRY-RUN - NO SE HARÁN PAGOS REALES")
             )
         else:
-            self.stdout.write(self.style.SUCCESS("🚀 EJECUTANDO PAGOS SEMANALES..."))
+            self.stdout.write(self.style.SUCCESS(
+                "🚀 EJECUTANDO PAGOS SEMANALES..."))
         self.stdout.write("=" * 80)
 
         success_count = 0
@@ -165,7 +168,8 @@ class Command(BaseCommand):
                         f"   ✗ ERROR: {shelter.name} no tiene información de pago configurada"
                     )
                 )
-                distribution.mark_as_failed("No tiene información de pago configurada")
+                distribution.mark_as_failed(
+                    "No tiene información de pago configurada")
                 failed_count += 1
                 continue
 
@@ -205,7 +209,8 @@ class Command(BaseCommand):
                 distribution.mark_as_failed(error_msg)
                 failed_count += 1
 
-                self.stdout.write(self.style.ERROR(f"   ✗ EXCEPCIÓN: {error_msg}"))
+                self.stdout.write(self.style.ERROR(
+                    f"   ✗ EXCEPCIÓN: {error_msg}"))
 
         self.stdout.write("\n" + "=" * 80)
         self.stdout.write(self.style.SUCCESS("RESUMEN DE EJECUCIÓN:"))
@@ -273,7 +278,8 @@ class Command(BaseCommand):
         }
 
         try:
-            response = requests.post(url, json=data, headers=headers, timeout=30)
+            response = requests.post(
+                url, json=data, headers=headers, timeout=30)
 
             if response.status_code == 201:
                 result = response.json()

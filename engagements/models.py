@@ -3,7 +3,8 @@ from django.db import models
 
 from animals.models import Animal
 
-ENGAGEMENTS_TYPES_CHOICES = [("A", "Adoption"), ("S", "Sponsorship"), ("D", "Donate")]
+ENGAGEMENTS_TYPES_CHOICES = [
+    ("A", "Adoption"), ("S", "Sponsorship"), ("D", "Donate")]
 
 STATUS_CHOICES = [
     ("P", "Pending"),
@@ -13,9 +14,12 @@ STATUS_CHOICES = [
 
 
 class AnimalEngagement(models.Model):
-    engagements_type = models.CharField(max_length=1, choices=ENGAGEMENTS_TYPES_CHOICES)
-    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default="P")
-    pdf_file = models.FileField(upload_to="adoptions_pdfs/", blank=True, null=True)
+    engagements_type = models.CharField(
+        max_length=1, choices=ENGAGEMENTS_TYPES_CHOICES)
+    status = models.CharField(
+        max_length=1, choices=STATUS_CHOICES, default="P")
+    pdf_file = models.FileField(
+        upload_to="adoptions_pdfs/", blank=True, null=True)
     form_data = models.JSONField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

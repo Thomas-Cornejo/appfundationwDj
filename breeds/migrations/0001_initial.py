@@ -24,7 +24,8 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "name",
-                    models.CharField(max_length=127, verbose_name="Nombre de la raza"),
+                    models.CharField(
+                        max_length=127, verbose_name="Nombre de la raza"),
                 ),
                 (
                     "species",

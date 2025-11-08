@@ -31,7 +31,8 @@ def gamification_dashboard(request, animal_id):
     # Obtener o crear el CareIndicator (debería existir por el signal)
     care_indicator, created = CareIndicator.objects.get_or_create(
         engagement=engagement,
-        defaults={"food_level": 100, "hygiene_level": 100, "health_level": 100},
+        defaults={"food_level": 100,
+                  "hygiene_level": 100, "health_level": 100},
     )
 
     # Obtener o crear la billetera del usuario
@@ -53,8 +54,10 @@ def gamification_dashboard(request, animal_id):
     ).order_by("-is_urgent", "entry_date")
 
     # Calcular nivel y XP (puedes expandir esto más adelante)
-    total_actions = CareAction.objects.filter(care_indicator=care_indicator).count()
-    level = min(1 + (total_actions // 10), 20)  # Cada 10 acciones sube un nivel, max 20
+    total_actions = CareAction.objects.filter(
+        care_indicator=care_indicator).count()
+    # Cada 10 acciones sube un nivel, max 20
+    level = min(1 + (total_actions // 10), 20)
     xp_current = (total_actions % 10) * 10  # Progreso hacia el siguiente nivel
     xp_max = 100
 
@@ -185,7 +188,8 @@ def clean_animal(request, animal_id):
     # Aumentar nivel de higiene
     increase = 10
     old_level = care_indicator.hygiene_level
-    care_indicator.hygiene_level = min(100, care_indicator.hygiene_level + increase)
+    care_indicator.hygiene_level = min(
+        100, care_indicator.hygiene_level + increase)
     care_indicator.last_hygiene_update = timezone.now()
     care_indicator.save()
 

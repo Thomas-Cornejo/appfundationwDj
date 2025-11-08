@@ -15,8 +15,10 @@ AVAILABILITY_CHOICES = [("A", "Adoption"), ("S", "Sponsorship"), ("B", "Both")]
 class Animal(models.Model):
     name = models.CharField(max_length=200, verbose_name="Nombre")
     birth_date = models.DateField(verbose_name="Fecha de nacimiento aprox.")
-    sex = models.CharField(max_length=1, choices=SEX_CHOICES, verbose_name="Sexo")
-    size = models.CharField(max_length=1, choices=SIZE_CHOICES, verbose_name="Tamaño")
+    sex = models.CharField(
+        max_length=1, choices=SEX_CHOICES, verbose_name="Sexo")
+    size = models.CharField(
+        max_length=1, choices=SIZE_CHOICES, verbose_name="Tamaño")
     color = models.CharField(max_length=20, verbose_name="Color")
     imagen = CloudinaryField("image")
     availability = models.CharField(
@@ -26,7 +28,8 @@ class Animal(models.Model):
         verbose_name="Disponibilidad",
     )
     is_active = models.BooleanField(default=True, verbose_name="Activo")
-    breed = models.ForeignKey(Breed, on_delete=models.PROTECT, verbose_name="Raza")
+    breed = models.ForeignKey(
+        Breed, on_delete=models.PROTECT, verbose_name="Raza")
     shelter = models.ForeignKey(
         Shelter,
         on_delete=models.SET_NULL,
@@ -48,7 +51,8 @@ class Animal(models.Model):
         age = (
             today.year
             - self.birth_date.year
-            - ((today.month, today.day) < (self.birth_date.month, self.birth_date.day))
+            - ((today.month, today.day) <
+               (self.birth_date.month, self.birth_date.day))
         )
         return age
 
@@ -190,7 +194,8 @@ class History(models.Model):
                     indicator.save()
                     return True
                 else:
-                    print(f"Animal {self.animal.name} no tiene CareIndicator activo")
+                    print(
+                        f"Animal {self.animal.name} no tiene CareIndicator activo")
                     return False
             except Exception as e:
                 print(f"Error aplicando impacto de salud: {e}")

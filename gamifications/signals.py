@@ -51,7 +51,8 @@ def ensure_user_has_wallet(sender, instance, created, **kwargs):
         return
     try:
         wallet = VirtualWallet.objects.create(user=user, balance=1000)
-        print(f"VirtualWallet creada para {user.username} con {wallet.balance} monedas")
+        print(
+            f"VirtualWallet creada para {user.username} con {wallet.balance} monedas")
 
         from .models import WalletTransaction
 

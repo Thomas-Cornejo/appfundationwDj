@@ -1,9 +1,11 @@
+from datetime import date
+
+from cloudinary.models import CloudinaryField
 from django.db import models
+from django.utils import timezone
+
 from breeds.models import Breed
 from shelters.models import Shelter
-from datetime import date
-from django.utils import timezone
-from cloudinary.models import CloudinaryField
 
 SEX_CHOICES = [("M", "Macho"), ("H", "Hembra")]
 SIZE_CHOICES = [("G", "Grande"), ("M", "Mediano"), ("P", "Pequeño")]
@@ -172,8 +174,8 @@ class History(models.Model):
         """
         if self.health_impact > 0 and self.animal:
             try:
-                from gamifications.models import CareIndicator
                 from engagements.models import AnimalEngagement
+                from gamifications.models import CareIndicator
 
                 engagement = AnimalEngagement.objects.filter(
                     animal=self.animal, engagements_type="S", status="A"
@@ -206,8 +208,8 @@ class History(models.Model):
 
         if self.health_impact > 0 and self.animal:
             try:
-                from gamifications.models import CareIndicator
                 from engagements.models import AnimalEngagement
+                from gamifications.models import CareIndicator
 
                 engagement = AnimalEngagement.objects.filter(
                     animal=self.animal, engagements_type="S", status="A"

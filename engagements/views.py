@@ -1,14 +1,17 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+import os
+from datetime import datetime
+
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.files.base import ContentFile
 from django.http import FileResponse, Http404
+from django.shortcuts import get_object_or_404, redirect, render
+
 from animals.models import Animal
-from .models import AnimalEngagement
+
 from .forms import AdoptionForm, SponsorshipForm
+from .models import AnimalEngagement
 from .utils import generate_adoption_pdf, generate_sponsorship_pdf
-from datetime import datetime
-import os
 
 
 @login_required

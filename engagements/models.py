@@ -1,5 +1,6 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
+
 from animals.models import Animal
 
 ENGAGEMENTS_TYPES_CHOICES = [("A", "Adoption"), ("S", "Sponsorship"), ("D", "Donate")]

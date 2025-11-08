@@ -1,7 +1,8 @@
 from django.contrib.auth.views import LoginView, LogoutView
-from .views import RegisterView, HomeView
 from django.urls import path
+
 from . import views
+from .views import HomeView, RegisterView
 
 urlpatterns = [
     path("login/", LoginView.as_view(template_name="users/login.html"), name="login"),

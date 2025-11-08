@@ -1,7 +1,7 @@
-from django.db import models
-from shelters.models import Shelter
-
 from django.contrib.auth.models import AbstractUser
+from django.db import models
+
+from shelters.models import Shelter
 
 
 class CustomUser(AbstractUser):

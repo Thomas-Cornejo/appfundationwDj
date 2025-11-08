@@ -1,17 +1,11 @@
 from django.contrib import admin
-from django.utils.html import format_html
-from django.db.models import Avg, Sum, Count
+from django.db.models import Avg, Count, Sum
 from django.utils import timezone
-from .models import (
-    CareIndicator,
-    CareAction,
-    VirtualWallet,
-    WalletTransaction,
-    WalletRecharge,
-    CoinUsage,
-    MonthlyDistribution,
-    DirectPayment,
-)
+from django.utils.html import format_html
+
+from .models import (CareAction, CareIndicator, CoinUsage, DirectPayment,
+                     MonthlyDistribution, VirtualWallet, WalletRecharge,
+                     WalletTransaction)
 
 
 @admin.register(CareIndicator)

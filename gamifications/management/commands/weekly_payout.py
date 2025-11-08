@@ -3,14 +3,16 @@ Management command para calcular y ejecutar la distribución SEMANAL de fondos a
 Ejecuta pagos cada semana para que las fundaciones reciban el dinero más rápido.
 """
 
+from datetime import datetime, timedelta
+
+import requests
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db.models import Sum
 from django.utils import timezone
-from datetime import datetime, timedelta
+
 from gamifications.models import CoinUsage, MonthlyDistribution
 from shelters.models import Shelter
-import requests
-from django.conf import settings
 
 
 class Command(BaseCommand):

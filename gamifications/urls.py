@@ -1,6 +1,6 @@
 from django.urls import path
-from . import views
-from . import views_recharge
+
+from . import views, views_recharge
 
 app_name = "gamifications"
 

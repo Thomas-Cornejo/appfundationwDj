@@ -1,9 +1,10 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, TemplateView
+
 from .forms import CustomUserCreationForm
 from .models import CustomUser
-from django.contrib.auth.decorators import login_required
 
 
 class RegisterView(CreateView):

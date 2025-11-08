@@ -1,8 +1,10 @@
 from django.contrib import admin
-from django.utils.html import format_html
 from django.utils import timezone
-from .models import Animal, History
+from django.utils.html import format_html
+
 from shelters.models import Shelter
+
+from .models import Animal, History
 
 
 class HistoryInline(admin.StackedInline):

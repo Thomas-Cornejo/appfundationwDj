@@ -23,7 +23,7 @@
             <span class="text-lg font-bold text-amber-900">{{ wallet.balance }}</span>
           </div>
 
-          <a href="{% url 'gamifications:recharge_wallet' %}"
+          <a href="{% url 'gamifications:recharge_wallet_for_animal' animal.id %}"
             class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium rounded-full hover:from-indigo-700 hover:to-purple-700 transition-all shadow-sm hover:shadow-md">
             Recargar
           </a>
@@ -50,18 +50,17 @@
             <span>{{ animal.age }} años</span>
             <span>•</span>
             <span>{{ animal.get_sex_display }}</span>
+            <span>•</span>
+            <span>Albergue: {{ animal.shelter.name }}</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Grid de indicadores y acciones -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
 
-      <!-- Indicadores (2 columnas en desktop) -->
       <div class="lg:col-span-2 space-y-4">
 
-        <!-- Alimento -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-3">
@@ -91,7 +90,6 @@
           </div>
         </div>
 
-        <!-- Higiene -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-3">
@@ -121,7 +119,6 @@
           </div>
         </div>
 
-        <!-- Salud -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-3">
@@ -148,10 +145,8 @@
         </div>
       </div>
 
-      <!-- Sidebar -->
       <div class="space-y-6">
 
-        <!-- Nivel y XP -->
         <div class="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl shadow-sm p-6 text-white">
           <div class="text-center mb-4">
             <div class="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl mb-3">
@@ -172,7 +167,6 @@
           </div>
         </div>
 
-        <!-- Estado general -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <h3 class="font-semibold text-gray-900 mb-4">Estado general</h3>
 
@@ -206,7 +200,6 @@
       </div>
     </div>
 
-    <!-- Eventos de salud -->
     {% if health_events %}
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
       <h3 class="text-lg font-semibold text-gray-900 mb-4">Eventos de Salud</h3>
@@ -250,7 +243,6 @@
   </div>
 </div>
 
-<!-- Toast para notificaciones -->
 <div id="toast" class="fixed bottom-4 right-4 transform translate-y-20 transition-transform duration-300 z-50">
   <div class="bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 backdrop-blur-lg">
     <span id="toast-icon"></span>

@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     "crispy_tailwind",
     "cloudinary",
     "cloudinary_storage",
+    "phonenumber_field",
     "shelters",
     "users",
     "breeds",

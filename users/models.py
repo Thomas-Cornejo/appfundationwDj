@@ -1,12 +1,15 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from phonenumber_field.modelfields import PhoneNumberField
 
 from shelters.models import Shelter
 
 
 class CustomUser(AbstractUser):
-    address = models.CharField(max_length=255, blank=True, null=True)
-    phone = models.CharField(max_length=20, blank=True, null=True)
+    address = models.CharField(
+        max_length=255, blank=True, null=True, verbose_name="Dirección de domicilio"
+    )
+    phone = PhoneNumberField(region="CO", blank=False, null=False, verbose_name="Teléfono")
     shelter = models.ForeignKey(
         Shelter,
         on_delete=models.SET_NULL,

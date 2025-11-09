@@ -3,8 +3,8 @@ from django.utils import timezone
 from django.utils.html import format_html
 
 from .models import (
-    CareAction, CareIndicator, CoinUsage, DirectPayment, MonthlyDistribution, VirtualWallet,
-    WalletRecharge, WalletTransaction,
+    CareAction, CareIndicator, DirectPayment, ShelterWalletBalance, VirtualWallet, WalletRecharge,
+    WalletTransaction,
 )
 
 
@@ -569,7 +569,7 @@ class WalletRechargeAdmin(admin.ModelAdmin):
     approve_button.short_description = "Acción"
 
     def approve_recharges(self, request, queryset):
-        """Aprueba recargas pendientes"""
+        """Approve pending recharges"""
         count = 0
         for recharge in queryset.filter(status="P"):
             if recharge.approve():
@@ -605,112 +605,6 @@ class WalletRechargeAdmin(admin.ModelAdmin):
                 return qs.filter(shelter=request.user.shelter)
 
         return qs.none()
-
-
-@admin.register(CoinUsage)
-class CoinUsageAdmin(admin.ModelAdmin):
-    list_display = [
-        "id",
-        "wallet_user",
-        "animal",
-        "shelter",
-        "coins_used",
-        "amount_cop",
-        "action_type",
-        "created_at",
-    ]
-    list_filter = ["action_type", "shelter", "created_at"]
-    search_fields = ["wallet__user__username", "animal__name", "shelter__name"]
-    readonly_fields = [
-        "wallet",
-        "shelter",
-        "animal",
-        "care_action",
-        "coins_used",
-        "amount_cop",
-        "action_type",
-        "created_at",
-    ]
-    date_hierarchy = "created_at"
-
-    def wallet_user(self, obj):
-        return obj.wallet.user.username
-
-    wallet_user.short_description = "Usuario"
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return request.user.is_superuser
-
-
-@admin.register(MonthlyDistribution)
-class MonthlyDistributionAdmin(admin.ModelAdmin):
-    list_display = [
-        "id",
-        "shelter",
-        "month",
-        "total_coins_used",
-        "amount_cop_formatted",
-        "status_badge",
-        "paid_at",
-    ]
-    list_filter = ["status", "month", "shelter"]
-    search_fields = ["shelter__name"]
-    readonly_fields = [
-        "shelter",
-        "month",
-        "total_coins_used",
-        "amount_cop",
-        "wompi_payout_id",
-        "paid_at",
-        "created_at",
-        "updated_at",
-    ]
-    date_hierarchy = "month"
-
-    fieldsets = (
-        (
-            "Información de Distribución",
-            {
-                "fields": (
-                    "shelter",
-                    "month",
-                    "total_coins_used",
-                    "amount_cop",
-                    "status",
-                )
-            },
-        ),
-        (
-            "Información de Pago",
-            {"fields": ("wompi_payout_id", "paid_at", "error_message")},
-        ),
-        ("Fechas", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
-    )
-
-    def amount_cop_formatted(self, obj):
-        return f"${obj.amount_cop:,.2f}"
-
-    amount_cop_formatted.short_description = "Monto COP"
-
-    def status_badge(self, obj):
-        colors = {"P": "#f59e0b", "PR": "#3b82f6", "PA": "#10b981", "F": "#ef4444"}
-        color = colors.get(obj.status, "#6b7280")
-        return format_html(
-            '<span style="background-color: {}; color: white; padding: 3px 10px; border-radius: 10px; font-size: 12px;">{}</span>',
-            color,
-            obj.get_status_display(),
-        )
-
-    status_badge.short_description = "Estado"
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return request.user.is_superuser
 
 
 @admin.register(DirectPayment)
@@ -796,6 +690,67 @@ class DirectPaymentAdmin(admin.ModelAdmin):
         return "-"
 
     transfer_action.short_description = "Acción"
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+
+@admin.register(ShelterWalletBalance)
+class ShelterWalletBalanceAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "user",
+        "shelter",
+        "balance_display",
+        "total_earned",
+        "total_spent",
+        "created_at",
+    ]
+    list_filter = ["shelter", "created_at"]
+    search_fields = ["user__username", "shelter__name"]
+    readonly_fields = [
+        "user",
+        "shelter",
+        "balance",
+        "total_earned",
+        "total_spent",
+        "created_at",
+        "updated_at",
+    ]
+
+    fieldsets = (
+        (
+            "Información del Balance",
+            {"fields": ("user", "shelter")},
+        ),
+        (
+            "Monedas",
+            {
+                "fields": (
+                    "balance",
+                    "total_earned",
+                    "total_spent",
+                )
+            },
+        ),
+        (
+            "Fechas",
+            {"fields": ("created_at", "updated_at"), "classes": ("collapse",)},
+        ),
+    )
+
+    def balance_display(self, obj):
+        """Formato bonito para el balance"""
+        return format_html(
+            '<span style="background-color: #10b981; color: white; padding: 4px 12px; '
+            'border-radius: 12px; font-weight: bold;">{} monedas</span>',
+            obj.balance,
+        )
+
+    balance_display.short_description = "Balance"
 
     def has_add_permission(self, request):
         return False

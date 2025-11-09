@@ -247,6 +247,94 @@ class VirtualWallet(models.Model):
         return self.balance >= amount
 
 
+class ShelterWalletBalance(models.Model):
+    """
+    A user's coin balance for a specific shelter.
+    Each user has a separate balance for each shelter where they sponsor animals.
+    This allows top-ups and expenses to be specific to each shelter.
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="shelter_balances",
+        verbose_name="Usuario",
+    )
+
+    shelter = models.ForeignKey(
+        "shelters.Shelter",
+        on_delete=models.CASCADE,
+        related_name="user_balances",
+        verbose_name="Albergue",
+    )
+
+    balance = models.IntegerField(default=0, verbose_name="Saldo de monedas para este albergue")
+
+    total_earned = models.IntegerField(default=0, verbose_name="Total ganado (histórico)")
+
+    total_spent = models.IntegerField(default=0, verbose_name="Total gastado (histórico)")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Balance por Albergue"
+        verbose_name_plural = "Balances por Albergue"
+        ordering = ["-created_at"]
+        unique_together = [["user", "shelter"]]
+        indexes = [
+            models.Index(fields=["user", "shelter"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.shelter.name}: {self.balance} monedas"
+
+    def add_coins(self, amount, description=""):
+        """Add coins to this hostel's balance"""
+        if amount <= 0:
+            return False
+
+        self.balance += amount
+        self.total_earned += amount
+        self.save()
+
+        WalletTransaction.objects.create(
+            wallet=self.user.wallet,
+            transaction_type="E",
+            amount=amount,
+            description=description or f"Monedas agregadas para {self.shelter.name}",
+            shelter=self.shelter,
+        )
+
+        return True
+
+    def spend_coins(self, amount, description=""):
+        """Spend coins from this hostel's balance"""
+        if amount <= 0:
+            return False
+
+        if self.balance < amount:
+            return False
+
+        self.balance -= amount
+        self.total_spent += amount
+        self.save()
+
+        WalletTransaction.objects.create(
+            wallet=self.user.wallet,
+            transaction_type="S",
+            amount=amount,
+            description=description or f"Monedas gastadas en {self.shelter.name}",
+            shelter=self.shelter,
+        )
+
+        return True
+
+    def can_afford(self, amount):
+        """Check if you have enough balance for this hostel"""
+        return self.balance >= amount
+
+
 class WalletTransaction(models.Model):
     """
     Record of all currency transactions.
@@ -272,6 +360,16 @@ class WalletTransaction(models.Model):
     amount = models.IntegerField(verbose_name="Cantidad")
 
     description = models.CharField(max_length=255, blank=True, verbose_name="Descripción")
+
+    shelter = models.ForeignKey(
+        "shelters.Shelter",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="transactions",
+        verbose_name="Albergue",
+        help_text="Albergue al que pertenece esta transacción",
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -376,16 +474,21 @@ class WalletRecharge(models.Model):
         return f"{self.wallet.user.username} - ${self.amount_cop} → {self.coins_received} monedas [{self.get_status_display()}]"
 
     def approve(self):
-        """Approve the top-up and add coins to the wallet"""
+        """Approve the top-up and add coins to the specific hostel's balance"""
         if self.status != "A":
             self.status = "A"
             self.approved_at = timezone.now()
             self.save()
 
-            self.wallet.add_coins(
-                amount=self.coins_received,
-                description=f"Recarga aprobada: ${self.amount_cop} COP",
+            shelter_balance, created = ShelterWalletBalance.objects.get_or_create(
+                user=self.wallet.user, shelter=self.shelter, defaults={"balance": 0}
             )
+
+            shelter_balance.add_coins(
+                amount=self.coins_received,
+                description=f"Recarga aprobada: ${self.amount_cop} COP para {self.shelter.name}",
+            )
+
             return True
         return False
 
@@ -400,137 +503,10 @@ class WalletRecharge(models.Model):
     @staticmethod
     def calculate_coins(amount_cop):
         """
-        Calcula las monedas según el monto en COP.
-        Tasa: 1 COP = 0.1 monedas (o sea, 10 COP = 1 moneda)
+        Calculate the number of coins based on the amount in COP.
+        Rate: 1 COP = 0.1 coins (i.e., 10 COP = 1 coin)
         """
         return int(amount_cop / 10)
-
-
-class CoinUsage(models.Model):
-    """
-    It records every time coins are used and which hostel they go to.
-    It allows you to track the distribution of funds.
-    """
-
-    wallet = models.ForeignKey(
-        "VirtualWallet", on_delete=models.CASCADE, related_name="coin_usages"
-    )
-    shelter = models.ForeignKey(
-        "shelters.Shelter", on_delete=models.CASCADE, related_name="coin_usages"
-    )
-    animal = models.ForeignKey(
-        "animals.Animal", on_delete=models.CASCADE, related_name="coin_usages"
-    )
-    care_action = models.ForeignKey(
-        "CareAction",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="coin_usage",
-    )
-
-    coins_used = models.IntegerField(verbose_name="Monedas usadas")
-    amount_cop = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name="Equivalente en COP"
-    )
-
-    action_type = models.CharField(
-        max_length=10,
-        choices=[
-            ("FEED", "Alimentar"),
-            ("CLEAN", "Limpiar"),
-            ("HEALTH", "Salud"),
-        ],
-        verbose_name="Tipo de acción",
-    )
-
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        verbose_name = "Uso de Monedas"
-        verbose_name_plural = "Usos de Monedas"
-        ordering = ["-created_at"]
-        indexes = [
-            models.Index(fields=["shelter", "created_at"]),
-            models.Index(fields=["wallet", "created_at"]),
-        ]
-
-    def __str__(self):
-        return f"{self.coins_used} monedas → {self.shelter.name} ({self.get_action_type_display()})"
-
-
-class MonthlyDistribution(models.Model):
-    """
-    Monthly distribution record for shelters.
-    It is automatically calculated based on the month's CoinUsage.
-    """
-
-    shelter = models.ForeignKey(
-        "shelters.Shelter",
-        on_delete=models.CASCADE,
-        related_name="monthly_distributions",
-    )
-
-    month = models.DateField(
-        verbose_name="Mes de distribución",
-        help_text="Primer día del mes correspondiente",
-    )
-
-    total_coins_used = models.IntegerField(default=0, verbose_name="Monedas usadas en el mes")
-
-    amount_cop = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Monto en COP")
-
-    STATUS_CHOICES = [
-        ("P", "Pendiente"),
-        ("PR", "Procesando"),
-        ("PA", "Pagado"),
-        ("F", "Fallido"),
-    ]
-    status = models.CharField(
-        max_length=2, choices=STATUS_CHOICES, default="P", verbose_name="Estado"
-    )
-
-    wompi_payout_id = models.CharField(
-        max_length=255, blank=True, null=True, verbose_name="ID del desembolso en Wompi"
-    )
-
-    error_message = models.TextField(
-        blank=True,
-        null=True,
-        verbose_name="Mensaje de error",
-        help_text="Si el pago falló, aquí se guarda el motivo",
-    )
-
-    paid_at = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de pago")
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "Monthly Distribution"
-        verbose_name_plural = "Monthly Distributions"
-        unique_together = ["shelter", "month"]
-        ordering = ["-month", "shelter"]
-        indexes = [
-            models.Index(fields=["month", "status"]),
-            models.Index(fields=["shelter", "month"]),
-        ]
-
-    def __str__(self):
-        return f"{self.shelter.name} - {self.month.strftime('%B %Y')} - ${self.amount_cop:,.0f}"
-
-    def mark_as_paid(self, payout_id):
-        """Mark as paid successfully"""
-        self.status = "PA"
-        self.wompi_payout_id = payout_id
-        self.paid_at = timezone.now()
-        self.save()
-
-    def mark_as_failed(self, error_message):
-        """Mark as failed"""
-        self.status = "F"
-        self.error_message = error_message
-        self.save()
 
 
 class DirectPayment(models.Model):

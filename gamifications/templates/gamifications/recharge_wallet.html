@@ -171,20 +171,73 @@
           </div>
         </div>
 
-        <div>
-          <h3 class="font-semibold text-gray-900 mb-3">Albergue destino</h3>
-          <select
-            name="shelter_id"
-            id="shelter-select"
-            required
-            class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none"
-          >
-            <option value="">Selecciona un albergue...</option>
-            {% for shelter in shelters %}
-            <option value="{{ shelter.id }}">{{ shelter.name }}</option>
-            {% endfor %}
-          </select>
+      <div>
+        <h3 class="font-semibold text-gray-900 mb-3">Albergue destino</h3>
+
+        {% if from_animal %}
+        <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-5 border-2 border-indigo-200">
+          <div class="flex items-center gap-4">
+            <div class="flex-shrink-0 w-16 h-16 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-3xl shadow-sm">
+              🏠
+            </div>
+            <div class="flex-1">
+              <p class="text-xs text-indigo-600 font-semibold uppercase tracking-wide mb-1">
+                Recarga para el albergue de
+              </p>
+              <p class="text-lg font-bold text-gray-900 mb-0.5">
+                {{ from_animal.shelter.name }}
+              </p>
+              <div class="flex items-center gap-2 text-sm text-gray-600">
+                <span>🐾</span>
+                <span>Tu ahijado: <strong>{{ from_animal.name }}</strong></span>
+              </div>
+            </div>
+            <div class="flex-shrink-0">
+              <div class="bg-green-100 text-green-700 px-3 py-1.5 rounded-full text-xs font-semibold">
+                ✓ Auto-seleccionado
+              </div>
+            </div>
+          </div>
+          <div class="mt-3 pt-3 border-t border-indigo-200">
+            <p class="text-xs text-gray-600 flex items-start gap-2">
+              <svg class="w-4 h-4 text-indigo-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+              </svg>
+              <span>
+                Las monedas que recargues solo podrán ser usadas con animales de este albergue.
+                Si tienes ahijados en otros albergues, necesitarás recargar por separado.
+              </span>
+            </p>
+          </div>
         </div>
+        <input type="hidden" name="shelter_id" id="shelter-select" value="{{ selected_shelter_id }}" />
+
+        {% else %}
+        <select
+          name="shelter_id"
+          id="shelter-select"
+          required
+          class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors"
+        >
+          <option value="">Selecciona un albergue...</option>
+          {% for shelter in shelters %}
+          <option value="{{ shelter.id }}" {% if selected_shelter_id == shelter.id %}selected{% endif %}>
+            {{ shelter.name }}
+            {% if shelter.city %} - {{ shelter.city }}{% endif %}
+          </option>
+          {% endfor %}
+        </select>
+
+        <p class="text-xs text-gray-500 mt-2 flex items-start gap-2">
+          <svg class="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+          </svg>
+          <span>
+            Las monedas que recargues solo podrán ser usadas con animales del albergue seleccionado.
+          </span>
+        </p>
+        {% endif %}
+      </div>
 
         <div
           class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-6"
@@ -233,16 +286,20 @@
   </div>
 </div>
 
-<!-- Cargar Widget de Wompi -->
 <script src="https://checkout.wompi.co/widget.js"></script>
 
 <script>
 const csrfToken = '{{ csrf_token }}';
-const WOMPI_PUBLIC_KEY = '{{ wompi_public_key|escapejs }}';
+const WOMPI_PUBLIC_KEY = '{{ wompi_public_key|escapejs }}'.trim();
 
 if (!WOMPI_PUBLIC_KEY || WOMPI_PUBLIC_KEY.length < 20) {
-  console.error('❌ Public Key inválida o vacía');
+  console.error('Public Key inválida o vacía');
   alert('Error de configuración. Por favor contacta al administrador.');
+}
+
+if (!WOMPI_PUBLIC_KEY.startsWith('pub_')) {
+  console.error('Public Key no tiene el formato correcto. Debe empezar con "pub_"');
+  alert('Error: La clave pública de Wompi no tiene el formato correcto.');
 }
 
 function calculateCoins(amountCOP) {
@@ -328,7 +385,6 @@ document.getElementById('recharge-form').addEventListener('submit', async functi
     formData.append('shelter_id', shelterId);
     formData.append('payment_method', 'WOMPI');
 
-
     const response = await fetch('{% url "gamifications:create_recharge" %}', {
       method: 'POST',
       headers: {'X-CSRFToken': csrfToken},
@@ -336,7 +392,6 @@ document.getElementById('recharge-form').addEventListener('submit', async functi
     });
 
     const data = await response.json();
-    console.log('📥 Respuesta backend:', data);
 
     if (!data.success) {
       alert('Error: ' + data.error);
@@ -353,7 +408,6 @@ document.getElementById('recharge-form').addEventListener('submit', async functi
       button.innerHTML = 'Proceder al Pago →';
       return;
     }
-
 
     if (!data.reference) {
       alert('Error: No se generó la referencia de pago');
@@ -382,12 +436,9 @@ document.getElementById('recharge-form').addEventListener('submit', async functi
     };
 
     if (data.integrity_signature) {
-      checkoutConfig.signature = {
-        integrity: data.integrity_signature
-      };
-      console.log('🔐 Firma agregada a la configuración');
+      checkoutConfig.signature = { integrity: data.integrity_signature };
     } else {
-      console.warn('⚠️ No se proporcionó firma de integridad (solo válido en sandbox)');
+      console.warn('No se proporcionó firma de integridad (solo válido en sandbox)');
     }
 
     const validations = {
@@ -396,16 +447,16 @@ document.getElementById('recharge-form').addEventListener('submit', async functi
       'reference existe': !!checkoutConfig.reference,
       'reference length': checkoutConfig.reference.length > 5,
       'publicKey formato': checkoutConfig.publicKey.startsWith('pub_'),
+      'publicKey sin espacios': checkoutConfig.publicKey === checkoutConfig.publicKey.trim(),
       'redirectUrl existe': !!checkoutConfig.redirectUrl
     };
 
-
     const failedValidations = Object.entries(validations)
-      .filter(([key, value]) => !value)
+      .filter(([_, value]) => !value)
       .map(([key]) => key);
 
     if (failedValidations.length > 0) {
-      console.error('❌ Validaciones fallidas:', failedValidations);
+      console.error('Validaciones fallidas:', failedValidations);
       alert('Error en la configuración: ' + failedValidations.join(', '));
       button.disabled = false;
       button.innerHTML = 'Proceder al Pago →';
@@ -413,7 +464,7 @@ document.getElementById('recharge-form').addEventListener('submit', async functi
     }
 
     if (!checkoutConfig.publicKey.startsWith('pub_')) {
-      console.error('❌ Public Key no tiene el formato correcto');
+      console.error('Public Key no tiene el formato correcto');
       alert('Error de configuración en la clave pública');
       button.disabled = false;
       button.innerHTML = 'Proceder al Pago →';
@@ -423,11 +474,10 @@ document.getElementById('recharge-form').addEventListener('submit', async functi
     let checkout;
 
     try {
-      console.log('Intentando crear WidgetCheckout...');
       checkout = new WidgetCheckout(checkoutConfig);
-      console.log('Checkout objeto creado:', checkout);
     } catch (widgetError) {
       console.error('Error al crear WidgetCheckout:', widgetError);
+      console.error('Detalles del error:', widgetError.message);
       alert('Error al crear el checkout: ' + widgetError.message);
       button.disabled = false;
       button.innerHTML = 'Proceder al Pago →';
@@ -435,39 +485,31 @@ document.getElementById('recharge-form').addEventListener('submit', async functi
     }
 
     checkout.open(function(result) {
-      console.log('📊 Resultado del pago:', result);
-
       if (result.transaction) {
         const status = result.transaction.status;
         const transactionId = result.transaction.id;
 
-        console.log('💳 Estado:', status);
-        console.log('🆔 ID:', transactionId);
-
         if (status === 'APPROVED') {
-          console.log('✅ Pago aprobado, redirigiendo...');
           window.location.href = '{% url "gamifications:recharge_callback" %}?id=' + transactionId;
         } else if (status === 'DECLINED') {
-          alert('❌ Pago rechazado. Por favor intenta nuevamente.');
+          alert('Pago rechazado. Por favor intenta nuevamente.');
           button.disabled = false;
           button.innerHTML = 'Proceder al Pago →';
         } else if (status === 'PENDING') {
-          console.log('⏳ Pago pendiente');
           window.location.href = '{% url "gamifications:recharge_callback" %}?id=' + transactionId;
         } else {
-          console.log('⚠️ Estado desconocido:', status);
           button.disabled = false;
           button.innerHTML = 'Proceder al Pago →';
         }
       } else {
-        console.log('ℹ️ Usuario cerró el modal');
         button.disabled = false;
         button.innerHTML = 'Proceder al Pago →';
       }
     });
 
   } catch (error) {
-    console.error('❌ Error:', error);
+    console.error('Error:', error);
+    console.error('Stack trace:', error.stack);
     alert('Ocurrió un error al procesar el pago: ' + error.message);
     button.disabled = false;
     button.innerHTML = 'Proceder al Pago →';

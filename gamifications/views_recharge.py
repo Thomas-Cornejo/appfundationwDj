@@ -10,16 +10,18 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
+from engagements.models import AnimalEngagement
 from shelters.models import Shelter
 
-from .models import VirtualWallet, WalletRecharge
+from .models import ShelterWalletBalance, VirtualWallet, WalletRecharge
 
 
 @login_required
-def recharge_wallet(request):
+def recharge_wallet(request, animal_id=None):
     """
     View to display the coin recharge form.
     The user chooses how much they want to recharge.
+    If animal_id is provided, pre-select the shelter for that animal.
     """
     wallet, created = VirtualWallet.objects.get_or_create(
         user=request.user, defaults={"balance": 1000}
@@ -34,11 +36,28 @@ def recharge_wallet(request):
 
     shelters = Shelter.objects.filter(is_active=True)
 
+    # Si viene desde un animal específico, preseleccionar su albergue
+    selected_shelter_id = None
+    from_animal = None
+    if animal_id:
+        try:
+            engagement = AnimalEngagement.objects.get(
+                animal_id=animal_id, user=request.user, engagements_type="S", status="A"
+            )
+            selected_shelter_id = engagement.animal.shelter.id
+            from_animal = engagement.animal
+        except AnimalEngagement.DoesNotExist:
+            messages.warning(request, "No tienes un apadrinamiento activo para este animal.")
+
+    wompi_key = settings.WOMPI_PUBLIC_KEY.strip()
+
     context = {
         "wallet": wallet,
         "packages": packages,
         "shelters": shelters,
-        "wompi_public_key": settings.WOMPI_PUBLIC_KEY.strip(),
+        "wompi_public_key": wompi_key,
+        "selected_shelter_id": selected_shelter_id,
+        "from_animal": from_animal,
     }
 
     return render(request, "gamifications/recharge_wallet.html", context)
@@ -238,10 +257,14 @@ def recharge_callback(request):
                         if recharge.status != "A":
                             recharge.transaction_id = transaction_id
                             recharge.approve()
+                            shelter_balance = ShelterWalletBalance.objects.get(
+                                user=request.user, shelter=recharge.shelter
+                            )
                             messages.success(
                                 request,
-                                f"¡Recarga exitosa! Se han agregado {recharge.coins_received} monedas a tu wallet. "
-                                f"Tu nuevo saldo es: {recharge.wallet.balance} monedas.",
+                                f"¡Recarga exitosa! Se han agregado {recharge.coins_received} monedas "
+                                f"para {recharge.shelter.name}. "
+                                f"Tu saldo actual para este albergue es: {shelter_balance.balance} monedas.",
                             )
                         else:
                             messages.info(request, "Esta recarga ya fue procesada anteriormente.")

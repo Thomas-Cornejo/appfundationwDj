@@ -103,11 +103,9 @@ class CareIndicator(models.Model):
             self.last_food_update = now
             changed = True
 
-        hours_since_hygiene = (
-            now - self.last_hygiene_update).total_seconds() / 3600
+        hours_since_hygiene = (now - self.last_hygiene_update).total_seconds() / 3600
         if hours_since_hygiene >= shelter.hygiene_degradation_hours:
-            cycles = int(hours_since_hygiene /
-                         shelter.hygiene_degradation_hours)
+            cycles = int(hours_since_hygiene / shelter.hygiene_degradation_hours)
             degradation = shelter.hygiene_degradation_percentage * cycles
             self.hygiene_level = max(0, self.hygiene_level - degradation)
             self.last_hygiene_update = now
@@ -151,8 +149,7 @@ class CareAction(models.Model):
         verbose_name="Cantidad aumentada (%)", help_text="Cuánto subió el indicador"
     )
 
-    coins_spent = models.IntegerField(
-        default=0, verbose_name="Monedas gastadas")
+    coins_spent = models.IntegerField(default=0, verbose_name="Monedas gastadas")
 
     xp_earned = models.IntegerField(default=0, verbose_name="XP ganado")
 
@@ -190,16 +187,11 @@ class VirtualWallet(models.Model):
         verbose_name="Usuario",
     )
 
-    balance = models.IntegerField(
-        default=1000, verbose_name="Saldo de monedas")
+    balance = models.IntegerField(default=1000, verbose_name="Saldo de monedas")
 
-    total_earned = models.IntegerField(
-        default=0, verbose_name="Total ganado (histórico)"
-    )
+    total_earned = models.IntegerField(default=0, verbose_name="Total ganado (histórico)")
 
-    total_spent = models.IntegerField(
-        default=0, verbose_name="Total gastado (histórico)"
-    )
+    total_spent = models.IntegerField(default=0, verbose_name="Total gastado (histórico)")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -279,9 +271,7 @@ class WalletTransaction(models.Model):
 
     amount = models.IntegerField(verbose_name="Cantidad")
 
-    description = models.CharField(
-        max_length=255, blank=True, verbose_name="Descripción"
-    )
+    description = models.CharField(max_length=255, blank=True, verbose_name="Descripción")
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -292,9 +282,7 @@ class WalletTransaction(models.Model):
 
     def __str__(self):
         symbol = "+" if self.transaction_type == "E" else "-"
-        return (
-            f"{self.wallet.user.username}: {symbol}{self.amount} - {self.description}"
-        )
+        return f"{self.wallet.user.username}: {symbol}{self.amount} - {self.description}"
 
     @property
     def is_earn(self):
@@ -374,9 +362,7 @@ class WalletRecharge(models.Model):
         help_text="La donación va a este albergue",
     )
 
-    admin_notes = models.TextField(
-        blank=True, null=True, verbose_name="Notas del administrador"
-    )
+    admin_notes = models.TextField(blank=True, null=True, verbose_name="Notas del administrador")
 
     created_at = models.DateTimeField(auto_now_add=True)
     approved_at = models.DateTimeField(null=True, blank=True)
@@ -490,13 +476,9 @@ class MonthlyDistribution(models.Model):
         help_text="Primer día del mes correspondiente",
     )
 
-    total_coins_used = models.IntegerField(
-        default=0, verbose_name="Monedas usadas en el mes"
-    )
+    total_coins_used = models.IntegerField(default=0, verbose_name="Monedas usadas en el mes")
 
-    amount_cop = models.DecimalField(
-        max_digits=12, decimal_places=2, verbose_name="Monto en COP"
-    )
+    amount_cop = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Monto en COP")
 
     STATUS_CHOICES = [
         ("P", "Pendiente"),
@@ -519,8 +501,7 @@ class MonthlyDistribution(models.Model):
         help_text="Si el pago falló, aquí se guarda el motivo",
     )
 
-    paid_at = models.DateTimeField(
-        null=True, blank=True, verbose_name="Fecha de pago")
+    paid_at = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de pago")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -574,9 +555,7 @@ class DirectPayment(models.Model):
         "shelters.Shelter", on_delete=models.CASCADE, related_name="direct_payments"
     )
 
-    amount_cop = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name="Monto en COP"
-    )
+    amount_cop = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Monto en COP")
 
     STATUS_CHOICES = [
         ("P", "Pendiente"),
@@ -608,9 +587,7 @@ class DirectPayment(models.Model):
         help_text="Referencia del pago al albergue",
     )
 
-    admin_notes = models.TextField(
-        blank=True, null=True, verbose_name="Notas del administrador"
-    )
+    admin_notes = models.TextField(blank=True, null=True, verbose_name="Notas del administrador")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

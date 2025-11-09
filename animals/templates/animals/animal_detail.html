@@ -46,7 +46,7 @@
 
       <div class="flex flex-wrap gap-4 mt-8">
         {% if user.is_authenticated %}
-          
+
           {% if animal.availability == 'A' or animal.availability == 'B' %}
             <a href="{% url 'adopt_animal' animal.id %}" class="bg-indigo-500 text-white px-6 py-3 rounded-full hover:bg-indigo-600 transition font-medium">
               🐾 Adoptar
@@ -75,7 +75,7 @@
 
       <div class="mt-6 pt-6 border-t border-gray-200">
         <p class="text-sm text-gray-600">
-          <strong>Disponibilidad:</strong> 
+          <strong>Disponibilidad:</strong>
           {% if animal.availability == 'A' %}
             <span class="text-indigo-600">Disponible para adopción</span>
           {% elif animal.availability == 'S' %}
@@ -128,7 +128,7 @@
 
   openBtn.addEventListener("click", () => modal.classList.remove("hidden"));
   closeBtn.addEventListener("click", () => modal.classList.add("hidden"));
-  
+
   modal.addEventListener("click", (e) => {
     if (e.target === modal) {
       modal.classList.add("hidden");

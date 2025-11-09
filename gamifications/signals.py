@@ -18,9 +18,7 @@ def create_care_indicator_on_sponsorship_approval(sender, instance, created, **k
         return
 
     if hasattr(instance, "care_indicator"):
-        print(
-            f"CareIndicator ya existe para {instance.user.username} → {instance.animal.name}"
-        )
+        print(f"CareIndicator ya existe para {instance.user.username} → {instance.animal.name}")
         return
     try:
         care_indicator = CareIndicator.objects.create(
@@ -45,14 +43,11 @@ def ensure_user_has_wallet(sender, instance, created, **kwargs):
     user = instance.user
 
     if hasattr(user, "wallet"):
-        print(
-            f"{user.username} ya tiene una VirtualWallet con {user.wallet.balance} monedas"
-        )
+        print(f"{user.username} ya tiene una VirtualWallet con {user.wallet.balance} monedas")
         return
     try:
         wallet = VirtualWallet.objects.create(user=user, balance=1000)
-        print(
-            f"VirtualWallet creada para {user.username} con {wallet.balance} monedas")
+        print(f"VirtualWallet creada para {user.username} con {wallet.balance} monedas")
 
         from .models import WalletTransaction
 

@@ -10,6 +10,5 @@ urlpatterns = [
         views.engagement_success,
         name="engagement_success",
     ),
-    path("download-pdf/<int:engagement_id>/",
-         views.download_pdf, name="download_pdf"),
+    path("download-pdf/<int:engagement_id>/", views.download_pdf, name="download_pdf"),
 ]

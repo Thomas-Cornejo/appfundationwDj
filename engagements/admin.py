@@ -19,8 +19,7 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
         "created_at",
         "view_pdf",
     ]
-    list_filter = ["engagements_type", "status",
-                   "created_at", "animal__shelter"]
+    list_filter = ["engagements_type", "status", "created_at", "animal__shelter"]
     search_fields = [
         "user__username",
         "user__email",
@@ -43,8 +42,7 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
             "Detalles de la solicitud",
             {"fields": ("form_data_display", "pdf_file", "admin_notes")},
         ),
-        ("Fechas", {"fields": ("created_at", "updated_at"),
-         "classes": ("collapse",)}),
+        ("Fechas", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
     )
 
     # Fieldsets para creación (sin form_data_display ni pdf_file)
@@ -171,9 +169,7 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
                 engagement.save()
                 self.send_status_email(engagement, approved=True)
 
-        self.message_user(
-            request, f"{queryset.count()} solicitud(es) aprobada(s) exitosamente."
-        )
+        self.message_user(request, f"{queryset.count()} solicitud(es) aprobada(s) exitosamente.")
 
     approve_engagements.short_description = "Aprobar solicitudes seleccionadas"
 
@@ -185,8 +181,7 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
                 engagement.save()
                 self.send_status_email(engagement, approved=False)
 
-        self.message_user(
-            request, f"{queryset.count()} solicitud(es) rechazada(s).")
+        self.message_user(request, f"{queryset.count()} solicitud(es) rechazada(s).")
 
     reject_engagements.short_description = "Rechazar solicitudes seleccionadas"
 

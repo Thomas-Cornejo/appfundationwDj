@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-stone-50">
-  
+
   <!-- Header minimalista -->
   <div class="bg-white border-b border-gray-100 sticky top-0 z-50 backdrop-blur-lg bg-white/90">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -13,7 +13,7 @@
           </svg>
           <span class="text-sm font-medium">Volver</span>
         </a>
-        
+
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-2 px-4 py-2 bg-amber-50 rounded-full">
             <svg class="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
@@ -22,8 +22,8 @@
             </svg>
             <span class="text-lg font-bold text-amber-900">{{ wallet.balance }}</span>
           </div>
-          
-          <a href="{% url 'gamifications:recharge_wallet' %}" 
+
+          <a href="{% url 'gamifications:recharge_wallet' %}"
             class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium rounded-full hover:from-indigo-700 hover:to-purple-700 transition-all shadow-sm hover:shadow-md">
             Recargar
           </a>
@@ -33,12 +33,12 @@
   </div>
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    
+
     <!-- Hero section del animal -->
     <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-6">
       <div class="relative h-64 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
         {% if animal.image %}
-        <img src="{{ animal.image.url }}" alt="{{ animal.name }}" 
+        <img src="{{ animal.image.url }}" alt="{{ animal.name }}"
           class="w-full h-full object-cover mix-blend-overlay opacity-50">
         {% endif %}
         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
@@ -57,10 +57,10 @@
 
     <!-- Grid de indicadores y acciones -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-      
+
       <!-- Indicadores (2 columnas en desktop) -->
       <div class="lg:col-span-2 space-y-4">
-        
+
         <!-- Alimento -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between mb-4">
@@ -78,7 +78,7 @@
               Alimentar
             </button>
           </div>
-          
+
           <div class="relative">
             <div class="flex items-center justify-between text-sm mb-2">
               <span class="text-gray-600">Nivel</span>
@@ -108,7 +108,7 @@
               Limpiar
             </button>
           </div>
-          
+
           <div class="relative">
             <div class="flex items-center justify-between text-sm mb-2">
               <span class="text-gray-600">Nivel</span>
@@ -134,7 +134,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="relative">
             <div class="flex items-center justify-between text-sm mb-2">
               <span class="text-gray-600">Nivel</span>
@@ -150,7 +150,7 @@
 
       <!-- Sidebar -->
       <div class="space-y-6">
-        
+
         <!-- Nivel y XP -->
         <div class="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl shadow-sm p-6 text-white">
           <div class="text-center mb-4">
@@ -159,7 +159,7 @@
             </div>
             <p class="text-sm text-white/80">Nivel actual</p>
           </div>
-          
+
           <div class="space-y-2">
             <div class="flex justify-between text-sm">
               <span class="text-white/80">Experiencia</span>
@@ -175,7 +175,7 @@
         <!-- Estado general -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <h3 class="font-semibold text-gray-900 mb-4">Estado general</h3>
-          
+
           {% if care_indicator.food_level >= 70 and care_indicator.hygiene_level >= 70 and care_indicator.health_level >= 70 %}
             <div class="flex items-center gap-3 p-3 bg-green-50 rounded-xl">
               <span class="text-2xl">😊</span>
@@ -210,7 +210,7 @@
     {% if health_events %}
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
       <h3 class="text-lg font-semibold text-gray-900 mb-4">Eventos de Salud</h3>
-      
+
       <div class="space-y-3">
         {% for event in health_events %}
         <div class="border border-gray-200 rounded-xl p-4 hover:border-gray-300 transition-colors">
@@ -225,7 +225,7 @@
               <p class="text-sm text-gray-600">{{ event.entry_date|date:"d/m/Y" }}</p>
             </div>
           </div>
-          
+
           <div class="mb-3">
             <div class="flex justify-between text-sm mb-2">
               <span class="text-gray-600">Progreso</span>
@@ -236,7 +236,7 @@
                 style="width: {{ event.contributed_coins|floatformat:0 }}{{ event.cost_coins|floatformat:0 }}%"></div>
             </div>
           </div>
-          
+
           <button onclick="contributeHealth({{ event.id }}, {{ event.cost_coins }}, {{ event.contributed_coins }})"
             class="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors text-sm">
             Contribuir
@@ -266,13 +266,13 @@ function showToast(message, type = 'success') {
   const toast = document.getElementById('toast');
   const icon = document.getElementById('toast-icon');
   const msg = document.getElementById('toast-message');
-  
+
   icon.textContent = type === 'success' ? '✓' : '✗';
   msg.textContent = message;
-  
+
   toast.classList.remove('translate-y-20');
   toast.classList.add('translate-y-0');
-  
+
   setTimeout(() => {
     toast.classList.remove('translate-y-0');
     toast.classList.add('translate-y-20');
@@ -283,15 +283,15 @@ async function feedAnimal() {
   const button = document.getElementById('feed-button');
   button.disabled = true;
   button.textContent = '...';
-  
+
   try {
     const response = await fetch(`/gamifications/animal/${animalId}/feed/`, {
       method: 'POST',
       headers: {'X-CSRFToken': csrfToken}
     });
-    
+
     const data = await response.json();
-    
+
     if (data.success) {
       document.getElementById('food-level-text').textContent = data.new_level + '%';
       document.getElementById('food-bar').style.width = data.new_level + '%';
@@ -312,15 +312,15 @@ async function cleanAnimal() {
   const button = document.getElementById('clean-button');
   button.disabled = true;
   button.textContent = '...';
-  
+
   try {
     const response = await fetch(`/gamifications/animal/${animalId}/clean/`, {
       method: 'POST',
       headers: {'X-CSRFToken': csrfToken}
     });
-    
+
     const data = await response.json();
-    
+
     if (data.success) {
       document.getElementById('hygiene-level-text').textContent = data.new_level + '%';
       document.getElementById('hygiene-bar').style.width = data.new_level + '%';
@@ -340,21 +340,21 @@ async function cleanAnimal() {
 async function contributeHealth(historyId, totalCost, contributed) {
   const remaining = totalCost - contributed;
   const amount = prompt(`¿Cuántas monedas quieres contribuir? (Faltan ${remaining})`);
-  
+
   if (!amount || isNaN(amount)) return;
-  
+
   try {
     const formData = new FormData();
     formData.append('amount', amount);
-    
+
     const response = await fetch(`/gamifications/animal/${animalId}/health/${historyId}/contribute/`, {
       method: 'POST',
       headers: {'X-CSRFToken': csrfToken},
       body: formData
     });
-    
+
     const data = await response.json();
-    
+
     if (data.success) {
       showToast(data.message);
       setTimeout(() => location.reload(), 2000);

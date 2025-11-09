@@ -3,7 +3,7 @@
 {% block content %}
 <div class="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center py-12 px-4">
   <div class="max-w-2xl w-full">
-    
+
     {% if status == 'APPROVED' %}
     <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
       <div class="bg-gradient-to-r from-green-400 to-emerald-500 p-8 text-white text-center">
@@ -11,7 +11,7 @@
         <h1 class="text-4xl font-bold mb-2">¡Recarga Exitosa!</h1>
         <p class="text-green-100">Tu pago ha sido procesado correctamente</p>
       </div>
-      
+
       <div class="p-8">
         <div class="space-y-4 mb-8">
           <div class="flex justify-between items-center py-3 border-b border-gray-200">
@@ -34,24 +34,24 @@
 
         <div class="bg-green-50 border-l-4 border-green-500 p-6 mb-8 rounded-lg">
           <p class="text-green-800">
-            <strong>¡Gracias por tu donación!</strong> Tu aporte ayuda directamente a 
+            <strong>¡Gracias por tu donación!</strong> Tu aporte ayuda directamente a
             {{ recharge.shelter.name }} en el cuidado de sus animales. 💚
           </p>
         </div>
 
         <div class="flex space-x-4">
-          <a href="{% url 'perfil' %}" 
+          <a href="{% url 'perfil' %}"
             class="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-4 rounded-xl text-center hover:from-purple-600 hover:to-pink-600 transition">
             🏠 Ir al Perfil
           </a>
-          <a href="{% url 'gamifications:recharge_history' %}" 
+          <a href="{% url 'gamifications:recharge_history' %}"
             class="flex-1 bg-gray-200 text-gray-800 font-bold py-4 rounded-xl text-center hover:bg-gray-300 transition">
             📜 Ver Historial
           </a>
         </div>
       </div>
     </div>
-    
+
     {% elif status == 'PENDING' %}
     <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
       <div class="bg-gradient-to-r from-yellow-400 to-orange-500 p-8 text-white text-center">
@@ -59,7 +59,7 @@
         <h1 class="text-4xl font-bold mb-2">Pago en Proceso</h1>
         <p class="text-yellow-100">Tu pago está siendo verificado</p>
       </div>
-      
+
       <div class="p-8">
         <p class="text-gray-700 text-center mb-8">
           Tu pago está siendo procesado por el banco. Te notificaremos por email cuando esté aprobado.
@@ -72,13 +72,13 @@
           </p>
         </div>
 
-        <a href="{% url 'perfil' %}" 
+        <a href="{% url 'perfil' %}"
           class="block w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-4 rounded-xl text-center hover:from-blue-600 hover:to-purple-600 transition">
           Volver al Perfil
         </a>
       </div>
     </div>
-    
+
     {% else %}
     <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
       <div class="bg-gradient-to-r from-red-400 to-pink-500 p-8 text-white text-center">
@@ -86,10 +86,10 @@
         <h1 class="text-4xl font-bold mb-2">Pago No Procesado</h1>
         <p class="text-red-100">Hubo un problema con tu pago</p>
       </div>
-      
+
       <div class="p-8">
         <p class="text-gray-700 text-center mb-8">
-          Tu pago no pudo ser procesado. Esto puede deberse a fondos insuficientes, 
+          Tu pago no pudo ser procesado. Esto puede deberse a fondos insuficientes,
           problemas con tu banco o cancelación del pago.
         </p>
 
@@ -100,11 +100,11 @@
         </div>
 
         <div class="flex space-x-4">
-          <a href="{% url 'gamifications:recharge_wallet' %}" 
+          <a href="{% url 'gamifications:recharge_wallet' %}"
             class="flex-1 bg-gradient-to-r from-orange-500 to-pink-500 text-white font-bold py-4 rounded-xl text-center hover:from-orange-600 hover:to-pink-600 transition">
             🔄 Intentar de Nuevo
           </a>
-          <a href="{% url 'perfil' %}" 
+          <a href="{% url 'perfil' %}"
             class="flex-1 bg-gray-200 text-gray-800 font-bold py-4 rounded-xl text-center hover:bg-gray-300 transition">
             🏠 Volver al Perfil
           </a>

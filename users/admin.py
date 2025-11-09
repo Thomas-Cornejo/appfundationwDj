@@ -85,8 +85,7 @@ class CustomUserAdmin(UserAdmin):
             if request.user.is_superuser:
                 kwargs["queryset"] = Shelter.objects.all()
             elif hasattr(request.user, "shelter") and request.user.shelter:
-                kwargs["queryset"] = Shelter.objects.filter(
-                    id=request.user.shelter.id)
+                kwargs["queryset"] = Shelter.objects.filter(id=request.user.shelter.id)
             else:
                 kwargs["queryset"] = Shelter.objects.all()
 
@@ -102,10 +101,7 @@ class CustomUserAdmin(UserAdmin):
         if request.user.is_superuser:
             return qs
 
-        if (
-            hasattr(request.user, "is_shelter_admin")
-            and request.user.is_shelter_admin()
-        ):
+        if hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
             if hasattr(request.user, "shelter") and request.user.shelter:
                 return qs.filter(shelter=request.user.shelter)
 

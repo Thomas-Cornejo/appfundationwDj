@@ -248,28 +248,28 @@ if (!WOMPI_PUBLIC_KEY || WOMPI_PUBLIC_KEY.length < 20) {
 function calculateCoins(amountCOP) {
   let baseCoins = Math.floor(amountCOP / 10);
   let bonus = 0;
-  
+
   if (amountCOP >= 100000) bonus = Math.floor(baseCoins * 0.20);
   else if (amountCOP >= 50000) bonus = Math.floor(baseCoins * 0.15);
   else if (amountCOP >= 20000) bonus = Math.floor(baseCoins * 0.10);
-  
+
   return { base: baseCoins, bonus: bonus, total: baseCoins + bonus };
 }
 
 function updateSummary() {
   const customAmount = document.getElementById('custom-amount').value;
   const selectedPackage = document.querySelector('input[name="package"]:checked');
-  
+
   let amount = 0;
-  
+
   if (customAmount && parseInt(customAmount) > 0) {
     amount = parseInt(customAmount);
   } else if (selectedPackage) {
     amount = parseInt(selectedPackage.value);
   }
-  
+
   const coins = calculateCoins(amount);
-  
+
   document.getElementById('summary-amount').textContent = `$${amount.toLocaleString('es-CO')}`;
   document.getElementById('summary-base-coins').textContent = `${coins.base} 🪙`;
   document.getElementById('summary-bonus').textContent = `+${coins.bonus} 🎁`;
@@ -295,80 +295,80 @@ document.addEventListener('DOMContentLoaded', function() {
 
 document.getElementById('recharge-form').addEventListener('submit', async function(e) {
   e.preventDefault();
-  
+
   const customAmount = document.getElementById('custom-amount').value;
   const selectedPackage = document.querySelector('input[name="package"]:checked');
   const shelterId = document.getElementById('shelter-select').value;
-  
+
   let amount = 0;
-  
+
   if (customAmount && parseInt(customAmount) > 0) {
     amount = parseInt(customAmount);
   } else if (selectedPackage) {
     amount = parseInt(selectedPackage.value);
   }
-  
+
   if (amount < 5000) {
     alert('El monto mínimo es $5,000 COP');
     return;
   }
-  
+
   if (!shelterId) {
     alert('Por favor selecciona un albergue');
     return;
   }
-  
+
   const button = document.getElementById('pay-button');
   button.disabled = true;
   button.innerHTML = '⏳ Creando transacción...';
-  
+
   try {
     const formData = new FormData();
     formData.append('amount_cop', amount);
     formData.append('shelter_id', shelterId);
     formData.append('payment_method', 'WOMPI');
-    
-    
+
+
     const response = await fetch('{% url "gamifications:create_recharge" %}', {
       method: 'POST',
       headers: {'X-CSRFToken': csrfToken},
       body: formData
     });
-    
+
     const data = await response.json();
     console.log('📥 Respuesta backend:', data);
-    
+
     if (!data.success) {
       alert('Error: ' + data.error);
       button.disabled = false;
       button.innerHTML = 'Proceder al Pago →';
       return;
     }
-    
+
     button.innerHTML = '⏳ Abriendo pasarela de pago...';
-    
+
     if (typeof WidgetCheckout === 'undefined') {
       alert('Error: No se pudo cargar el sistema de pagos. Por favor recarga la página.');
       button.disabled = false;
       button.innerHTML = 'Proceder al Pago →';
       return;
     }
-    
-  
+
+
     if (!data.reference) {
       alert('Error: No se generó la referencia de pago');
       button.disabled = false;
       button.innerHTML = 'Proceder al Pago →';
       return;
     }
-    
+
     if (!data.integrity_signature) {
       alert('Error: No se generó la firma de seguridad');
       button.disabled = false;
       button.innerHTML = 'Proceder al Pago →';
       return;
     }
-    
+
     const checkoutConfig = {
       currency: 'COP',
       amountInCents: data.amount_in_cents,
@@ -380,7 +380,7 @@ document.getElementById('recharge-form').addEventListener('submit', async functi
         fullName: '{{ user.get_full_name|default:"Usuario" }}'
       }
     };
-    
+
     if (data.integrity_signature) {
       checkoutConfig.signature = {
         integrity: data.integrity_signature
@@ -389,7 +389,7 @@ document.getElementById('recharge-form').addEventListener('submit', async functi
     } else {
       console.warn('⚠️ No se proporcionó firma de integridad (solo válido en sandbox)');
     }
-    
+
     const validations = {
       'currency': checkoutConfig.currency === 'COP',
       'amountInCents > 0': checkoutConfig.amountInCents > 0,
@@ -398,12 +398,12 @@ document.getElementById('recharge-form').addEventListener('submit', async functi
       'publicKey formato': checkoutConfig.publicKey.startsWith('pub_'),
       'redirectUrl existe': !!checkoutConfig.redirectUrl
     };
-    
-    
+
+
     const failedValidations = Object.entries(validations)
       .filter(([key, value]) => !value)
       .map(([key]) => key);
-    
+
     if (failedValidations.length > 0) {
       console.error('❌ Validaciones fallidas:', failedValidations);
       alert('Error en la configuración: ' + failedValidations.join(', '));
@@ -411,7 +411,7 @@ document.getElementById('recharge-form').addEventListener('submit', async functi
       button.innerHTML = 'Proceder al Pago →';
       return;
     }
-    
+
     if (!checkoutConfig.publicKey.startsWith('pub_')) {
       console.error('❌ Public Key no tiene el formato correcto');
       alert('Error de configuración en la clave pública');
@@ -419,9 +419,9 @@ document.getElementById('recharge-form').addEventListener('submit', async functi
       button.innerHTML = 'Proceder al Pago →';
       return;
     }
-    
+
     let checkout;
-    
+
     try {
       console.log('Intentando crear WidgetCheckout...');
       checkout = new WidgetCheckout(checkoutConfig);
@@ -433,17 +433,17 @@ document.getElementById('recharge-form').addEventListener('submit', async functi
       button.innerHTML = 'Proceder al Pago →';
       return;
     }
-    
+
     checkout.open(function(result) {
       console.log('📊 Resultado del pago:', result);
-      
+
       if (result.transaction) {
         const status = result.transaction.status;
         const transactionId = result.transaction.id;
-        
+
         console.log('💳 Estado:', status);
         console.log('🆔 ID:', transactionId);
-        
+
         if (status === 'APPROVED') {
           console.log('✅ Pago aprobado, redirigiendo...');
           window.location.href = '{% url "gamifications:recharge_callback" %}?id=' + transactionId;
@@ -465,7 +465,7 @@ document.getElementById('recharge-form').addEventListener('submit', async functi
         button.innerHTML = 'Proceder al Pago →';
       }
     });
-    
+
   } catch (error) {
     console.error('❌ Error:', error);
     alert('Ocurrió un error al procesar el pago: ' + error.message);

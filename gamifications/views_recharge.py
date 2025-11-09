@@ -94,9 +94,7 @@ def create_recharge(request):
         concatenated_string = (
             f"{reference}{amount_in_cents}{currency}{settings.WOMPI_INTEGRITY_SECRET}"
         )
-        integrity_signature = hashlib.sha256(
-            concatenated_string.encode("utf-8")
-        ).hexdigest()
+        integrity_signature = hashlib.sha256(concatenated_string.encode("utf-8")).hexdigest()
 
         return JsonResponse(
             {
@@ -114,21 +112,15 @@ def create_recharge(request):
         )
 
     except Shelter.DoesNotExist:
-        return JsonResponse(
-            {"success": False, "error": "Albergue no encontrado"}, status=404
-        )
+        return JsonResponse({"success": False, "error": "Albergue no encontrado"}, status=404)
     except ValueError as e:
-        return JsonResponse(
-            {"success": False, "error": f"Datos inválidos: {str(e)}"}, status=400
-        )
+        return JsonResponse({"success": False, "error": f"Datos inválidos: {str(e)}"}, status=400)
     except Exception as e:
         print(f"Error en create_recharge: {e}")
         import traceback
 
         traceback.print_exc()
-        return JsonResponse(
-            {"success": False, "error": f"Error interno: {str(e)}"}, status=500
-        )
+        return JsonResponse({"success": False, "error": f"Error interno: {str(e)}"}, status=500)
 
 
 @csrf_exempt
@@ -233,9 +225,7 @@ def recharge_callback(request):
             if reference and reference.startswith("RCG"):
                 try:
                     recharge_id = reference.split("U")[0].replace("RCG", "")
-                    recharge = WalletRecharge.objects.get(
-                        id=recharge_id, wallet__user=request.user
-                    )
+                    recharge = WalletRecharge.objects.get(id=recharge_id, wallet__user=request.user)
 
                     context = {
                         "recharge": recharge,
@@ -254,9 +244,7 @@ def recharge_callback(request):
                                 f"Tu nuevo saldo es: {recharge.wallet.balance} monedas.",
                             )
                         else:
-                            messages.info(
-                                request, "Esta recarga ya fue procesada anteriormente."
-                            )
+                            messages.info(request, "Esta recarga ya fue procesada anteriormente.")
 
                     elif status == "DECLINED":
                         recharge.status = "R"
@@ -282,16 +270,12 @@ def recharge_callback(request):
                         recharge.transaction_id = transaction_id
                         recharge.save()
                         print(f"Error en el pago")
-                        messages.error(
-                            request, "Ocurrió un error al procesar tu pago.")
+                        messages.error(request, "Ocurrió un error al procesar tu pago.")
 
-                    return render(
-                        request, "gamifications/recharge_callback.html", context
-                    )
+                    return render(request, "gamifications/recharge_callback.html", context)
 
                 except WalletRecharge.DoesNotExist:
-                    print(
-                        f"Recarga no encontrada para referencia: {reference}")
+                    print(f"Recarga no encontrada para referencia: {reference}")
                     messages.error(
                         request,
                         "No se encontró la recarga asociada a esta transacción.",
@@ -301,15 +285,12 @@ def recharge_callback(request):
                     import traceback
 
                     traceback.print_exc()
-                    messages.error(
-                        request, f"Error al procesar la recarga: {str(e)}")
+                    messages.error(request, f"Error al procesar la recarga: {str(e)}")
             else:
                 messages.warning(request, "Referencia de pago inválida.")
 
         else:
-            messages.error(
-                request, "No se pudo verificar el estado del pago con Wompi."
-            )
+            messages.error(request, "No se pudo verificar el estado del pago con Wompi.")
 
     except requests.RequestException as e:
         messages.error(request, "Error de conexión al verificar el pago.")
@@ -328,8 +309,7 @@ def recharge_history(request):
     User recharge history.
     """
     wallet = get_object_or_404(VirtualWallet, user=request.user)
-    recharges = WalletRecharge.objects.filter(
-        wallet=wallet).order_by("-created_at")
+    recharges = WalletRecharge.objects.filter(wallet=wallet).order_by("-created_at")
 
     context = {"wallet": wallet, "recharges": recharges}
 

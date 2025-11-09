@@ -15,10 +15,8 @@ AVAILABILITY_CHOICES = [("A", "Adoption"), ("S", "Sponsorship"), ("B", "Both")]
 class Animal(models.Model):
     name = models.CharField(max_length=200, verbose_name="Nombre")
     birth_date = models.DateField(verbose_name="Fecha de nacimiento aprox.")
-    sex = models.CharField(
-        max_length=1, choices=SEX_CHOICES, verbose_name="Sexo")
-    size = models.CharField(
-        max_length=1, choices=SIZE_CHOICES, verbose_name="Tamaño")
+    sex = models.CharField(max_length=1, choices=SEX_CHOICES, verbose_name="Sexo")
+    size = models.CharField(max_length=1, choices=SIZE_CHOICES, verbose_name="Tamaño")
     color = models.CharField(max_length=20, verbose_name="Color")
     imagen = CloudinaryField("image")
     availability = models.CharField(
@@ -28,8 +26,7 @@ class Animal(models.Model):
         verbose_name="Disponibilidad",
     )
     is_active = models.BooleanField(default=True, verbose_name="Activo")
-    breed = models.ForeignKey(
-        Breed, on_delete=models.PROTECT, verbose_name="Raza")
+    breed = models.ForeignKey(Breed, on_delete=models.PROTECT, verbose_name="Raza")
     shelter = models.ForeignKey(
         Shelter,
         on_delete=models.SET_NULL,
@@ -51,8 +48,7 @@ class Animal(models.Model):
         age = (
             today.year
             - self.birth_date.year
-            - ((today.month, today.day) <
-               (self.birth_date.month, self.birth_date.day))
+            - ((today.month, today.day) < (self.birth_date.month, self.birth_date.day))
         )
         return age
 
@@ -92,12 +88,8 @@ class History(models.Model):
         null=True,
         help_text="Solo llenar si es un ingreso. Dejar vacío para eventos médicos.",
     )
-    entry_date = models.DateTimeField(
-        default=timezone.now, verbose_name="Fecha de historia"
-    )
-    exit_date = models.DateTimeField(
-        null=True, blank=True, verbose_name="Fecha de salida"
-    )
+    entry_date = models.DateTimeField(default=timezone.now, verbose_name="Fecha de historia")
+    exit_date = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de salida")
     status = models.CharField(
         max_length=1,
         choices=STATUS_CHOICES,
@@ -179,7 +171,6 @@ class History(models.Model):
         if self.health_impact > 0 and self.animal:
             try:
                 from engagements.models import AnimalEngagement
-                from gamifications.models import CareIndicator
 
                 engagement = AnimalEngagement.objects.filter(
                     animal=self.animal, engagements_type="S", status="A"
@@ -187,15 +178,12 @@ class History(models.Model):
 
                 if engagement and hasattr(engagement, "care_indicator"):
                     indicator = engagement.care_indicator
-                    indicator.health_level = max(
-                        0, indicator.health_level - self.health_impact
-                    )
+                    indicator.health_level = max(0, indicator.health_level - self.health_impact)
                     indicator.last_health_update = timezone.now()
                     indicator.save()
                     return True
                 else:
-                    print(
-                        f"Animal {self.animal.name} no tiene CareIndicator activo")
+                    print(f"Animal {self.animal.name} no tiene CareIndicator activo")
                     return False
             except Exception as e:
                 print(f"Error aplicando impacto de salud: {e}")
@@ -214,7 +202,6 @@ class History(models.Model):
         if self.health_impact > 0 and self.animal:
             try:
                 from engagements.models import AnimalEngagement
-                from gamifications.models import CareIndicator
 
                 engagement = AnimalEngagement.objects.filter(
                     animal=self.animal, engagements_type="S", status="A"
@@ -222,9 +209,7 @@ class History(models.Model):
 
                 if engagement and hasattr(engagement, "care_indicator"):
                     indicator = engagement.care_indicator
-                    indicator.health_level = min(
-                        100, indicator.health_level + self.health_impact
-                    )
+                    indicator.health_level = min(100, indicator.health_level + self.health_impact)
                     indicator.last_health_update = timezone.now()
                     indicator.save()
                     return True

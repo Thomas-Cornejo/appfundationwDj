@@ -4,8 +4,7 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
-from reportlab.platypus import (Paragraph, SimpleDocTemplate, Spacer, Table,
-                                TableStyle)
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 
 def generate_adoption_pdf(engagement, form_data):
@@ -36,8 +35,7 @@ def generate_adoption_pdf(engagement, form_data):
     elements.append(title)
     elements.append(Spacer(1, 0.3 * inch))
 
-    animal_title = Paragraph(
-        "<b>INFORMACIÓN DEL ANIMAL</b>", styles["Heading2"])
+    animal_title = Paragraph("<b>INFORMACIÓN DEL ANIMAL</b>", styles["Heading2"])
     elements.append(animal_title)
     elements.append(Spacer(1, 0.1 * inch))
 
@@ -67,8 +65,7 @@ def generate_adoption_pdf(engagement, form_data):
     elements.append(animal_table)
     elements.append(Spacer(1, 0.3 * inch))
 
-    user_title = Paragraph(
-        "<b>INFORMACIÓN DEL SOLICITANTE</b>", styles["Heading2"])
+    user_title = Paragraph("<b>INFORMACIÓN DEL SOLICITANTE</b>", styles["Heading2"])
     elements.append(user_title)
     elements.append(Spacer(1, 0.1 * inch))
 
@@ -99,8 +96,7 @@ def generate_adoption_pdf(engagement, form_data):
     elements.append(user_table)
     elements.append(Spacer(1, 0.3 * inch))
 
-    additional_title = Paragraph(
-        "<b>INFORMACIÓN ADICIONAL</b>", styles["Heading2"])
+    additional_title = Paragraph("<b>INFORMACIÓN ADICIONAL</b>", styles["Heading2"])
     elements.append(additional_title)
     elements.append(Spacer(1, 0.1 * inch))
 
@@ -114,12 +110,10 @@ def generate_adoption_pdf(engagement, form_data):
             "¿Tiene experiencia con mascotas?:",
             "Sí" if form_data.get("has_experience") else "No",
         ],
-        ["¿Tiene otras mascotas?:", "Sí" if form_data.get(
-            "has_other_pets") else "No"],
+        ["¿Tiene otras mascotas?:", "Sí" if form_data.get("has_other_pets") else "No"],
     ]
 
-    additional_table = Table(additional_data, colWidths=[
-                             2.5 * inch, 3.5 * inch])
+    additional_table = Table(additional_data, colWidths=[2.5 * inch, 3.5 * inch])
     additional_table.setStyle(
         TableStyle(
             [
@@ -137,23 +131,16 @@ def generate_adoption_pdf(engagement, form_data):
     elements.append(Spacer(1, 0.2 * inch))
 
     if form_data.get("has_other_pets") and form_data.get("other_pets_description"):
-        other_pets_title = Paragraph(
-            "<b>Descripción de otras mascotas:</b>", styles["Heading3"]
-        )
+        other_pets_title = Paragraph("<b>Descripción de otras mascotas:</b>", styles["Heading3"])
         elements.append(other_pets_title)
-        other_pets_text = Paragraph(
-            form_data.get("other_pets_description"), styles["BodyText"]
-        )
+        other_pets_text = Paragraph(form_data.get("other_pets_description"), styles["BodyText"])
         elements.append(other_pets_text)
         elements.append(Spacer(1, 0.2 * inch))
 
     if form_data.get("reason_for_adoption"):
-        reason_title = Paragraph(
-            "<b>¿Por qué desea adoptar?</b>", styles["Heading3"])
+        reason_title = Paragraph("<b>¿Por qué desea adoptar?</b>", styles["Heading3"])
         elements.append(reason_title)
-        reason_text = Paragraph(
-            form_data.get("reason_for_adoption"), styles["BodyText"]
-        )
+        reason_text = Paragraph(form_data.get("reason_for_adoption"), styles["BodyText"])
         elements.append(reason_text)
         elements.append(Spacer(1, 0.3 * inch))
 
@@ -196,8 +183,7 @@ def generate_sponsorship_pdf(engagement, form_data):
     elements.append(title)
     elements.append(Spacer(1, 0.3 * inch))
 
-    animal_title = Paragraph(
-        "<b>INFORMACIÓN DEL ANIMAL</b>", styles["Heading2"])
+    animal_title = Paragraph("<b>INFORMACIÓN DEL ANIMAL</b>", styles["Heading2"])
     elements.append(animal_title)
     elements.append(Spacer(1, 0.1 * inch))
 
@@ -227,8 +213,7 @@ def generate_sponsorship_pdf(engagement, form_data):
     elements.append(animal_table)
     elements.append(Spacer(1, 0.3 * inch))
 
-    user_title = Paragraph(
-        "<b>INFORMACIÓN DEL PADRINO/MADRINA</b>", styles["Heading2"])
+    user_title = Paragraph("<b>INFORMACIÓN DEL PADRINO/MADRINA</b>", styles["Heading2"])
     elements.append(user_title)
     elements.append(Spacer(1, 0.1 * inch))
 
@@ -256,9 +241,7 @@ def generate_sponsorship_pdf(engagement, form_data):
     elements.append(user_table)
     elements.append(Spacer(1, 0.3 * inch))
 
-    sponsorship_title = Paragraph(
-        "<b>DETALLES DEL APADRINAMIENTO</b>", styles["Heading2"]
-    )
+    sponsorship_title = Paragraph("<b>DETALLES DEL APADRINAMIENTO</b>", styles["Heading2"])
     elements.append(sponsorship_title)
     elements.append(Spacer(1, 0.1 * inch))
 
@@ -271,19 +254,15 @@ def generate_sponsorship_pdf(engagement, form_data):
     }
 
     sponsorship_data = [
-        ["Aporte mensual:",
-            f"${form_data.get('monthly_contribution', 0):,.0f} COP"],
+        ["Aporte mensual:", f"${form_data.get('monthly_contribution', 0):,.0f} COP"],
         [
             "Duración:",
-            duration_dict.get(form_data.get(
-                "sponsorship_duration", ""), "N/A"),
+            duration_dict.get(form_data.get("sponsorship_duration", ""), "N/A"),
         ],
-        ["Acepta actualizaciones:", "Sí" if form_data.get(
-            "accept_terms") else "No"],
+        ["Acepta actualizaciones:", "Sí" if form_data.get("accept_terms") else "No"],
     ]
 
-    sponsorship_table = Table(sponsorship_data, colWidths=[
-                              2.5 * inch, 3.5 * inch])
+    sponsorship_table = Table(sponsorship_data, colWidths=[2.5 * inch, 3.5 * inch])
     sponsorship_table.setStyle(
         TableStyle(
             [
@@ -301,12 +280,9 @@ def generate_sponsorship_pdf(engagement, form_data):
     elements.append(Spacer(1, 0.2 * inch))
 
     if form_data.get("reason_for_sponsorship"):
-        reason_title = Paragraph(
-            "<b>¿Por qué desea apadrinar?</b>", styles["Heading3"])
+        reason_title = Paragraph("<b>¿Por qué desea apadrinar?</b>", styles["Heading3"])
         elements.append(reason_title)
-        reason_text = Paragraph(
-            form_data.get("reason_for_sponsorship"), styles["BodyText"]
-        )
+        reason_text = Paragraph(form_data.get("reason_for_sponsorship"), styles["BodyText"])
         elements.append(reason_text)
         elements.append(Spacer(1, 0.3 * inch))
 

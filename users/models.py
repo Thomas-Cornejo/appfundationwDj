@@ -15,10 +15,9 @@ class CustomUser(AbstractUser):
         related_name="staff_members",
         verbose_name="Albergue asignado",
     )
-    experience_points = models.SmallIntegerField(
-        default=0, verbose_name="Puntos de experiencia"
-    )
-    # rank = models.ForeignKey(Rank, on_delete=models.SET_NULL, null=True, blank=True, related_name=True, verbose_name="Rango actual")
+    experience_points = models.SmallIntegerField(default=0, verbose_name="Puntos de experiencia")
+    # rank = models.ForeignKey(Rank, on_delete=models.SET_NULL,
+    # null=True, blank=True, related_name=True, verbose_name="Rango actual")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -35,10 +34,7 @@ class CustomUser(AbstractUser):
 
     def is_regular_user(self):
         """Check if they are a regular user (they can adopt/sponsor)"""
-        return (
-            self.groups.filter(name="Regular User").exists(
-            ) or not self.groups.exists()
-        )
+        return self.groups.filter(name="Regular User").exists() or not self.groups.exists()
 
     def can_manage_shelter(self, shelter):
         """Check if you can manage a specific hostel"""

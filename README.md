@@ -5,7 +5,7 @@
 </p>
 
 ### Description
-A web application designed to optimize the adoption and sponsorship processes for animal foundations located in Cúcuta, Norte de Santander (Colombia).  
+A web application designed to optimize the adoption and sponsorship processes for animal foundations located in Cúcuta, Norte de Santander (Colombia).
 It introduces innovation through a **gamified sponsorship system**, improving user engagement and promoting responsible ownership via interactive strategies.
 
 ---

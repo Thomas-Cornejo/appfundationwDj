@@ -16,10 +16,10 @@
         </svg>
       {% endif %}
     </div>
-    
+
     {% if engagement.status == 'P' %}
       <h1 class="text-2xl font-bold text-gray-900 mb-4 text-center">Solicitud en Revisión</h1>
-      
+
       <p class="text-gray-600 mb-6 text-center">
         Ya tienes una solicitud de adopción <strong>pendiente</strong> para <strong>{{ animal.name }}</strong>.
       </p>
@@ -38,7 +38,7 @@
 
     {% elif engagement.status == 'A' %}
       <h1 class="text-2xl font-bold text-gray-900 mb-4 text-center">¡Solicitud Aprobada!</h1>
-      
+
       <p class="text-gray-600 mb-6 text-center">
         Tu solicitud de adopción para <strong>{{ animal.name }}</strong> ya ha sido <strong>aprobada</strong>.
       </p>

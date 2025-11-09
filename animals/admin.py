@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.utils import timezone
 from django.utils.html import format_html
 
 from shelters.models import Shelter
@@ -132,10 +131,7 @@ class AnimalAdmin(admin.ModelAdmin):
         if hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
             return qs
 
-        if (
-            hasattr(request.user, "is_shelter_admin")
-            and request.user.is_shelter_admin()
-        ):
+        if hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
             if hasattr(request.user, "shelter") and request.user.shelter:
                 return qs.filter(shelter=request.user.shelter)
 
@@ -146,19 +142,11 @@ class AnimalAdmin(admin.ModelAdmin):
         if db_field.name == "shelter":
             if request.user.is_superuser:
                 pass
-            elif (
-                hasattr(request.user,
-                        "is_superadmin") and request.user.is_superadmin()
-            ):
+            elif hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
                 pass
-            elif (
-                hasattr(request.user, "is_shelter_admin")
-                and request.user.is_shelter_admin()
-            ):
+            elif hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
                 if hasattr(request.user, "shelter") and request.user.shelter:
-                    kwargs["queryset"] = Shelter.objects.filter(
-                        id=request.user.shelter.id
-                    )
+                    kwargs["queryset"] = Shelter.objects.filter(id=request.user.shelter.id)
                     if not kwargs.get("initial"):
                         kwargs["initial"] = request.user.shelter.id
 
@@ -178,10 +166,7 @@ class AnimalAdmin(admin.ModelAdmin):
             return True
         if hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
             return True
-        if (
-            hasattr(request.user, "is_shelter_admin")
-            and request.user.is_shelter_admin()
-        ):
+        if hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
             return True
         return False
 
@@ -192,10 +177,7 @@ class AnimalAdmin(admin.ModelAdmin):
         if hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
             return True
 
-        if (
-            hasattr(request.user, "is_shelter_admin")
-            and request.user.is_shelter_admin()
-        ):
+        if hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
             if obj is None:
                 return True
             if hasattr(request.user, "shelter"):
@@ -216,9 +198,7 @@ class AnimalAdmin(admin.ModelAdmin):
             request, f"{updated} animal(es) marcado(s) como disponible para adopción."
         )
 
-    mark_as_available_for_adoption.short_description = (
-        "Marcar como disponible para adopción"
-    )
+    mark_as_available_for_adoption.short_description = "Marcar como disponible para adopción"
 
     def mark_as_available_for_sponsorship(self, request, queryset):
         """Marcar como disponible solo para apadrinamiento"""
@@ -235,9 +215,7 @@ class AnimalAdmin(admin.ModelAdmin):
     def mark_as_available_for_both(self, request, queryset):
         """Marcar como disponible para ambos"""
         updated = queryset.update(availability="B")
-        self.message_user(
-            request, f"{updated} animal(es) marcado(s) como disponible para ambos."
-        )
+        self.message_user(request, f"{updated} animal(es) marcado(s) como disponible para ambos.")
 
     mark_as_available_for_both.short_description = "Marcar como disponible para ambos"
 
@@ -422,9 +400,7 @@ class HistoryAdmin(admin.ModelAdmin):
     def urgent_icon(self, obj):
         """Icono de urgencia"""
         if obj.is_urgent:
-            return format_html(
-                '<span style="font-size: 18px;" title="¡Urgente!">🚨</span>'
-            )
+            return format_html('<span style="font-size: 18px;" title="¡Urgente!">🚨</span>')
         return "-"
 
     urgent_icon.short_description = "🚨"
@@ -458,9 +434,7 @@ class HistoryAdmin(admin.ModelAdmin):
 
         remaining = obj.remaining_coins
         if remaining == 0:
-            return format_html(
-                '<span style="color: #10b981; font-weight: bold;">✓ Completo</span>'
-            )
+            return format_html('<span style="color: #10b981; font-weight: bold;">✓ Completo</span>')
 
         return format_html(
             '<span style="color: #ef4444; font-weight: bold;">🪙 {}</span>', remaining
@@ -502,9 +476,7 @@ class HistoryAdmin(admin.ModelAdmin):
                 errors += 1
 
         if count > 0:
-            self.message_user(
-                request, f"⚠️ Impacto aplicado a {count} animal(es). Salud reducida."
-            )
+            self.message_user(request, f"⚠️ Impacto aplicado a {count} animal(es). Salud reducida.")
 
         if errors > 0:
             self.message_user(
@@ -525,10 +497,7 @@ class HistoryAdmin(admin.ModelAdmin):
         if hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
             return qs
 
-        if (
-            hasattr(request.user, "is_shelter_admin")
-            and request.user.is_shelter_admin()
-        ):
+        if hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
             if hasattr(request.user, "shelter") and request.user.shelter:
                 return qs.filter(animal__shelter=request.user.shelter)
 
@@ -538,18 +507,13 @@ class HistoryAdmin(admin.ModelAdmin):
         """Restringir animales visibles al crear historial"""
         if db_field.name == "animal":
             if not request.user.is_superuser:
-                if not (
-                    hasattr(request.user, "is_superadmin")
-                    and request.user.is_superadmin()
-                ):
+                if not (hasattr(request.user, "is_superadmin") and request.user.is_superadmin()):
                     if (
                         hasattr(request.user, "is_shelter_admin")
                         and request.user.is_shelter_admin()
                     ):
                         if hasattr(request.user, "shelter") and request.user.shelter:
-                            kwargs["queryset"] = Animal.objects.filter(
-                                shelter=request.user.shelter
-                            )
+                            kwargs["queryset"] = Animal.objects.filter(shelter=request.user.shelter)
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 

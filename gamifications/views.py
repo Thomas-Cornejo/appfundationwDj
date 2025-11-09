@@ -31,8 +31,7 @@ def gamification_dashboard(request, animal_id):
     # Obtener o crear el CareIndicator (debería existir por el signal)
     care_indicator, created = CareIndicator.objects.get_or_create(
         engagement=engagement,
-        defaults={"food_level": 100,
-                  "hygiene_level": 100, "health_level": 100},
+        defaults={"food_level": 100, "hygiene_level": 100, "health_level": 100},
     )
 
     # Obtener o crear la billetera del usuario
@@ -54,8 +53,7 @@ def gamification_dashboard(request, animal_id):
     ).order_by("-is_urgent", "entry_date")
 
     # Calcular nivel y XP (puedes expandir esto más adelante)
-    total_actions = CareAction.objects.filter(
-        care_indicator=care_indicator).count()
+    total_actions = CareAction.objects.filter(care_indicator=care_indicator).count()
     # Cada 10 acciones sube un nivel, max 20
     level = min(1 + (total_actions // 10), 20)
     xp_current = (total_actions % 10) * 10  # Progreso hacia el siguiente nivel
@@ -129,7 +127,7 @@ def feed_animal(request, animal_id):
     wallet.spend_coins(food_cost, f"Alimentar a {engagement.animal.name}")
 
     # Registrar acción (con XP ganado)
-    xp_earned = 10  # Configurable
+    xp_earned = 10
     CareAction.objects.create(
         care_indicator=care_indicator,
         action_type="F",
@@ -188,8 +186,7 @@ def clean_animal(request, animal_id):
     # Aumentar nivel de higiene
     increase = 10
     old_level = care_indicator.hygiene_level
-    care_indicator.hygiene_level = min(
-        100, care_indicator.hygiene_level + increase)
+    care_indicator.hygiene_level = min(100, care_indicator.hygiene_level + increase)
     care_indicator.last_hygiene_update = timezone.now()
     care_indicator.save()
 
@@ -249,9 +246,7 @@ def contribute_health(request, animal_id, history_id):
         contribution = int(request.POST.get("amount", 0))
 
     if contribution <= 0:
-        return JsonResponse(
-            {"success": False, "error": "Cantidad inválida"}, status=400
-        )
+        return JsonResponse({"success": False, "error": "Cantidad inválida"}, status=400)
 
     # Verificar que no contribuya más de lo necesario
     remaining = health_event.remaining_coins
@@ -265,9 +260,7 @@ def contribute_health(request, animal_id, history_id):
         )
 
     # Gastar monedas
-    wallet.spend_coins(
-        contribution, f"Tratamiento médico para {engagement.animal.name}"
-    )
+    wallet.spend_coins(contribution, f"Tratamiento médico para {engagement.animal.name}")
 
     # Registrar contribución
     health_event.contribute(contribution)

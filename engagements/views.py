@@ -1,6 +1,3 @@
-import os
-from datetime import datetime
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.files.base import ContentFile
@@ -27,8 +24,7 @@ def adopt_animal(request, animal_id):
         return render(
             request,
             "engagements/already_applied.html",
-            {"engagement": existing, "animal": animal,
-                "engagement_type": "adopción"},
+            {"engagement": existing, "animal": animal, "engagement_type": "adopción"},
         )
 
     if request.method == "POST":
@@ -47,24 +43,16 @@ def adopt_animal(request, animal_id):
             pdf_buffer = generate_adoption_pdf(engagement, form_data)
 
             filename = f"Solicitud_Adopcion_{user.username}_para_{animal.name}.pdf"
-            filename = filename.replace(" ", "_").replace(
-                "/", "_").replace("\\", "_")
+            filename = filename.replace(" ", "_").replace("/", "_").replace("\\", "_")
 
-            engagement.pdf_file.save(
-                filename, ContentFile(pdf_buffer.read()), save=True
-            )
+            engagement.pdf_file.save(filename, ContentFile(pdf_buffer.read()), save=True)
 
-            messages.success(
-                request, f"¡Solicitud de adopción enviada para {animal.name}!"
-            )
+            messages.success(request, f"¡Solicitud de adopción enviada para {animal.name}!")
             return redirect("engagement_success", engagement_id=engagement.id)
     else:
         form = AdoptionForm()
 
-    return render(
-        request, "engagements/adoption_form.html", {
-            "form": form, "animal": animal}
-    )
+    return render(request, "engagements/adoption_form.html", {"form": form, "animal": animal})
 
 
 @login_required
@@ -102,35 +90,23 @@ def sponsor_animal(request, animal_id):
 
             pdf_buffer = generate_sponsorship_pdf(engagement, form_data)
 
-            filename = (
-                f"Solicitud_Apadrinamiento_{user.username}_para_{animal.name}.pdf"
-            )
-            filename = filename.replace(" ", "_").replace(
-                "/", "_").replace("\\", "_")
+            filename = f"Solicitud_Apadrinamiento_{user.username}_para_{animal.name}.pdf"
+            filename = filename.replace(" ", "_").replace("/", "_").replace("\\", "_")
 
-            engagement.pdf_file.save(
-                filename, ContentFile(pdf_buffer.read()), save=True
-            )
+            engagement.pdf_file.save(filename, ContentFile(pdf_buffer.read()), save=True)
 
-            messages.success(
-                request, f"¡Solicitud de apadrinamiento enviada para {animal.name}!"
-            )
+            messages.success(request, f"¡Solicitud de apadrinamiento enviada para {animal.name}!")
             return redirect("engagement_success", engagement_id=engagement.id)
     else:
         form = SponsorshipForm()
 
-    return render(
-        request, "engagements/sponsorship_form.html", {
-            "form": form, "animal": animal}
-    )
+    return render(request, "engagements/sponsorship_form.html", {"form": form, "animal": animal})
 
 
 @login_required
 def engagement_success(request, engagement_id):
     """Vista unificada de éxito para adopciones y apadrinamientos"""
-    engagement = get_object_or_404(
-        AnimalEngagement, pk=engagement_id, user=request.user
-    )
+    engagement = get_object_or_404(AnimalEngagement, pk=engagement_id, user=request.user)
 
     engagement_type = engagement.get_engagements_type_display()
 
@@ -156,9 +132,7 @@ def download_pdf(request, engagement_id):
     if not engagement.pdf_file:
         raise Http404("No hay PDF disponible")
 
-    engagement_type_name = (
-        "Adopcion" if engagement.engagements_type == "A" else "Apadrinamiento"
-    )
+    engagement_type_name = "Adopcion" if engagement.engagements_type == "A" else "Apadrinamiento"
     filename = f"Solicitud_{engagement_type_name}_{engagement.user.username}_para_{engagement.animal.name}.pdf"
     filename = filename.replace(" ", "_")
 

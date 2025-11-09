@@ -48,7 +48,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
       {% for animal in page_obj %}
       <div class="bg-white rounded-2xl shadow-md overflow-hidden hover:scale-105 transition">
-        
+
         <div class="h-48 bg-gray-200 flex justify-center items-center">
           {% if animal.imagen %}
             <img src="{{ animal.imagen.url }}" alt="{{ animal.name }}" class="h-full w-full object-cover">
@@ -56,17 +56,17 @@
             <span class="text-gray-500">Sin imagen</span>
           {% endif %}
         </div>
-        
+
         <div class="p-4 text-center">
           <h3 class="text-xl font-bold text-indigo-700">{{ animal.name }}</h3>
           <p class="text-gray-600">{{ animal.breed.name }}</p>
           <p class="text-gray-500">
-            {{ animal.age }} año{% if animal.age != 1 %}s{% endif %} • 
+            {{ animal.age }} año{% if animal.age != 1 %}s{% endif %} •
             {% if animal.size == "P" %}Pequeño
             {% elif animal.size == "M" %}Mediano
             {% else %}Grande{% endif %}
           </p>
-          <a href="{% url 'animal_detail' animal.id %}" 
+          <a href="{% url 'animal_detail' animal.id %}"
             class="mt-4 bg-indigo-500 text-white px-4 py-2 rounded-full hover:bg-blue-500 transition inline-block text-center">
             Adóptame
           </a>

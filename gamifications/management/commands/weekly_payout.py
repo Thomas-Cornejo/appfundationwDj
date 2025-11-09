@@ -51,25 +51,18 @@ class Command(BaseCommand):
 
         self.stdout.write("=" * 80)
         self.stdout.write(
-            self.style.SUCCESS(
-                f"  DISTRIBUCIÓN SEMANAL - Semana del {week_start} al {week_end}"
-            )
+            self.style.SUCCESS(f"  DISTRIBUCIÓN SEMANAL - Semana del {week_start} al {week_end}")
         )
         self.stdout.write("=" * 80)
 
         usage_by_shelter = (
-            CoinUsage.objects.filter(
-                created_at__gte=week_start, created_at__lt=week_end
-            )
+            CoinUsage.objects.filter(created_at__gte=week_start, created_at__lt=week_end)
             .values("shelter")
             .annotate(total_coins=Sum("coins_used"), total_cop=Sum("amount_cop"))
         )
 
         if not usage_by_shelter:
-            self.stdout.write(
-                self.style.WARNING(
-                    "\n⚠️  No hay usos de monedas en esta semana")
-            )
+            self.stdout.write(self.style.WARNING("\n⚠️  No hay usos de monedas en esta semana"))
             return
 
         distributions = []
@@ -87,19 +80,14 @@ class Command(BaseCommand):
             self.stdout.write(f"\n📍 {shelter.name}")
             self.stdout.write(f"   Monedas usadas: {coins:,}")
             self.stdout.write(f"   Monto: ${amount:,.2f} COP")
-            self.stdout.write(
-                f"   Método de pago: {shelter.get_payment_method_display()}"
-            )
+            self.stdout.write(f"   Método de pago: {shelter.get_payment_method_display()}")
 
             if not shelter.has_payment_info():
                 self.stdout.write(
-                    self.style.WARNING(
-                        f"   ⚠️  ALERTA: No tiene información de pago configurada"
-                    )
+                    self.style.WARNING(f"   ⚠️  ALERTA: No tiene información de pago configurada")
                 )
             else:
-                self.stdout.write(
-                    f"   Pagar a: {shelter.get_payment_info_display()}")
+                self.stdout.write(f"   Pagar a: {shelter.get_payment_info_display()}")
 
             distribution, created = MonthlyDistribution.objects.get_or_create(
                 shelter=shelter,
@@ -122,9 +110,7 @@ class Command(BaseCommand):
 
         self.stdout.write("\n" + "=" * 80)
         self.stdout.write(
-            self.style.SUCCESS(
-                f"TOTAL A DISTRIBUIR ESTA SEMANA: ${total_amount:,.2f} COP"
-            )
+            self.style.SUCCESS(f"TOTAL A DISTRIBUIR ESTA SEMANA: ${total_amount:,.2f} COP")
         )
         self.stdout.write("=" * 80)
 
@@ -136,20 +122,15 @@ class Command(BaseCommand):
                 )
             )
             self.stdout.write(
-                self.style.WARNING(
-                    "💡 Para simulación sin pagos reales usa: --execute --dry-run"
-                )
+                self.style.WARNING("💡 Para simulación sin pagos reales usa: --execute --dry-run")
             )
             return
 
         self.stdout.write("\n" + "=" * 80)
         if dry_run:
-            self.stdout.write(
-                self.style.WARNING("🧪 MODO DRY-RUN - NO SE HARÁN PAGOS REALES")
-            )
+            self.stdout.write(self.style.WARNING("🧪 MODO DRY-RUN - NO SE HARÁN PAGOS REALES"))
         else:
-            self.stdout.write(self.style.SUCCESS(
-                "🚀 EJECUTANDO PAGOS SEMANALES..."))
+            self.stdout.write(self.style.SUCCESS("🚀 EJECUTANDO PAGOS SEMANALES..."))
         self.stdout.write("=" * 80)
 
         success_count = 0
@@ -158,9 +139,7 @@ class Command(BaseCommand):
         for distribution in distributions:
             shelter = distribution.shelter
 
-            self.stdout.write(
-                f"\nProcesando: {shelter.name} - ${distribution.amount_cop:,.2f}"
-            )
+            self.stdout.write(f"\nProcesando: {shelter.name} - ${distribution.amount_cop:,.2f}")
 
             if not shelter.has_payment_info():
                 self.stdout.write(
@@ -168,8 +147,7 @@ class Command(BaseCommand):
                         f"   ✗ ERROR: {shelter.name} no tiene información de pago configurada"
                     )
                 )
-                distribution.mark_as_failed(
-                    "No tiene información de pago configurada")
+                distribution.mark_as_failed("No tiene información de pago configurada")
                 failed_count += 1
                 continue
 
@@ -192,25 +170,20 @@ class Command(BaseCommand):
                     success_count += 1
 
                     self.stdout.write(
-                        self.style.SUCCESS(
-                            f"   ✓ ÉXITO: Payout ID: {result['payout_id']}"
-                        )
+                        self.style.SUCCESS(f"   ✓ ÉXITO: Payout ID: {result['payout_id']}")
                     )
                 else:
                     distribution.mark_as_failed(result["error"])
                     failed_count += 1
 
-                    self.stdout.write(
-                        self.style.ERROR(f"   ✗ ERROR: {result['error']}")
-                    )
+                    self.stdout.write(self.style.ERROR(f"   ✗ ERROR: {result['error']}"))
 
             except Exception as e:
                 error_msg = str(e)
                 distribution.mark_as_failed(error_msg)
                 failed_count += 1
 
-                self.stdout.write(self.style.ERROR(
-                    f"   ✗ EXCEPCIÓN: {error_msg}"))
+                self.stdout.write(self.style.ERROR(f"   ✗ EXCEPCIÓN: {error_msg}"))
 
         self.stdout.write("\n" + "=" * 80)
         self.stdout.write(self.style.SUCCESS("RESUMEN DE EJECUCIÓN:"))
@@ -219,9 +192,7 @@ class Command(BaseCommand):
         self.stdout.write(f"✗ Fallidos: {failed_count}")
         self.stdout.write(f"Total procesados: {len(distributions)}")
         self.stdout.write("=" * 80)
-        self.stdout.write(
-            "\n💡 TIP: Configura un cron job para ejecutar esto cada lunes:"
-        )
+        self.stdout.write("\n💡 TIP: Configura un cron job para ejecutar esto cada lunes:")
         self.stdout.write(
             "   0 9 * * 1 cd /path/to/project && python manage.py weekly_payout --execute"
         )
@@ -278,8 +249,7 @@ class Command(BaseCommand):
         }
 
         try:
-            response = requests.post(
-                url, json=data, headers=headers, timeout=30)
+            response = requests.post(url, json=data, headers=headers, timeout=30)
 
             if response.status_code == 201:
                 result = response.json()

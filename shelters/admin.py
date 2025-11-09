@@ -6,8 +6,7 @@ from .models import Shelter
 
 @admin.register(Shelter)
 class ShelterAdmin(admin.ModelAdmin):
-    list_display = ["name", "email", "is_active",
-                    "payment_status", "created_at"]
+    list_display = ["name", "email", "is_active", "payment_status", "created_at"]
     list_filter = ["is_active", "payment_method", "created_at"]
     search_fields = ["name", "email", "legal_name"]
     readonly_fields = ["created_at", "updated_at"]
@@ -89,10 +88,7 @@ class ShelterAdmin(admin.ModelAdmin):
         if hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
             return qs
 
-        if (
-            hasattr(request.user, "is_shelter_admin")
-            and request.user.is_shelter_admin()
-        ):
+        if hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
             if hasattr(request.user, "shelter") and request.user.shelter:
                 return qs.filter(id=request.user.shelter.id)
 
@@ -120,10 +116,7 @@ class ShelterAdmin(admin.ModelAdmin):
             return True
         if hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
             return True
-        if (
-            hasattr(request.user, "is_shelter_admin")
-            and request.user.is_shelter_admin()
-        ):
+        if hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
             if obj is None:
                 return True
             return obj == request.user.shelter

@@ -1,5 +1,6 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, TemplateView
 
@@ -46,10 +47,34 @@ def perfil(request):
             )
 
     context = {
-        "adoptions": adoptions,
-        "sponsorships": sponsorships_with_care,
+        "adoptions": adoptions if adoptions.exists() else [],
+        "sponsorships": sponsorships_with_care if sponsorships_with_care else [],
         "has_adoptions": adoptions.exists(),
         "has_sponsorships": len(sponsorships_with_care) > 0,
+        "user": request.user,
     }
 
     return render(request, "users/perfil.html", context)
+
+
+@login_required
+def edit_profile(request):
+    """
+    Permite al usuario editar su perfil.
+    """
+    if request.method == "POST":
+        user = request.user
+
+        user.email = request.POST.get("email", user.email)
+        user.phone = request.POST.get("phone", user.phone)
+        user.address = request.POST.get("address", user.address)
+
+        try:
+            user.full_clean()
+            user.save()
+            messages.success(request, "Perfil actualizado correctamente")
+            return redirect("perfil")
+        except Exception as e:
+            messages.error(request, f"Error al actualizar: {str(e)}")
+
+    return render(request, "users/edit_profile.html", {"user": request.user})

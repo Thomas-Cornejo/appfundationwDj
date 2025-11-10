@@ -14,4 +14,5 @@ urlpatterns = [
     ),
     path("home/", HomeView.as_view(template_name="users/home.html"), name="home"),
     path("perfil/", views.perfil, name="perfil"),
+    path("perfil/editar/", views.edit_profile, name="edit_profile"),
 ]

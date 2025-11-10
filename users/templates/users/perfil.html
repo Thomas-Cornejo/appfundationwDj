@@ -22,18 +22,108 @@
     </div>
 
     <div class="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
-      <div class="flex border-b border-gray-200">
-        <button onclick="switchTab('adoptions')" id="tab-adoptions" class="flex-1 py-4 px-6 text-center font-semibold transition border-b-4 border-purple-500 text-purple-600">
-          🏠 Mis Adopciones ({{ adoptions.count }})
+      <div class="flex border-b border-gray-200 overflow-x-auto">
+        <button onclick="switchTab('profile')" id="tab-profile" class="flex-1 py-4 px-6 text-center font-semibold transition border-b-4 border-purple-500 text-purple-600 whitespace-nowrap">
+          👤 Mi Perfil
         </button>
-        <button onclick="switchTab('sponsorships')" id="tab-sponsorships" class="flex-1 py-4 px-6 text-center font-semibold transition border-b-4 border-transparent text-gray-600 hover:text-purple-600">
-          💖 Mis Apadrinamientos ({{ sponsorships|length }})
+        <button onclick="switchTab('adoptions')" id="tab-adoptions" class="flex-1 py-4 px-6 text-center font-semibold transition border-b-4 border-transparent text-gray-600 hover:text-purple-600 whitespace-nowrap">
+          🏠 Mis Adopciones ({{ adoptions.count|default:0 }})
+        </button>
+        <button onclick="switchTab('sponsorships')" id="tab-sponsorships" class="flex-1 py-4 px-6 text-center font-semibold transition border-b-4 border-transparent text-gray-600 hover:text-purple-600 whitespace-nowrap">
+          💖 Mis Apadrinamientos ({{ sponsorships|length|default:0 }})
         </button>
       </div>
     </div>
 
-    <div id="content-adoptions" class="tab-content">
-      {% if has_adoptions %}
+    <!-- Sección de Perfil -->
+    <div id="content-profile" class="tab-content">
+      <div class="bg-white rounded-2xl shadow-lg p-8">
+        <div class="flex items-center justify-between mb-6 pb-6 border-b border-gray-200">
+          <h2 class="text-2xl font-bold text-gray-800">📋 Datos Personales</h2>
+          <a href="{% url 'edit_profile' %}" class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition text-sm">
+            ✏️ Editar perfil
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Información básica -->
+          <div class="space-y-4">
+            <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4">
+              <label class="text-sm font-semibold text-gray-600 block mb-1">👤 Nombre de usuario</label>
+              <p class="text-lg font-bold text-gray-800">{{ user.username }}</p>
+            </div>
+
+            <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-4">
+              <label class="text-sm font-semibold text-gray-600 block mb-1">📧 Correo electrónico</label>
+              <p class="text-lg font-bold text-gray-800">{{ user.email|default:"No especificado" }}</p>
+            </div>
+
+            <div class="bg-gradient-to-br from-green-50 to-teal-50 rounded-xl p-4">
+              <label class="text-sm font-semibold text-gray-600 block mb-1">📱 Teléfono</label>
+              <p class="text-lg font-bold text-gray-800">{{ user.phone|default:"No especificado" }}</p>
+            </div>
+
+            <div class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-4">
+              <label class="text-sm font-semibold text-gray-600 block mb-1">📍 Dirección</label>
+              <p class="text-lg font-bold text-gray-800">{{ user.address|default:"No especificada" }}</p>
+            </div>
+          </div>
+
+          <!-- Información adicional -->
+          <div class="space-y-4">
+            <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4">
+              <label class="text-sm font-semibold text-gray-600 block mb-1">⭐ Puntos de experiencia</label>
+              <p class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+                {{ user.experience_points }}
+              </p>
+            </div>
+
+            {% if user.shelter %}
+            <div class="bg-gradient-to-br from-pink-50 to-red-50 rounded-xl p-4">
+              <label class="text-sm font-semibold text-gray-600 block mb-1">🏢 Albergue asignado</label>
+              <p class="text-lg font-bold text-gray-800">{{ user.shelter.name }}</p>
+            </div>
+            {% endif %}
+
+            <div class="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-4">
+              <label class="text-sm font-semibold text-gray-600 block mb-1">📅 Miembro desde</label>
+              <p class="text-lg font-bold text-gray-800">{{ user.created_at|date:"d/m/Y" }}</p>
+            </div>
+
+            <div class="bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-4">
+              <label class="text-sm font-semibold text-gray-600 block mb-1">🔄 Última actualización</label>
+              <p class="text-lg font-bold text-gray-800">{{ user.updated_at|date:"d/m/Y H:i" }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estadísticas del usuario -->
+        <div class="mt-8 pt-6 border-t border-gray-200">
+          <h3 class="text-xl font-bold text-gray-800 mb-4">📊 Tus Estadísticas</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl p-6 text-center">
+              <div class="text-4xl mb-2">🏠</div>
+              <p class="text-3xl font-bold text-green-700">{{ adoptions.count|default:0 }}</p>
+              <p class="text-sm text-green-600 font-semibold">Adopciones</p>
+            </div>
+            <div class="bg-gradient-to-br from-pink-100 to-rose-100 rounded-xl p-6 text-center">
+              <div class="text-4xl mb-2">💖</div>
+              <p class="text-3xl font-bold text-pink-700">{{ sponsorships|length|default:0 }}</p>
+              <p class="text-sm text-pink-600 font-semibold">Apadrinamientos</p>
+            </div>
+            <div class="bg-gradient-to-br from-purple-100 to-violet-100 rounded-xl p-6 text-center">
+              <div class="text-4xl mb-2">⭐</div>
+              <p class="text-3xl font-bold text-purple-700">{{ user.experience_points }}</p>
+              <p class="text-sm text-purple-600 font-semibold">Puntos XP</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección de Adopciones -->
+    <div id="content-adoptions" class="tab-content hidden">
+      {% if adoptions and adoptions.count > 0 %}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {% for adoption in adoptions %}
             <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-1">
@@ -71,8 +161,9 @@
       {% endif %}
     </div>
 
+    <!-- Sección de Apadrinamientos -->
     <div id="content-sponsorships" class="tab-content hidden">
-      {% if has_sponsorships %}
+      {% if sponsorships and sponsorships|length > 0 %}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {% for item in sponsorships %}
             <a href="{% url 'gamifications:dashboard' item.animal.id %}" class="block group">

@@ -150,9 +150,18 @@
         <div class="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl shadow-sm p-6 text-white">
           <div class="text-center mb-4">
             <div class="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl mb-3">
-              <span class="text-3xl font-bold">{{ level }}</span>
+              {% if level_info.current_rank %}
+                <span class="text-3xl">{{ level_info.current_rank.icon }}</span>
+              {% else %}
+                <span class="text-3xl font-bold">{{ level }}</span>
+              {% endif %}
             </div>
-            <p class="text-sm text-white/80">Nivel actual</p>
+            {% if level_info.current_rank %}
+              <p class="font-semibold text-white">{{ level_info.current_rank.name }}</p>
+              <p class="text-xs text-white/70">Nivel {{ level }}</p>
+            {% else %}
+              <p class="text-sm text-white/80">Nivel {{ level }}</p>
+            {% endif %}
           </div>
 
           <div class="space-y-2">
@@ -162,8 +171,13 @@
             </div>
             <div class="h-2 bg-white/20 rounded-full overflow-hidden">
               <div class="h-full bg-white rounded-full transition-all duration-500"
-                style="width: {{ xp_current }}%"></div>
+                style="width: {{ level_info.progress_percentage }}%"></div>
             </div>
+            {% if level_info.next_rank %}
+              <p class="text-xs text-white/70 text-center mt-2">
+                Próximo: {{ level_info.next_rank.icon }} {{ level_info.next_rank.name }}
+              </p>
+            {% endif %}
           </div>
         </div>
 
@@ -199,6 +213,8 @@
 
       </div>
     </div>
+
+    {% include "gamifications/missions_section.html" %}
 
     {% if health_events %}
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">

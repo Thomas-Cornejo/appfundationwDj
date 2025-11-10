@@ -10,6 +10,7 @@ from django.views.decorators.http import require_POST
 from animals.models import History
 from engagements.models import AnimalEngagement
 
+from .mission_utils import get_active_missions_for_user, get_user_level_info, track_mission_progress
 from .models import CareAction, CareIndicator, ShelterWalletBalance, VirtualWallet
 
 
@@ -49,10 +50,11 @@ def gamification_dashboard(request, animal_id):
         animal=engagement.animal, status__in=["P", "T"], cost_coins__gt=0
     ).order_by("-is_urgent", "entry_date")
 
+    # Sistema de nivel y misiones
+    level_info = get_user_level_info(request.user)
+    active_missions = get_active_missions_for_user(request.user)
+
     total_actions = CareAction.objects.filter(care_indicator=care_indicator).count()
-    level = min(1 + (total_actions // 10), 20)
-    xp_current = (total_actions % 10) * 10
-    xp_max = 100
 
     recent_actions = CareAction.objects.filter(care_indicator=care_indicator).order_by(
         "-created_at"
@@ -68,9 +70,11 @@ def gamification_dashboard(request, animal_id):
         "food_cost": food_cost,
         "hygiene_cost": hygiene_cost,
         "health_events": health_events,
-        "level": level,
-        "xp_current": xp_current,
-        "xp_max": xp_max,
+        "level": level_info["level"],
+        "xp_current": level_info["current_xp_in_level"],
+        "xp_max": level_info["xp_for_next_level"],
+        "level_info": level_info,
+        "active_missions": active_missions,
         "recent_actions": recent_actions,
     }
 
@@ -129,6 +133,12 @@ def feed_animal(request, animal_id):
         xp_earned=xp_earned,
     )
 
+    # Trackear progreso de misiones
+    completed_missions = track_mission_progress(request.user, "feed")
+    missions_completed_info = [
+        {"title": m.title, "xp": m.xp_reward, "coins": m.coins_reward} for m in completed_missions
+    ]
+
     return JsonResponse(
         {
             "success": True,
@@ -138,6 +148,7 @@ def feed_animal(request, animal_id):
             "new_balance": shelter_balance.balance,
             "xp_earned": xp_earned,
             "message": f"¡{engagement.animal.name} ha comido! +{increase}% alimento",
+            "missions_completed": missions_completed_info,
         }
     )
 
@@ -193,6 +204,12 @@ def clean_animal(request, animal_id):
         xp_earned=xp_earned,
     )
 
+    # Trackear progreso de misiones
+    completed_missions = track_mission_progress(request.user, "clean")
+    missions_completed_info = [
+        {"title": m.title, "xp": m.xp_reward, "coins": m.coins_reward} for m in completed_missions
+    ]
+
     return JsonResponse(
         {
             "success": True,
@@ -202,6 +219,7 @@ def clean_animal(request, animal_id):
             "new_balance": shelter_balance.balance,
             "xp_earned": xp_earned,
             "message": f"¡{engagement.animal.name} está limpio! +{increase}% higiene",
+            "missions_completed": missions_completed_info,
         }
     )
 
@@ -261,6 +279,12 @@ def contribute_health(request, animal_id, history_id):
         xp_earned=xp_earned,
     )
 
+    # Trackear progreso de misiones
+    completed_missions = track_mission_progress(request.user, "health")
+    missions_completed_info = [
+        {"title": m.title, "xp": m.xp_reward, "coins": m.coins_reward} for m in completed_missions
+    ]
+
     fully_funded = health_event.is_fully_funded
 
     return JsonResponse(
@@ -273,6 +297,7 @@ def contribute_health(request, animal_id, history_id):
             "remaining": health_event.remaining_coins,
             "fully_funded": fully_funded,
             "message": f"Contribución exitosa: {contribution} monedas",
+            "missions_completed": missions_completed_info,
         }
     )
 

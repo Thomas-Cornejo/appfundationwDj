@@ -584,3 +584,164 @@ class DirectPayment(models.Model):
         if notes:
             self.admin_notes = notes
         self.save()
+
+
+class Rank(models.Model):
+    """
+    Rangos/niveles del usuario basados en XP acumulado.
+    """
+
+    name = models.CharField(max_length=50, verbose_name="Nombre del rango")
+    min_xp = models.IntegerField(verbose_name="XP mínimo requerido")
+    icon = models.CharField(
+        max_length=10,
+        default="⭐",
+        verbose_name="Icono/emoji",
+        help_text="Emoji que representa el rango",
+    )
+    color = models.CharField(
+        max_length=20,
+        default="gray",
+        verbose_name="Color",
+        help_text="Color para UI (ej: blue, purple, gold)",
+    )
+    order = models.IntegerField(default=0, verbose_name="Orden")
+
+    class Meta:
+        verbose_name = "Rango"
+        verbose_name_plural = "Rangos"
+        ordering = ["order", "min_xp"]
+
+    def __str__(self):
+        return f"{self.icon} {self.name} ({self.min_xp} XP)"
+
+
+class Mission(models.Model):
+    """
+    Misiones que los usuarios pueden completar para ganar XP y monedas.
+    """
+
+    TYPE_CHOICES = [
+        ("daily", "Diaria"),
+        ("weekly", "Semanal"),
+        ("achievement", "Logro"),
+    ]
+
+    ACTION_CHOICES = [
+        ("feed", "Alimentar animales"),
+        ("clean", "Limpiar animales"),
+        ("health", "Contribuir a salud"),
+        ("login", "Iniciar sesión"),
+        ("sponsor", "Apadrinar un animal"),
+    ]
+
+    title = models.CharField(max_length=100, verbose_name="Título")
+    description = models.TextField(verbose_name="Descripción")
+    mission_type = models.CharField(
+        max_length=20, choices=TYPE_CHOICES, default="daily", verbose_name="Tipo de misión"
+    )
+    action_type = models.CharField(
+        max_length=20, choices=ACTION_CHOICES, verbose_name="Tipo de acción"
+    )
+    target_count = models.IntegerField(default=1, verbose_name="Cantidad objetivo")
+    xp_reward = models.IntegerField(default=10, verbose_name="Recompensa XP")
+    coins_reward = models.IntegerField(default=50, verbose_name="Recompensa en monedas")
+    icon = models.CharField(max_length=10, default="🎯", verbose_name="Icono")
+    is_active = models.BooleanField(default=True, verbose_name="Activa")
+    order = models.IntegerField(default=0, verbose_name="Orden de visualización")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Misión"
+        verbose_name_plural = "Misiones"
+        ordering = ["order", "-created_at"]
+
+    def __str__(self):
+        return f"{self.icon} {self.title} ({self.get_mission_type_display()})"
+
+
+class UserMissionProgress(models.Model):
+    """
+    Progreso del usuario en misiones específicas.
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="mission_progress",
+        verbose_name="Usuario",
+    )
+    mission = models.ForeignKey(
+        Mission,
+        on_delete=models.CASCADE,
+        related_name="user_progress",
+        verbose_name="Misión",
+    )
+    current_count = models.IntegerField(default=0, verbose_name="Progreso actual")
+    is_completed = models.BooleanField(default=False, verbose_name="Completada")
+    completed_at = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de completado")
+
+    # Para misiones diarias/semanales
+    period_date = models.DateField(
+        default=timezone.now,
+        verbose_name="Fecha del periodo",
+        help_text="Día para diarias, inicio de semana para semanales",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Progreso de Misión"
+        verbose_name_plural = "Progresos de Misiones"
+        ordering = ["-created_at"]
+        unique_together = ["user", "mission", "period_date"]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.mission.title}: {self.current_count}/{self.mission.target_count}"
+
+    @property
+    def progress_percentage(self):
+        """Retorna el porcentaje de progreso"""
+        if self.mission.target_count == 0:
+            return 0
+        return min(100, int((self.current_count / self.mission.target_count) * 100))
+
+    def increment_progress(self, amount=1):
+        """
+        Incrementa el progreso y verifica si se completó la misión.
+        Retorna True si se completó la misión.
+        """
+        if self.is_completed:
+            return False
+
+        self.current_count += amount
+
+        if self.current_count >= self.mission.target_count:
+            self.is_completed = True
+            self.completed_at = timezone.now()
+            self.save()
+
+            # Otorgar recompensas
+            self._grant_rewards()
+            return True
+
+        self.save()
+        return False
+
+    def _grant_rewards(self):
+        """Otorga XP y monedas al usuario por completar la misión"""
+        from gamifications.models import VirtualWallet
+
+        # Otorgar XP
+        self.user.experience_points += self.mission.xp_reward
+        self.user.save()
+
+        # Otorgar monedas (a la billetera global del usuario)
+        wallet, _ = VirtualWallet.objects.get_or_create(user=self.user)
+        wallet.add_coins(
+            amount=self.mission.coins_reward,
+            description=f"Misión completada: {self.mission.title}",
+        )

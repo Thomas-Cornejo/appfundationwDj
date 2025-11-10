@@ -3,8 +3,8 @@ from django.utils import timezone
 from django.utils.html import format_html
 
 from .models import (
-    CareAction, CareIndicator, DirectPayment, ShelterWalletBalance, VirtualWallet, WalletRecharge,
-    WalletTransaction,
+    CareAction, CareIndicator, DirectPayment, Mission, Rank, ShelterWalletBalance,
+    UserMissionProgress, VirtualWallet, WalletRecharge, WalletTransaction,
 )
 
 
@@ -135,7 +135,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
             color = self._get_color_by_level(status)
             return format_html(
                 '<span style="background-color: {}; color: white; padding: 4px 12px; '
-                'border-radius: 12px; font-weight: bold; font-size: 11px;">{:.0f}%</span>',
+                'border-radius: 12px; font-weight: bold; font-size: 11px;">{}%</span>',
                 color,
                 status,
             )
@@ -757,3 +757,124 @@ class ShelterWalletBalanceAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser
+
+
+@admin.register(Rank)
+class RankAdmin(admin.ModelAdmin):
+    list_display = ["order", "name", "min_xp", "icon", "color"]
+    list_editable = ["name", "min_xp", "icon", "color"]
+    ordering = ["order", "min_xp"]
+
+    fieldsets = (
+        (
+            "Información del Rango",
+            {
+                "fields": (
+                    "name",
+                    "min_xp",
+                    "icon",
+                    "color",
+                    "order",
+                )
+            },
+        ),
+    )
+
+
+@admin.register(Mission)
+class MissionAdmin(admin.ModelAdmin):
+    list_display = [
+        "title",
+        "order",
+        "mission_type",
+        "action_type",
+        "target_count",
+        "xp_reward",
+        "coins_reward",
+        "is_active",
+    ]
+    list_editable = ["is_active", "order"]
+    list_filter = ["mission_type", "action_type", "is_active"]
+    search_fields = ["title", "description"]
+    ordering = ["order", "-created_at"]
+
+    fieldsets = (
+        (
+            "Información de la Misión",
+            {
+                "fields": (
+                    "title",
+                    "description",
+                    "mission_type",
+                    "action_type",
+                    "icon",
+                    "order",
+                    "is_active",
+                )
+            },
+        ),
+        (
+            "Objetivos y Recompensas",
+            {
+                "fields": (
+                    "target_count",
+                    "xp_reward",
+                    "coins_reward",
+                )
+            },
+        ),
+    )
+
+
+@admin.register(UserMissionProgress)
+class UserMissionProgressAdmin(admin.ModelAdmin):
+    list_display = [
+        "user",
+        "mission",
+        "progress_display",
+        "is_completed",
+        "period_date",
+        "completed_at",
+    ]
+    list_filter = [
+        "is_completed",
+        "mission__mission_type",
+        "period_date",
+    ]
+    search_fields = ["user__username", "mission__title"]
+    readonly_fields = ["created_at", "updated_at", "progress_percentage"]
+    ordering = ["-created_at"]
+
+    def progress_display(self, obj):
+        return f"{obj.current_count}/{obj.mission.target_count} ({obj.progress_percentage}%)"
+
+    progress_display.short_description = "Progreso"
+
+    fieldsets = (
+        (
+            "Información del Progreso",
+            {
+                "fields": (
+                    "user",
+                    "mission",
+                    "current_count",
+                    "progress_percentage",
+                    "is_completed",
+                    "completed_at",
+                )
+            },
+        ),
+        (
+            "Periodo",
+            {"fields": ("period_date",)},
+        ),
+        (
+            "Metadatos",
+            {
+                "fields": (
+                    "created_at",
+                    "updated_at",
+                )
+            },
+        ),
+    )

@@ -9,7 +9,9 @@ class CustomUser(AbstractUser):
     address = models.CharField(
         max_length=255, blank=True, null=True, verbose_name="Dirección de domicilio"
     )
-    phone = PhoneNumberField(region="CO", blank=False, null=False, verbose_name="Teléfono")
+    phone = PhoneNumberField(
+        region="CO", blank=False, null=False, default="0000000000", verbose_name="Teléfono"
+    )
     shelter = models.ForeignKey(
         Shelter,
         on_delete=models.SET_NULL,
@@ -19,8 +21,6 @@ class CustomUser(AbstractUser):
         verbose_name="Albergue asignado",
     )
     experience_points = models.SmallIntegerField(default=0, verbose_name="Puntos de experiencia")
-    # rank = models.ForeignKey(Rank, on_delete=models.SET_NULL,
-    # null=True, blank=True, related_name=True, verbose_name="Rango actual")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -52,3 +52,15 @@ class CustomUser(AbstractUser):
         if self.is_shelter_admin():
             return self.shelter
         return None
+
+    def get_rank(self):
+        """Obtiene el rango actual del usuario basado en XP"""
+        from gamifications.models import Rank
+
+        return Rank.objects.filter(min_xp__lte=self.experience_points).order_by("-min_xp").first()
+
+    def add_xp(self, amount):
+        """Agrega experiencia al usuario"""
+        self.experience_points += amount
+        self.save()
+        return self.experience_points

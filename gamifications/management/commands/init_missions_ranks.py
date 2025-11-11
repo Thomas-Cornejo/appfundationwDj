@@ -34,7 +34,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(f"  - Ya existe: {rank_data['name']}")
 
-        self.stdout.write("\n🎯 Creando misiones diarias...")
+        self.stdout.write("\nCreando misiones diarias...")
         daily_missions = [
             {
                 "title": "Alimenta a tu mascota",
@@ -86,7 +86,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(f"  - Ya existe: {mission_data['title']}")
 
-        self.stdout.write("\n🗓️  Creando misiones semanales...")
+        self.stdout.write("\nCreando misiones semanales...")
         weekly_missions = [
             {
                 "title": "Cuidador semanal",

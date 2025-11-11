@@ -37,7 +37,6 @@ def get_user_level_info(user):
     user_xp = user.experience_points
 
     if current_rank is None:
-        # No hay rangos definidos, crear un nivel base
         level = 1
         current_xp_in_level = user_xp
         xp_for_next_level = 100
@@ -48,9 +47,8 @@ def get_user_level_info(user):
         if next_rank:
             xp_for_next_level = next_rank.min_xp - current_rank.min_xp
         else:
-            # Ya está en el nivel máximo
             xp_for_next_level = 1
-            current_xp_in_level = 1  # 100% completado
+            current_xp_in_level = 1
 
     progress_percentage = min(100, int((current_xp_in_level / xp_for_next_level) * 100))
 
@@ -73,11 +71,9 @@ def get_or_create_mission_progress(user, mission, period_date=None):
         if mission.mission_type == "daily":
             period_date = date.today()
         elif mission.mission_type == "weekly":
-            # Obtener el inicio de la semana (lunes)
             today = date.today()
             period_date = today - timedelta(days=today.weekday())
-        else:  # achievement
-            # Los logros no tienen período específico, usar fecha fija
+        else:
             period_date = date(2000, 1, 1)
 
     progress, created = UserMissionProgress.objects.get_or_create(
@@ -101,18 +97,14 @@ def track_mission_progress(user, action_type, amount=1):
     """
     completed_missions = []
 
-    # Obtener todas las misiones activas del tipo de acción
     missions = Mission.objects.filter(action_type=action_type, is_active=True)
 
     for mission in missions:
-        # Obtener o crear el progreso
         progress = get_or_create_mission_progress(user, mission)
 
-        # Si ya está completada, no hacer nada
         if progress.is_completed:
             continue
 
-        # Incrementar el progreso
         mission_completed = progress.increment_progress(amount)
 
         if mission_completed:
@@ -128,15 +120,12 @@ def get_active_missions_for_user(user):
     """
     missions_data = []
 
-    # Obtener todas las misiones activas
     active_missions = Mission.objects.filter(is_active=True)
 
     for mission in active_missions:
         progress = get_or_create_mission_progress(user, mission)
 
-        # Para misiones diarias y semanales, verificar si ya se completaron en este período
         if mission.mission_type in ["daily", "weekly"]:
-            # Ya filtrado por period_date en get_or_create_mission_progress
             pass
 
         missions_data.append(
@@ -157,7 +146,6 @@ def reset_daily_missions(user):
     """
     today = date.today()
 
-    # Marcar como no completadas las misiones diarias del período anterior
     UserMissionProgress.objects.filter(
         user=user,
         mission__mission_type="daily",
@@ -173,7 +161,6 @@ def reset_weekly_missions(user):
     today = date.today()
     week_start = today - timedelta(days=today.weekday())
 
-    # Marcar como no completadas las misiones semanales del período anterior
     UserMissionProgress.objects.filter(
         user=user,
         mission__mission_type="weekly",

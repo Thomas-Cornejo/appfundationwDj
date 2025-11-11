@@ -1,97 +1,99 @@
-{% extends "base.html" %} {% load static %} {% block content %}
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
 {% include "partials/navbar.html" %}
-<main class="bg-slate-100 min-h-screen">
-  <section class="bg-slate-100 py-20 px-8">
-    <div class="flex flex-col lg:flex-row max-w-7xl mx-auto gap-10">
-      <div class="flex-1 flex flex-col items-center text-center justify-center">
-        <h2 class="text-4xl font-bold text-blue-700 mb-4">
-          Tu nuevo mejor amigo te espera
-        </h2>
-        <p class="text-lg text-gray-600 mb-6 max-w-md">
-          Adopta o apadrina un animalito y cambia su mundo (¡y el tuyo!).
+<main class="bg-gradient-to-b from-blue-50 to-slate-100 min-h-screen">
+  <!-- Hero Section -->
+  <section class="py-16 px-6 lg:px-8">
+    <div class="flex flex-col lg:flex-row max-w-7xl mx-auto gap-12 items-center">
+      <!-- Content Side -->
+      <div class="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left justify-center space-y-6">
+        <!-- Badge -->
+        <div class="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-full text-sm font-medium">
+          <span class="text-xl">🐾</span>
+          <span>Tu ayuda puede cambiar una vida</span>
+        </div>
+
+        <!-- Main Heading -->
+        <h1 class="text-5xl lg:text-6xl font-bold text-blue-800 leading-tight">
+          Tu nuevo mejor amigo<br/>
+          <span class="text-orange-500">te espera</span>
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="text-xl text-gray-700 max-w-xl leading-relaxed">
+          Cada animal merece una segunda oportunidad. Adopta, apadrina o dona, y sé parte de una historia de amor y esperanza.
         </p>
 
-        <h3 class="text-2xl font-bold text-blue-700 mb-6">
-          Casos que necesitan ayuda urgente
-        </h3>
-
-        <div class="flex flex-col sm:flex-row gap-6 justify-center mb-6">
-          <div class="bg-white rounded-2xl shadow-md overflow-hidden max-w-xs">
-            <img
-              src="{% static 'images/DogAmarillo.jpeg' %}"
-              alt="Dog"
-              class="w-full h-56 object-cover"
-            />
-            <div class="p-4">
-              <p class="font-semibold text-gray-800">Luna - Necesita cirugía</p>
+        <!-- Trust Indicators -->
+        <div class="grid grid-cols-2 gap-4 w-full max-w-xl pt-4">
+          <div class="flex items-center gap-3 bg-white p-4 rounded-2xl shadow-md">
+            <div class="text-3xl">✅</div>
+            <div>
+              <p class="font-bold text-gray-800 text-sm">Proceso seguro</p>
+              <p class="text-xs text-gray-600">Adopción responsable</p>
             </div>
           </div>
-
-          <div class="bg-white rounded-2xl shadow-md overflow-hidden max-w-xs">
-            <img
-              src="{% static 'images/CatTresColores.jpeg' %}"
-              alt="Cat"
-              class="w-full h-56 object-cover"
-            />
-            <div class="p-4">
-              <p class="font-semibold text-gray-800">
-                Tom - Rehabilitación urgente
-              </p>
+          <div class="flex items-center gap-3 bg-white p-4 rounded-2xl shadow-md">
+            <div class="text-3xl">💝</div>
+            <div>
+              <p class="font-bold text-gray-800 text-sm">Seguimiento</p>
+              <p class="text-xs text-gray-600">Te acompañamos siempre</p>
             </div>
           </div>
         </div>
-
-        <button
-          class="mt-6 bg-orange-500 text-white px-6 py-3 rounded-full hover:bg-orange-600 transition"
-        >
-          Conoce nuestros casos urgentes
-        </button>
       </div>
 
-      <div class="w-full lg:w-1/2 flex items-end">
+      <!-- Image Side -->
+      <div class="w-full lg:w-1/2 flex items-end justify-center lg:justify-end">
         <img
           src="{% static 'images/cachorro.png' %}"
-          alt="Dog and Cat"
-          class="w-full max-w-[700px] object-contain"
+          alt="Perrito esperando adopción"
+          class="w-full max-w-[700px] object-contain drop-shadow-2xl"
         />
       </div>
     </div>
   </section>
 
-  <section class="pb-32 mt-20 px-6 text-center">
-    <h2 class="text-3xl font-bold text-blue-800 mb-10">
-      ¿Por qué apoyar a nuestros amigos?
-    </h2>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-      <div
-        class="bg-green-100 p-6 rounded-2xl shadow-md hover:scale-105 transition"
-      >
-        <h3 class="text-lg font-semibold mb-2">Más de 100 historias</h3>
-        <p>
-          Hemos rescatado y dado en adopción a más de 100 animales con historias
-          únicas.
+  <!-- Impact Section -->
+  <section class="py-20 px-6 bg-white">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl font-bold text-blue-800 mb-4">
+          ¿Por qué tu ayuda es importante?
+        </h2>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+          Cada gesto cuenta. Tu apoyo no solo salva vidas, también construye un futuro mejor para ellos.
         </p>
       </div>
 
-      <div
-        class="bg-yellow-100 p-6 rounded-2xl shadow-md hover:scale-105 transition"
-      >
-        <h3 class="text-lg font-semibold mb-2">Cuidamos su salud</h3>
-        <p>
-          Cada rescatado recibe atención veterinaria completa, vacunas y
-          esterilización.
-        </p>
-      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Card 1 -->
+        <div class="group bg-gradient-to-br from-green-50 to-green-100 p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-all hover:scale-105 border-2 border-green-200">
+          <div class="text-5xl mb-4">🏥</div>
+          <h3 class="text-2xl font-bold text-green-800 mb-3">Atención Veterinaria</h3>
+          <p class="text-gray-700 leading-relaxed">
+            Cada rescatado recibe atención médica completa, vacunas, desparasitación y esterilización para garantizar su bienestar.
+          </p>
+        </div>
 
-      <div
-        class="bg-pink-100 p-6 rounded-2xl shadow-md hover:scale-105 transition"
-      >
-        <h3 class="text-lg font-semibold mb-2">Transparencia y amor</h3>
-        <p>
-          Informamos a padrinos y donantes con reportes reales de nuestros
-          peludos.
-        </p>
+        <!-- Card 2 -->
+        <div class="group bg-gradient-to-br from-yellow-50 to-yellow-100 p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-all hover:scale-105 border-2 border-yellow-200">
+          <div class="text-5xl mb-4">❤️</div>
+          <h3 class="text-2xl font-bold text-yellow-800 mb-3">Amor y Rehabilitación</h3>
+          <p class="text-gray-700 leading-relaxed">
+            Brindamos un hogar temporal lleno de cariño mientras encuentran a su familia definitiva. Cada uno recibe el amor que merece.
+          </p>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="group bg-gradient-to-br from-pink-50 to-pink-100 p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-all hover:scale-105 border-2 border-pink-200">
+          <div class="text-5xl mb-4">📋</div>
+          <h3 class="text-2xl font-bold text-pink-800 mb-3">Transparencia Total</h3>
+          <p class="text-gray-700 leading-relaxed">
+            Compartimos actualizaciones constantes con padrinos y donantes. Tu ayuda es visible y cada peso cuenta.
+          </p>
+        </div>
       </div>
     </div>
   </section>

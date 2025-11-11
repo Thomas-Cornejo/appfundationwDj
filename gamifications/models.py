@@ -735,11 +735,9 @@ class UserMissionProgress(models.Model):
         """Otorga XP y monedas al usuario por completar la misión"""
         from gamifications.models import VirtualWallet
 
-        # Otorgar XP
         self.user.experience_points += self.mission.xp_reward
         self.user.save()
 
-        # Otorgar monedas (a la billetera global del usuario)
         wallet, _ = VirtualWallet.objects.get_or_create(user=self.user)
         wallet.add_coins(
             amount=self.mission.coins_reward,

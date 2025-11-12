@@ -1,9 +1,13 @@
 Django==5.2.6
-reportlab==4.4.4
-crispy-tailwind==1.0.3
 django-crispy-forms==2.4
-Pillow==11.3.0
-cloudinary==1.44.1
+crispy-tailwind==1.0.3
+django-cors-headers==4.9.0
 django-cloudinary-storage==0.3.0
+cloudinary==1.44.1
+Pillow==11.3.0
+reportlab==4.4.4
 requests==2.31.0
 tzdata==2025.2
+phonenumbers==9.0.18
+django-jazzmin==3.0.1
+python-dotenv==1.1.1

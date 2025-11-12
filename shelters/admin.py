@@ -29,7 +29,6 @@ class ShelterAdmin(admin.ModelAdmin):
                     "bank_account_number",
                     "wompi_merchant_id",
                 ),
-                "description": "IMPORTANTE: Configura estos datos para recibir las distribuciones mensuales automáticas",
             },
         ),
         (
@@ -88,7 +87,10 @@ class ShelterAdmin(admin.ModelAdmin):
         if hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
             return qs
 
-        if hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
+        if (
+            hasattr(request.user, "is_shelter_admin")
+            and request.user.is_shelter_admin()
+        ):
             if hasattr(request.user, "shelter") and request.user.shelter:
                 return qs.filter(id=request.user.shelter.id)
 
@@ -116,7 +118,10 @@ class ShelterAdmin(admin.ModelAdmin):
             return True
         if hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
             return True
-        if hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
+        if (
+            hasattr(request.user, "is_shelter_admin")
+            and request.user.is_shelter_admin()
+        ):
             if obj is None:
                 return True
             return obj == request.user.shelter

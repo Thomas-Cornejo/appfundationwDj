@@ -38,6 +38,10 @@ class Animal(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        verbose_name = "Animalito"
+        verbose_name_plural = "Animalitos"
+
     def __str__(self):
         return f"{self.name} ({self.breed})"
 
@@ -88,8 +92,12 @@ class History(models.Model):
         null=True,
         help_text="Solo llenar si es un ingreso. Dejar vacío para eventos médicos.",
     )
-    entry_date = models.DateTimeField(default=timezone.now, verbose_name="Fecha de historia")
-    exit_date = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de salida")
+    entry_date = models.DateTimeField(
+        default=timezone.now, verbose_name="Fecha de historia"
+    )
+    exit_date = models.DateTimeField(
+        null=True, blank=True, verbose_name="Fecha de salida"
+    )
     status = models.CharField(
         max_length=1,
         choices=STATUS_CHOICES,
@@ -178,7 +186,9 @@ class History(models.Model):
 
                 if engagement and hasattr(engagement, "care_indicator"):
                     indicator = engagement.care_indicator
-                    indicator.health_level = max(0, indicator.health_level - self.health_impact)
+                    indicator.health_level = max(
+                        0, indicator.health_level - self.health_impact
+                    )
                     indicator.last_health_update = timezone.now()
                     indicator.save()
                     return True
@@ -209,7 +219,9 @@ class History(models.Model):
 
                 if engagement and hasattr(engagement, "care_indicator"):
                     indicator = engagement.care_indicator
-                    indicator.health_level = min(100, indicator.health_level + self.health_impact)
+                    indicator.health_level = min(
+                        100, indicator.health_level + self.health_impact
+                    )
                     indicator.last_health_update = timezone.now()
                     indicator.save()
                     return True

@@ -19,7 +19,9 @@ class AnimalEngagement(models.Model):
     form_data = models.JSONField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    animal = models.ForeignKey(Animal, on_delete=models.CASCADE, related_name="engagements")
+    animal = models.ForeignKey(
+        Animal, on_delete=models.CASCADE, related_name="engagements"
+    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="engagements"
     )
@@ -27,8 +29,8 @@ class AnimalEngagement(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
-        verbose_name = "Animal Engagement"
-        verbose_name_plural = "Animal Engagements"
+        verbose_name = "Gestión de Adopcion - Apadrinamiento"
+        verbose_name_plural = "Gestión de Adopciones - Apadrinamientos"
 
     def __str__(self):
         return f"#{self.id} - {self.user.username} - {self.get_engagements_type_display()} - {self.animal.name}"

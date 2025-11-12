@@ -74,6 +74,14 @@ class CareIndicatorAdmin(admin.ModelAdmin):
 
     actions = ["reset_indicators"]
 
+    def has_add_permission(self, request):
+        """Disable the creation of indicators from the admin panel"""
+        return False
+    
+    def has_delete_permission(self, request, obj=None):
+        """Disable the elimiantions of indicators from the admin panel"""
+        return False
+
     def user_display(self, obj):
         """Shows the user (godfather)"""
         try:
@@ -530,6 +538,10 @@ class WalletRechargeAdmin(admin.ModelAdmin):
     )
 
     actions = ["approve_recharges", "reject_recharges"]
+
+    def has_add_permission(self, request):
+        """Disable the creation of recharge from the admin panel"""
+        return False
 
     def user_display(self, obj):
         """User who made the recharge"""

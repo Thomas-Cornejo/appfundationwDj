@@ -195,3 +195,21 @@ WOMPI_PUBLIC_KEY = os.getenv("WOMPI_PUBLIC_KEY")
 WOMPI_PRIVATE_KEY = os.getenv("WOMPI_PRIVATE_KEY")
 WOMPI_EVENT_SECRET = os.getenv("WOMPI_EVENT_SECRET")
 WOMPI_INTEGRITY_SECRET = os.getenv("WOMPI_INTEGRITY_SECRET")
+
+FUNDATION_APP = "Solidaridad Cúcuta"
+WELCOME_TO = "Bienvenidos a"
+
+JAZZMIN_SETTINGS = {
+    # title of the window (Will default to current_admin_site.site_title if absent or None)
+    "site_title": FUNDATION_APP,
+    # Title on the login screen (19 chars max) (defaults to current_admin_site.site_header if absent or None)
+    "site_header": FUNDATION_APP,
+    # Title on the brand (19 chars max) (defaults to current_admin_site.site_header if absent or None)
+    "site_brand": FUNDATION_APP,
+    # Welcome text on the login screen
+    "welcome_sign": WELCOME_TO + " " + FUNDATION_APP,
+    "site_logo": "images/logo.png",
+    "site_logo_classes": "img-circle",    # Opcional: redondea el logo
+    "login_logo": "images/logo.png",         # Logo que aparece en la pantalla de login
+    "site_icon": "images/logo.png",  
+}

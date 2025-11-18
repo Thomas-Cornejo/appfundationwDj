@@ -111,7 +111,6 @@ class AdoptionForm(forms.Form):
 class SponsorshipForm(forms.Form):
     """Formulario de apadrinamiento virtual gamificado"""
 
-    # Información Personal
     full_name = forms.CharField(
         max_length=200,
         label="Nombre completo",

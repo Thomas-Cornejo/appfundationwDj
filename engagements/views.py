@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from animals.models import Animal
 
 from .forms import AdoptionForm, SponsorshipForm
-from .models import AnimalEngagement
+from .models import AnimalEngagement, Visit
 from .utils import generate_adoption_pdf, generate_sponsorship_pdf
 
 
@@ -143,3 +143,45 @@ def download_pdf(request, engagement_id):
         return response
     except Exception as e:
         raise Http404("Error al abrir el archivo")
+
+
+@login_required
+def animal_visits(request, engagement_id):
+    """
+    Vista para mostrar todas las visitas de un animal adoptado.
+    Solo el usuario adoptante puede ver sus visitas.
+    """
+    engagement = get_object_or_404(
+        AnimalEngagement,
+        pk=engagement_id,
+        user=request.user,
+        engagements_type="A",  # Solo adopciones
+        status="A",  # Solo aprobadas
+    )
+
+    # Obtener visitas programadas (futuras y no completadas)
+    from django.utils import timezone
+
+    scheduled_visits = Visit.objects.filter(
+        animal_engagement=engagement, completed=False, visit_date__gte=timezone.now()
+    ).order_by("visit_date")
+
+    # Obtener visitas vencidas (pasadas y no completadas)
+    overdue_visits = Visit.objects.filter(
+        animal_engagement=engagement, completed=False, visit_date__lt=timezone.now()
+    ).order_by("-visit_date")
+
+    # Obtener visitas completadas
+    completed_visits = Visit.objects.filter(animal_engagement=engagement, completed=True).order_by(
+        "-visit_date"
+    )
+
+    context = {
+        "engagement": engagement,
+        "animal": engagement.animal,
+        "scheduled_visits": scheduled_visits,
+        "overdue_visits": overdue_visits,
+        "completed_visits": completed_visits,
+    }
+
+    return render(request, "engagements/animal_visits.html", context)

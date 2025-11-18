@@ -36,11 +36,9 @@ DEBUG = True  # Debo de cambiar a False cuando cambie a produccion
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+ENVIRONMENT = os.environ.get("ENVIRONMENT", default="local")
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "opticalapp-test.up.railway.app"]
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -118,12 +116,24 @@ WSGI_APPLICATION = "appfundationwDj.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+if ENVIRONMENT == "local":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("DB_NAME"),
+            "USER": os.environ.get("DB_USER"),
+            "PASSWORD": os.environ.get("DB_PASSWORD"),
+            "HOST": os.environ.get("DB_HOST"),
+            "PORT": os.environ.get("DB_PORT", default="5432"),
+        }
+    }
 
 
 # Password validation
@@ -209,7 +219,7 @@ JAZZMIN_SETTINGS = {
     # Welcome text on the login screen
     "welcome_sign": WELCOME_TO + " " + FUNDATION_APP,
     "site_logo": "images/logo.png",
-    "site_logo_classes": "img-circle",    # Opcional: redondea el logo
-    "login_logo": "images/logo.png",         # Logo que aparece en la pantalla de login
-    "site_icon": "images/logo.png",  
+    "site_logo_classes": "img-circle",  # Opcional: redondea el logo
+    "login_logo": "images/logo.png",  # Logo que aparece en la pantalla de login
+    "site_icon": "images/logo.png",
 }

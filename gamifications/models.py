@@ -176,7 +176,7 @@ class CareAction(models.Model):
 
 class VirtualWallet(models.Model):
     """
-    The user's virtual wallet contains coins to spend on care.
+    The user's virtual wallet contains coins to spend on food, hygiene, and medical care.
     Each user has one wallet.
     """
 
@@ -260,20 +260,15 @@ class ShelterWalletBalance(models.Model):
         related_name="shelter_balances",
         verbose_name="Usuario",
     )
-
     shelter = models.ForeignKey(
         "shelters.Shelter",
         on_delete=models.CASCADE,
         related_name="user_balances",
         verbose_name="Albergue",
     )
-
     balance = models.IntegerField(default=0, verbose_name="Saldo de monedas para este albergue")
-
     total_earned = models.IntegerField(default=0, verbose_name="Total ganado (histórico)")
-
     total_spent = models.IntegerField(default=0, verbose_name="Total gastado (histórico)")
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -461,7 +456,6 @@ class WalletRecharge(models.Model):
     )
 
     admin_notes = models.TextField(blank=True, null=True, verbose_name="Notas del administrador")
-
     created_at = models.DateTimeField(auto_now_add=True)
     approved_at = models.DateTimeField(null=True, blank=True)
 
@@ -512,7 +506,7 @@ class WalletRecharge(models.Model):
 class DirectPayment(models.Model):
     """
     Direct payments to shelters (for medical emergencies).
-    They do not go through the virtual currency system.
+    These payments are not made through a coin system.
     The money goes directly to the shelter immediately.
     """
 
@@ -638,7 +632,10 @@ class Mission(models.Model):
     title = models.CharField(max_length=100, verbose_name="Título")
     description = models.TextField(verbose_name="Descripción")
     mission_type = models.CharField(
-        max_length=20, choices=TYPE_CHOICES, default="daily", verbose_name="Tipo de misión"
+        max_length=20,
+        choices=TYPE_CHOICES,
+        default="daily",
+        verbose_name="Tipo de misión",
     )
     action_type = models.CharField(
         max_length=20, choices=ACTION_CHOICES, verbose_name="Tipo de acción"

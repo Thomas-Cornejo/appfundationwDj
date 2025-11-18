@@ -139,12 +139,17 @@
                 <p class="text-gray-600 mb-1"><span class="font-semibold">Raza:</span> {{ adoption.animal.breed.name }}</p>
                 <p class="text-gray-600 mb-1"><span class="font-semibold">Edad:</span> {{ adoption.animal.age }} años</p>
                 <p class="text-gray-600 mb-4"><span class="font-semibold">Albergue:</span> {{ adoption.animal.shelter.name }}</p>
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between mb-4">
                   <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
                     ✓ Adoptado
                   </span>
                   <span class="text-gray-500 text-sm">{{ adoption.created_at|date:"d/m/Y" }}</span>
                 </div>
+
+                <!-- Botón para ver visitas -->
+                <a href="{% url 'animal_visits' adoption.id %}" class="block w-full text-center px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition font-semibold text-sm">
+                  📅 Ver Visitas
+                </a>
               </div>
             </div>
           {% endfor %}
@@ -277,7 +282,7 @@
           <h3 class="text-2xl font-bold text-gray-800 mb-2">Aún no has apadrinado ningún animal</h3>
           <p class="text-gray-600 mb-6">Apadrina un animal y participa en su cuidado virtual con nuestro sistema de gamificación</p>
           <a href="{% url 'sponsorhip_list' %}" class="inline-block px-8 py-3 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition">
-            Ver animales para apadrinar 
+            Ver animales para apadrinar
           </a>
         </div>
       {% endif %}

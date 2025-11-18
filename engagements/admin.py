@@ -4,7 +4,7 @@ from django.core.mail import send_mail
 from django.urls import reverse
 from django.utils.html import format_html
 
-from .models import AnimalEngagement
+from .models import AnimalEngagement, Visit
 
 
 @admin.register(AnimalEngagement)
@@ -27,11 +27,10 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
         "animal__shelter__name",
     ]
 
-    # Campos readonly solo para edición, no para creación
     def get_readonly_fields(self, request, obj=None):
-        if obj:  # Editando un objeto existente
+        if obj:
             return ["created_at", "updated_at", "pdf_file", "form_data_display"]
-        return ["created_at", "updated_at"]  # Creando uno nuevo
+        return ["created_at", "updated_at"]
 
     fieldsets = (
         (
@@ -45,7 +44,6 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
         ("Fechas", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
     )
 
-    # Fieldsets para creación (sin form_data_display ni pdf_file)
     add_fieldsets = (
         (
             "Información básica",
@@ -56,7 +54,7 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
 
     def get_fieldsets(self, request, obj=None):
         """Usar fieldsets diferentes para crear vs editar"""
-        if not obj:  # Creando nuevo
+        if not obj:
             return self.add_fieldsets
         return super().get_fieldsets(request, obj)
 
@@ -289,10 +287,219 @@ El equipo de la Fundación
         """Al guardar, si es un apadrinamiento aprobado, el signal creará automáticamente el CareIndicator"""
         super().save_model(request, obj, form, change)
 
-        # Mensaje informativo al admin
         if not change and obj.engagements_type == "S" and obj.status == "A":
             self.message_user(
                 request,
                 f"✅ Apadrinamiento creado. El CareIndicator se creará automáticamente por el signal.",
                 level="SUCCESS",
             )
+
+
+@admin.register(Visit)
+class VisitAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "animal_display",
+        "user_display",
+        "visit_date",
+        "status_badge",
+        "evaluation_badge",
+        "created_at",
+    ]
+    list_filter = ["completed", "visit_date", "evaluation", "animal_engagement__animal__shelter"]
+    search_fields = [
+        "animal_engagement__user__username",
+        "animal_engagement__user__email",
+        "animal_engagement__animal__name",
+        "notes",
+    ]
+    readonly_fields = ["created_at", "updated_at"]
+
+    fieldsets = (
+        (
+            "Información de la Visita",
+            {
+                "fields": (
+                    "animal_engagement",
+                    "visit_date",
+                    "completed",
+                )
+            },
+        ),
+        (
+            "Evaluación y Notas",
+            {
+                "fields": ("evaluation", "notes"),
+                "description": "La evaluación se completa después de realizar la visita.",
+            },
+        ),
+        ("Fechas", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
+    )
+
+    actions = ["mark_as_completed"]
+
+    def get_queryset(self, request):
+        """Filtrar visitas según el rol del usuario"""
+        qs = super().get_queryset(request)
+
+        if request.user.is_superuser or request.user.is_superadmin():
+            return qs
+
+        if request.user.is_shelter_admin() and request.user.shelter:
+            return qs.filter(animal_engagement__animal__shelter=request.user.shelter)
+
+        return qs.none()
+
+    def has_add_permission(self, request):
+        """Superadmins y Shelter Admins pueden crear visitas"""
+        if (
+            request.user.is_superuser
+            or request.user.is_superadmin()
+            or request.user.is_shelter_admin()
+        ):
+            return True
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """Solo Super Admin puede eliminar visitas"""
+        if request.user.is_superuser or request.user.is_superadmin():
+            return True
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        """Super Admin y Shelter Admin pueden modificar visitas"""
+        if request.user.is_superuser or request.user.is_superadmin():
+            return True
+
+        if request.user.is_shelter_admin():
+            if obj is None:
+                return True
+            return obj.animal_engagement.animal.shelter == request.user.shelter
+
+        return False
+
+    def animal_display(self, obj):
+        """Muestra el nombre del animal"""
+        return obj.animal_engagement.animal.name
+
+    animal_display.short_description = "Animal"
+
+    def user_display(self, obj):
+        """Muestra el usuario adoptante"""
+        return obj.animal_engagement.user.username
+
+    user_display.short_description = "Usuario Adoptante"
+
+    def status_badge(self, obj):
+        """Badge indicando si la visita está completada o pendiente"""
+        if obj.completed:
+            color = "#10b981"
+            text = "Realizada"
+        else:
+            from django.utils import timezone
+
+            if obj.visit_date > timezone.now():
+                color = "#f59e0b"
+                text = "Programada"
+            else:
+                color = "#ef4444"
+                text = "Vencida"
+
+        return format_html(
+            '<span style="background-color: {}; color: white; padding: 3px 10px; '
+            'border-radius: 10px; font-size: 12px;">{}</span>',
+            color,
+            text,
+        )
+
+    status_badge.short_description = "Estado"
+
+    def evaluation_badge(self, obj):
+        """Badge con la evaluación de la visita"""
+        if obj.evaluation is None:
+            return format_html(
+                '<span style="background-color: #6b7280; color: white; padding: 3px 10px; '
+                'border-radius: 10px; font-size: 12px;">Sin evaluar</span>'
+            )
+
+        colors = {
+            1: "#ef4444",  # Rojo - Muy Mala
+            2: "#f97316",  # Naranja - Mala
+            3: "#f59e0b",  # Amarillo - Regular
+            4: "#84cc16",  # Lima - Buena
+            5: "#10b981",  # Verde - Excelente
+        }
+
+        stars = "⭐" * obj.evaluation
+        color = colors.get(obj.evaluation, "#6b7280")
+
+        return format_html(
+            '<span style="background-color: {}; color: white; padding: 3px 10px; '
+            'border-radius: 10px; font-size: 12px;">{} {}</span>',
+            color,
+            stars,
+            obj.get_evaluation_display(),
+        )
+
+    evaluation_badge.short_description = "Evaluación"
+
+    def mark_as_completed(self, request, queryset):
+        """Acción para marcar visitas como completadas"""
+        updated = queryset.update(completed=True)
+        self.message_user(request, f"{updated} visita(s) marcada(s) como completada(s).")
+
+    mark_as_completed.short_description = "Marcar como completadas"
+
+    def save_model(self, request, obj, form, change):
+        """Enviar email al usuario cuando se programa una nueva visita"""
+        is_new = obj.pk is None
+        super().save_model(request, obj, form, change)
+
+        if is_new:
+            self.send_visit_notification_email(obj)
+            self.message_user(
+                request,
+                f"✅ Visita programada. Se ha enviado un correo a {obj.user.email}",
+                level="SUCCESS",
+            )
+
+    def send_visit_notification_email(self, visit):
+        """Enviar correo al usuario adoptante sobre la visita programada"""
+        subject = f"Visita Programada - {visit.animal.name}"
+
+        message = f"""
+Hola {visit.user.username},
+
+Te informamos que se ha programado una visita de seguimiento para {visit.animal.name}.
+
+Detalles de la visita:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Animal: {visit.animal.name}
+- Fecha y hora: {visit.visit_date.strftime('%d/%m/%Y a las %H:%M')}
+- Raza: {visit.animal.breed.name}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Esta visita tiene como objetivo verificar que {visit.animal.name} se encuentre en
+óptimas condiciones y evaluar su adaptación a su nuevo hogar.
+
+Por favor, asegúrate de estar disponible en la fecha y hora indicadas.
+
+Puedes ver los detalles de esta y otras visitas en tu perfil, sección "Mis Adopciones".
+
+¡Gracias por cuidar de {visit.animal.name}! 🐾
+
+Saludos cordiales,
+El equipo de la Fundación
+        """
+
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [visit.user.email],
+                fail_silently=False,
+            )
+            print(f"Email de visita enviado exitosamente a {visit.user.email}")
+        except Exception as e:
+            print(f"Error enviando email de visita: {e}")

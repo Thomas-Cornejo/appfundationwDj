@@ -290,11 +290,3 @@ class SponsorshipForm(forms.Form):
             attrs={"class": "w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"}
         ),
     )
-
-    accept_data_usage = forms.BooleanField(
-        required=True,
-        label="Autorizo el uso de mis datos para personalizar mi experiencia de apadrinamiento",
-        widget=forms.CheckboxInput(
-            attrs={"class": "w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"}
-        ),
-    )

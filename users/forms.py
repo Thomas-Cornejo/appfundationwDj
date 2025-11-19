@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from django.core.exceptions import ValidationError
 from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import RegionalPhoneNumberWidget
 
@@ -28,3 +29,10 @@ class CustomUserCreationForm(UserCreationForm):
         for field in ["email", "phone_number"]:
             if field in self.fields:
                 self.fields[field].required = True
+
+    def clean_email(self):
+        """Validar que el email sea único"""
+        email = self.cleaned_data.get("email")
+        if email and CustomUser.objects.filter(email=email).exists():
+            raise ValidationError("Este correo electrónico ya está registrado.")
+        return email

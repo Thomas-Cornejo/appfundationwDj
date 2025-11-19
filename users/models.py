@@ -6,6 +6,7 @@ from shelters.models import Shelter
 
 
 class CustomUser(AbstractUser):
+    email = models.EmailField(unique=True)
     address = models.CharField(
         max_length=255, blank=True, null=True, verbose_name="Dirección de domicilio"
     )

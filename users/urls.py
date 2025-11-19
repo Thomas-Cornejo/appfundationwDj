@@ -14,7 +14,7 @@ urlpatterns = [
         name="register",
     ),
     path("home/", HomeView.as_view(template_name="users/home.html"), name="home"),
-    path("perfil/", views.perfil, name="perfil"),
+    path("profile/", views.profile, name="profile"),
     path("perfil/editar/", views.edit_profile, name="edit_profile"),
     path(
         "password-reset/",

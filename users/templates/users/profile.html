@@ -35,7 +35,6 @@
       </div>
     </div>
 
-    <!-- Sección de Perfil -->
     <div id="content-profile" class="tab-content">
       <div class="bg-white rounded-2xl shadow-lg p-8">
         <div class="flex items-center justify-between mb-6 pb-6 border-b border-gray-200">
@@ -46,7 +45,6 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Información básica -->
           <div class="space-y-4">
             <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4">
               <label class="text-sm font-semibold text-gray-600 block mb-1">👤 Nombre de usuario</label>
@@ -69,7 +67,6 @@
             </div>
           </div>
 
-          <!-- Información adicional -->
           <div class="space-y-4">
             <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4">
               <label class="text-sm font-semibold text-gray-600 block mb-1">⭐ Puntos de experiencia</label>
@@ -97,7 +94,6 @@
           </div>
         </div>
 
-        <!-- Estadísticas del usuario -->
         <div class="mt-8 pt-6 border-t border-gray-200">
           <h3 class="text-xl font-bold text-gray-800 mb-4">📊 Tus Estadísticas</h3>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -121,7 +117,6 @@
       </div>
     </div>
 
-    <!-- Sección de Adopciones -->
     <div id="content-adoptions" class="tab-content hidden">
       {% if adoptions and adoptions.count > 0 %}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -146,7 +141,6 @@
                   <span class="text-gray-500 text-sm">{{ adoption.created_at|date:"d/m/Y" }}</span>
                 </div>
 
-                <!-- Botón para ver visitas -->
                 <a href="{% url 'animal_visits' adoption.id %}" class="block w-full text-center px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition font-semibold text-sm">
                   📅 Ver Visitas
                 </a>
@@ -166,7 +160,6 @@
       {% endif %}
     </div>
 
-    <!-- Sección de Apadrinamientos -->
     <div id="content-sponsorships" class="tab-content hidden">
       {% if sponsorships and sponsorships|length > 0 %}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

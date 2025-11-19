@@ -20,9 +20,9 @@ class HomeView(TemplateView):
 
 
 @login_required
-def perfil(request):
+def profile(request):
     """
-    Dashboard del perfil del usuario.
+    Dashboard del profile del usuario.
     Muestra sus animales adoptados y apadrinados.
     """
     from engagements.models import AnimalEngagement
@@ -54,13 +54,13 @@ def perfil(request):
         "user": request.user,
     }
 
-    return render(request, "users/perfil.html", context)
+    return render(request, "users/profile.html", context)
 
 
 @login_required
 def edit_profile(request):
     """
-    Permite al usuario editar su perfil.
+    Permite al usuario editar su profile.
     """
     if request.method == "POST":
         user = request.user
@@ -72,8 +72,8 @@ def edit_profile(request):
         try:
             user.full_clean()
             user.save()
-            messages.success(request, "Perfil actualizado correctamente")
-            return redirect("perfil")
+            messages.success(request, "profile actualizado correctamente")
+            return redirect("profile")
         except Exception as e:
             messages.error(request, f"Error al actualizar: {str(e)}")
 

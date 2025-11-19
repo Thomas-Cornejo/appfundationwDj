@@ -5,8 +5,11 @@
 </p>
 
 ### Description
-A web application designed to optimize the adoption and sponsorship processes for animal foundations located in Cúcuta, Norte de Santander (Colombia).
-It introduces innovation through a **gamified sponsorship system**, improving user engagement and promoting responsible ownership via interactive strategies.
+This web application is designed to modernize and improve the digital ecosystem of animal foundations in Cúcuta, Norte de Santander (Colombia). It streamlines the management of adoptions, sponsorships, donations, and animal registrations, providing users and administrators with an intuitive, efficient, and engaging experience.
+
+The application introduces a gamified sponsorship system, where users can support animals through contributions that grant rewards, track progress, and interact with the community, thus promoting responsible pet ownership and strengthening the bond between the community and rescued animals.
+
+With a focus on usability, transparency, and automation, the system allows foundations to centralize their operations, optimize internal workflows, and streamline their processes.
 
 ---
 
@@ -18,6 +21,7 @@ It introduces innovation through a **gamified sponsorship system**, improving us
 - **JavaScript**
 - **Tailwind CSS**
 - **Cloudinary (media storage)**
+- **PostgreSQL**
 
 ---
 
@@ -79,15 +83,62 @@ Create a .env file at the project root and set the required variables.
 - Admin panel for creating and managing animals
 - Animal history model implemented
 - Basic views for browsing available animals with filters
-
-### 🚧 In Progress
 - Animal detail view (public)
 - Adoption request flow (user-side)
 - Refined history display (user-friendly version)
-
-### 🔜 Planned / Next Steps
-- Sponsorship module
-- Gamification system for sponsors
-- Donation system (monetary and in-kind)
+- Sponsorship module with gamification system
 - User dashboard with progress and rewards
 - Admin dashboard with analytics and activity tracking
+- Notification system (email, push, in-app)
+- Donation system integration with Wompi payment gateway
+- Code quality monitoring system with automated indicator degradation
+- Automated cron job for quality indicators maintenance
+
+### 🔜 Planned / Next Steps
+- "Help Us" section (donation campaigns and volunteer management)
+- Enhanced gamification features
+- Mobile app integration
+- Advanced analytics and reporting
+
+---
+
+## Available Commands
+
+The project includes several custom scripts and management commands:
+
+### Create Superuser
+```bash
+python manage.py create_superuser
+```
+Creates an admin user with predefined credentials (check the script for details).
+
+### Code Quality Compliance Check
+```bash
+python scripts/calculate_compliance.py
+```
+**Important:** This script calculates and reports code quality metrics compliance based on project standards:
+- **Pylint score:** Must be ≥ 8.0/10
+- **Test coverage:** Must be ≥ 90%
+- **Code complexity:** Must be maintained within acceptable limits
+
+Use this command before committing to ensure your code meets quality standards.
+
+### Degrade Indicators
+```bash
+python scripts/degrade_indicators.py
+```
+This script automatically degrades quality indicators over time. It is designed to be executed via cron job daily.
+
+---
+
+## Automated Tasks (Cron Jobs)
+
+The application uses a cron job to maintain quality indicators:
+
+### Configured Cron Job:
+
+**Degrade Indicators** (Daily at 12:00 AM)
+```bash
+python scripts/degrade_indicators.py
+```
+Automatically degrades quality indicators to encourage continuous improvement and prevent stale metrics.

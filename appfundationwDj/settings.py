@@ -33,9 +33,6 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
-
-CORS_ALLOW_ALL_ORIGINS = True
-
 ENVIRONMENT = os.environ.get("ENVIRONMENT", default="local")
 
 DEBUG = ENVIRONMENT == "local"
@@ -48,6 +45,21 @@ ALLOWED_HOSTS = [
     "www.solidaridad-cucuta.com",
 ]
 
+# CSRF Configuration
+CSRF_TRUSTED_ORIGINS = [
+    "https://solidaridad-cucuta.com",
+    "https://www.solidaridad-cucuta.com",
+    "https://*.railway.app",
+]
+
+# Cookie Settings
+SESSION_COOKIE_SECURE = ENVIRONMENT != "local"
+CSRF_COOKIE_SECURE = ENVIRONMENT != "local"
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
+
+# CORS Configuration
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 
@@ -180,6 +192,16 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
+# Whitenoise Storage Configuration
+if ENVIRONMENT == "local":
+    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+else:
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+
+# Media files
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -301,4 +323,3 @@ JAZZMIN_SETTINGS = {
     ],
     "navigation_expanded": True,
 }
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"

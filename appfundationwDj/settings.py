@@ -18,6 +18,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -43,19 +44,16 @@ ALLOWED_HOSTS = ["localhost", "127.0.0.1", "opticalapp-test.up.railway.app"]
 CORS_ALLOW_CREDENTIALS = True
 
 
-if DEBUG:
+if ENVIRONMENT == "local":
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 else:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-    EMAIL_HOST = "smtp.gmail.com"
-    EMAIL_PORT = 587
-    EMAIL_USE_TLS = True
-    EMAIL_HOST_USER = os.environ.get("EMAIL_USER", "dmnfndcnnml@gmail.com")
-    EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_PASSWORD", "uihm dwwd ifnh ygny")
-    DEFAULT_FROM_EMAIL = os.environ.get("EMAIL_USER", "dmnfndcnnml@gmail.com")
-
-
-ALLOWED_HOSTS = []
+    EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
+    EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
+    EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
+    EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+    EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+    DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 
 
 # Application definition
@@ -170,8 +168,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-
 STATIC_URL = "/static/"
 
 STATICFILES_DIRS = [BASE_DIR / "static"]
@@ -210,16 +206,90 @@ FUNDATION_APP = "Solidaridad Cúcuta"
 WELCOME_TO = "Bienvenidos a"
 
 JAZZMIN_SETTINGS = {
-    # title of the window (Will default to current_admin_site.site_title if absent or None)
     "site_title": FUNDATION_APP,
-    # Title on the login screen (19 chars max) (defaults to current_admin_site.site_header if absent or None)
     "site_header": FUNDATION_APP,
-    # Title on the brand (19 chars max) (defaults to current_admin_site.site_header if absent or None)
     "site_brand": FUNDATION_APP,
-    # Welcome text on the login screen
-    "welcome_sign": WELCOME_TO + " " + FUNDATION_APP,
+    "welcome_sign": f"{WELCOME_TO} {FUNDATION_APP}",
     "site_logo": "images/logo.png",
-    "site_logo_classes": "img-circle",  # Opcional: redondea el logo
-    "login_logo": "images/logo.png",  # Logo que aparece en la pantalla de login
+    "site_logo_classes": "img-circle",
+    "login_logo": "images/logo.png",
+    "login_logo_classes": "img-circle",
     "site_icon": "images/logo.png",
+    "custom_css": "css/custom_admin.css",
+    "use_nav_sidebar": False,
+    "icons": {
+        # Auth
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.group": "fas fa-users",
+        # Users
+        "users.customuser": "fas fa-user-circle",
+        # Animals
+        "animals.animal": "fas fa-paw",
+        "animals.history": "fas fa-history",
+        # Breeds
+        "breeds.breed": "fas fa-dog",
+        # Shelters
+        "shelters.shelter": "fas fa-home",
+        # Engagements
+        "engagements.animalengagement": "fas fa-handshake",
+        "engagements.visit": "fas fa-eye",
+        # Gamifications
+        "gamifications.careindicator": "fas fa-bullseye",
+        "gamifications.careaction": "fas fa-check",
+        "gamifications.virtualwallet": "fas fa-wallet",
+        "gamifications.shelterwalletbalance": "fas fa-donate",
+        "gamifications.wallettransaction": "fas fa-exchange-alt",
+        "gamifications.walletrecharge": "fas fa-plus-circle",
+        "gamifications.directpayment": "fas fa-money-bill-wave",
+        "gamifications.rank": "fas fa-trophy",
+        "gamifications.mission": "fas fa-flag-checkered",
+        "gamifications.usermissionprogress": "fas fa-tasks",
+    },
+    "side_menu": [
+        {
+            "label": "Usuarios y Administración",
+            "icon": "fas fa-users",
+            "models": [
+                "users.customuser",
+                "auth.user",
+                "auth.group",
+            ],
+        },
+        {
+            "label": "Gestión de Animales",
+            "icon": "fas fa-paw",
+            "models": [
+                "animals.animal",
+                "animals.history",
+                "breeds.breed",
+                "shelters.shelter",
+            ],
+        },
+        {
+            "label": "Interacciones",
+            "icon": "fas fa-handshake",
+            "models": [
+                "engagements.animalengagement",
+                "engagements.visit",
+            ],
+        },
+        {
+            "label": "Gamificación y Recompensas",
+            "icon": "fas fa-star",
+            "models": [
+                "gamifications.careindicator",
+                "gamifications.careaction",
+                "gamifications.virtualwallet",
+                "gamifications.wallettransaction",
+                "gamifications.walletrecharge",
+                "gamifications.directpayment",
+                "gamifications.shelterwalletbalance",
+                "gamifications.rank",
+                "gamifications.mission",
+                "gamifications.usermissionprogress",
+            ],
+        },
+    ],
+    "navigation_expanded": True,
 }

@@ -30,6 +30,11 @@ class CustomUserCreationForm(UserCreationForm):
             if field in self.fields:
                 self.fields[field].required = True
 
+        if "password1" in self.fields:
+            self.fields["password1"].help_text = None
+        if "password2" in self.fields:
+            self.fields["password2"].help_text = None
+
     def clean_email(self):
         """Validar que el email sea único"""
         email = self.cleaned_data.get("email")

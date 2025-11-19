@@ -1,0 +1,1 @@
+web: gunicorn appfundationwDj.wsgi --log-file -

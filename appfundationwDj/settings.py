@@ -33,13 +33,20 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
-DEBUG = True  # Debo de cambiar a False cuando cambie a produccion
 
 CORS_ALLOW_ALL_ORIGINS = True
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", default="local")
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "opticalapp-test.up.railway.app"]
+DEBUG = ENVIRONMENT == "local"
+
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    ".railway.app",
+    "solidaridad-cucuta.com",
+    "www.solidaridad-cucuta.com",
+]
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -82,6 +89,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -169,9 +177,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "/static/"
-
-STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -293,3 +301,4 @@ JAZZMIN_SETTINGS = {
     ],
     "navigation_expanded": True,
 }
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"

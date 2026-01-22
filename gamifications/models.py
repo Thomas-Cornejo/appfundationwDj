@@ -5,8 +5,6 @@ from django.utils import timezone
 from animals.models import Animal
 from engagements.models import AnimalEngagement
 
-# Create your models here.
-
 
 class CareIndicator(models.Model):
     """
@@ -174,25 +172,28 @@ class CareAction(models.Model):
         return self.care_indicator.animal
 
 
-class VirtualWallet(models.Model):
+class Wallet(models.Model):
     """
-    The user's virtual wallet contains coins to spend on food, hygiene, and medical care.
-    Each user has one wallet.
+    Billetera virtual del usuario para un albergue específico.
+    Cada usuario tiene una billetera separada por cada albergue donde apadrina animales.
+    Las monedas de un albergue solo pueden usarse en ese albergue.
     """
 
-    user = models.OneToOneField(
+    user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="wallet",
+        related_name="wallets",
         verbose_name="Usuario",
     )
-
-    balance = models.IntegerField(default=1000, verbose_name="Saldo de monedas")
-
+    shelter = models.ForeignKey(
+        "shelters.Shelter",
+        on_delete=models.CASCADE,
+        related_name="wallets",
+        verbose_name="Albergue",
+    )
+    balance = models.IntegerField(default=0, verbose_name="Saldo de monedas")
     total_earned = models.IntegerField(default=0, verbose_name="Total ganado (histórico)")
-
     total_spent = models.IntegerField(default=0, verbose_name="Total gastado (histórico)")
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -200,9 +201,14 @@ class VirtualWallet(models.Model):
         verbose_name = "Billetera Virtual"
         verbose_name_plural = "Billeteras Virtuales"
         ordering = ["-created_at"]
+        unique_together = [["user", "shelter"]]
+        indexes = [
+            models.Index(fields=["user", "shelter"]),
+        ]
+        db_table = "wallet"
 
     def __str__(self):
-        return f"{self.user.username} - {self.balance} monedas"
+        return f"{self.user.username} - {self.shelter.name}: {self.balance} monedas"
 
     def add_coins(self, amount, description=""):
         """Agregar monedas a la billetera"""
@@ -217,18 +223,19 @@ class VirtualWallet(models.Model):
             wallet=self,
             transaction_type="E",
             amount=amount,
-            description=description or "Monedas agregadas",
+            description=description or f"Monedas agregadas para {self.shelter.name}",
         )
 
         return True
 
     def spend_coins(self, amount, description=""):
-        """Spend coins (check balance)"""
+        """Gastar monedas (verificando balance)"""
         if amount <= 0:
             return False
 
         if self.balance < amount:
             return False
+
         self.balance -= amount
         self.total_spent += amount
         self.save()
@@ -237,96 +244,13 @@ class VirtualWallet(models.Model):
             wallet=self,
             transaction_type="S",
             amount=amount,
-            description=description or "Monedas gastadas",
-        )
-
-        return True
-
-    def can_afford(self, amount):
-        """Check if you have enough balance"""
-        return self.balance >= amount
-
-
-class ShelterWalletBalance(models.Model):
-    """
-    A user's coin balance for a specific shelter.
-    Each user has a separate balance for each shelter where they sponsor animals.
-    This allows top-ups and expenses to be specific to each shelter.
-    """
-
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="shelter_balances",
-        verbose_name="Usuario",
-    )
-    shelter = models.ForeignKey(
-        "shelters.Shelter",
-        on_delete=models.CASCADE,
-        related_name="user_balances",
-        verbose_name="Albergue",
-    )
-    balance = models.IntegerField(default=0, verbose_name="Saldo de monedas para este albergue")
-    total_earned = models.IntegerField(default=0, verbose_name="Total ganado (histórico)")
-    total_spent = models.IntegerField(default=0, verbose_name="Total gastado (histórico)")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "Balance por Albergue"
-        verbose_name_plural = "Balances por Albergue"
-        ordering = ["-created_at"]
-        unique_together = [["user", "shelter"]]
-        indexes = [
-            models.Index(fields=["user", "shelter"]),
-        ]
-
-    def __str__(self):
-        return f"{self.user.username} - {self.shelter.name}: {self.balance} monedas"
-
-    def add_coins(self, amount, description=""):
-        """Add coins to this hostel's balance"""
-        if amount <= 0:
-            return False
-
-        self.balance += amount
-        self.total_earned += amount
-        self.save()
-
-        WalletTransaction.objects.create(
-            wallet=self.user.wallet,
-            transaction_type="E",
-            amount=amount,
-            description=description or f"Monedas agregadas para {self.shelter.name}",
-            shelter=self.shelter,
-        )
-
-        return True
-
-    def spend_coins(self, amount, description=""):
-        """Spend coins from this hostel's balance"""
-        if amount <= 0:
-            return False
-
-        if self.balance < amount:
-            return False
-
-        self.balance -= amount
-        self.total_spent += amount
-        self.save()
-
-        WalletTransaction.objects.create(
-            wallet=self.user.wallet,
-            transaction_type="S",
-            amount=amount,
             description=description or f"Monedas gastadas en {self.shelter.name}",
-            shelter=self.shelter,
         )
 
         return True
 
     def can_afford(self, amount):
-        """Check if you have enough balance for this hostel"""
+        """Verificar si tiene suficiente balance"""
         return self.balance >= amount
 
 
@@ -342,7 +266,7 @@ class WalletTransaction(models.Model):
     ]
 
     wallet = models.ForeignKey(
-        VirtualWallet,
+        Wallet,
         on_delete=models.CASCADE,
         related_name="transactions",
         verbose_name="Billetera",
@@ -356,22 +280,13 @@ class WalletTransaction(models.Model):
 
     description = models.CharField(max_length=255, blank=True, verbose_name="Descripción")
 
-    shelter = models.ForeignKey(
-        "shelters.Shelter",
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name="transactions",
-        verbose_name="Albergue",
-        help_text="Albergue al que pertenece esta transacción",
-    )
-
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Transacción de Billetera"
         verbose_name_plural = "Transacciones de Billetera"
         ordering = ["-created_at"]
+        db_table = "wallet_transaction"
 
     def __str__(self):
         symbol = "+" if self.transaction_type == "E" else "-"
@@ -391,7 +306,7 @@ class WalletTransaction(models.Model):
 class WalletRecharge(models.Model):
     """
     Record of real money top-ups to the virtual wallet.
-    Each top-up is a DONATION to the foundation.
+    Each top-up is a DONATION to the foundation for a specific shelter.
     """
 
     PAYMENT_METHODS = [
@@ -409,7 +324,7 @@ class WalletRecharge(models.Model):
     ]
 
     wallet = models.ForeignKey(
-        VirtualWallet,
+        Wallet,
         on_delete=models.CASCADE,
         related_name="recharges",
         verbose_name="Billetera",
@@ -447,12 +362,11 @@ class WalletRecharge(models.Model):
         max_length=255, blank=True, null=True, verbose_name="Referencia de pago"
     )
 
-    shelter = models.ForeignKey(
-        "shelters.Shelter",
-        on_delete=models.CASCADE,
-        related_name="recharges",
-        verbose_name="Albergue destino",
-        help_text="La donación va a este albergue",
+    wompi_data = models.JSONField(
+        blank=True,
+        null=True,
+        verbose_name="Datos de Wompi",
+        help_text="Datos completos de la respuesta de Wompi",
     )
 
     admin_notes = models.TextField(blank=True, null=True, verbose_name="Notas del administrador")
@@ -463,24 +377,21 @@ class WalletRecharge(models.Model):
         verbose_name = "Recarga de Billetera"
         verbose_name_plural = "Recargas de Billetera"
         ordering = ["-created_at"]
+        db_table = "wallet_recharge"
 
     def __str__(self):
         return f"{self.wallet.user.username} - ${self.amount_cop} → {self.coins_received} monedas [{self.get_status_display()}]"
 
     def approve(self):
-        """Approve the top-up and add coins to the specific hostel's balance"""
+        """Approve the top-up and add coins to the wallet"""
         if self.status != "A":
             self.status = "A"
             self.approved_at = timezone.now()
             self.save()
 
-            shelter_balance, created = ShelterWalletBalance.objects.get_or_create(
-                user=self.wallet.user, shelter=self.shelter, defaults={"balance": 0}
-            )
-
-            shelter_balance.add_coins(
+            self.wallet.add_coins(
                 amount=self.coins_received,
-                description=f"Recarga aprobada: ${self.amount_cop} COP para {self.shelter.name}",
+                description=f"Recarga aprobada: ${self.amount_cop} COP para {self.wallet.shelter.name}",
             )
 
             return True
@@ -680,7 +591,6 @@ class UserMissionProgress(models.Model):
     is_completed = models.BooleanField(default=False, verbose_name="Completada")
     completed_at = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de completado")
 
-    # Para misiones diarias/semanales
     period_date = models.DateField(
         default=timezone.now,
         verbose_name="Fecha del periodo",
@@ -721,7 +631,6 @@ class UserMissionProgress(models.Model):
             self.completed_at = timezone.now()
             self.save()
 
-            # Otorgar recompensas
             self._grant_rewards()
             return True
 
@@ -730,12 +639,10 @@ class UserMissionProgress(models.Model):
 
     def _grant_rewards(self):
         """Otorga XP y monedas al usuario por completar la misión"""
-        from gamifications.models import VirtualWallet
-
         self.user.experience_points += self.mission.xp_reward
         self.user.save()
 
-        wallet, _ = VirtualWallet.objects.get_or_create(user=self.user)
+        wallet, _ = Wallet.objects.get_or_create(user=self.user)
         wallet.add_coins(
             amount=self.mission.coins_reward,
             description=f"Misión completada: {self.mission.title}",

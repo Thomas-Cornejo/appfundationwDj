@@ -7,14 +7,13 @@ from gamifications.models import Mission, Rank
 
 
 class Command(BaseCommand):
-    help = "Inicializa misiones y rangos por defecto en el sistema de gamificación"
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS("=== Inicializando Sistema de Misiones y Rangos ==="))
 
         self.stdout.write("\n📊 Creando rangos...")
         ranks_data = [
-            {"name": "Novato", "min_xp": 0, "icon": "🌱", "color": "gray", "order": 1},
+            {"name": "Novato", "min_xp": 0, "icon": "🔰", "color": "gray", "order": 1},
             {"name": "Aprendiz", "min_xp": 100, "icon": "🐣", "color": "blue", "order": 2},
             {"name": "Cuidador", "min_xp": 300, "icon": "🐾", "color": "green", "order": 3},
             {"name": "Protector", "min_xp": 600, "icon": "🛡️", "color": "teal", "order": 4},

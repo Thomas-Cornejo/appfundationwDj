@@ -3,8 +3,8 @@ from django.utils import timezone
 from django.utils.html import format_html
 
 from .models import (
-    CareAction, CareIndicator, DirectPayment, Mission, Rank, ShelterWalletBalance,
-    UserMissionProgress, VirtualWallet, WalletRecharge, WalletTransaction,
+    CareAction, CareIndicator, DirectPayment, Mission, Rank,
+    UserMissionProgress, Wallet, WalletRecharge, WalletTransaction,
 )
 
 
@@ -353,63 +353,6 @@ class CareActionAdmin(admin.ModelAdmin):
         return qs.none()
 
 
-@admin.register(VirtualWallet)
-class VirtualWalletAdmin(admin.ModelAdmin):
-    list_display = [
-        "id",
-        "user",
-        "balance_display",
-        "total_earned",
-        "total_spent",
-        "created_at",
-    ]
-
-    list_filter = ["created_at"]
-    search_fields = ["user__username", "user__email"]
-
-    readonly_fields = [
-        "user",
-        "balance",
-        "total_earned",
-        "total_spent",
-        "created_at",
-        "updated_at",
-    ]
-
-    fieldsets = (
-        ("Usuario", {"fields": ("user",)}),
-        ("Saldo Actual", {"fields": ("balance",)}),
-        ("Estadísticas", {"fields": ("total_earned", "total_spent")}),
-        (
-            "Metadatos",
-            {"fields": ("created_at", "updated_at"), "classes": ("collapse",)},
-        ),
-    )
-
-    def balance_display(self, obj):
-        """Show off your balance in style"""
-        color = "#10b981" if obj.balance > 0 else "#ef4444"
-        return format_html(
-            '<span style="color: {}; font-weight: bold; font-size: 14px;">🪙 {} monedas</span>',
-            color,
-            obj.balance,
-        )
-
-    balance_display.short_description = "Saldo"
-
-    def has_add_permission(self, request):
-        """Wallets cannot be created manually"""
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        """Only Super Admin can delete wallets"""
-        if request.user.is_superuser:
-            return True
-        if hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
-            return True
-        return False
-
-
 @admin.register(WalletTransaction)
 class WalletTransactionAdmin(admin.ModelAdmin):
     list_display = [
@@ -511,11 +454,11 @@ class WalletRechargeAdmin(admin.ModelAdmin):
         "coins_received",
         "payment_method",
         "status_badge",
-        "shelter",
+        "shelter_display",
         "approve_button",
     ]
 
-    list_filter = ["status", "payment_method", "shelter", "created_at"]
+    list_filter = ["status", "payment_method", "created_at"]
 
     search_fields = ["wallet__user__username", "transaction_id", "payment_reference"]
 
@@ -530,7 +473,7 @@ class WalletRechargeAdmin(admin.ModelAdmin):
     fieldsets = (
         (
             "Información de la Recarga",
-            {"fields": ("wallet", "amount_cop", "coins_received", "shelter")},
+            {"fields": ("wallet", "amount_cop", "coins_received")},
         ),
         ("Pago", {"fields": ("payment_method", "transaction_id", "payment_reference")}),
         ("Estado", {"fields": ("status", "admin_notes")}),
@@ -548,6 +491,12 @@ class WalletRechargeAdmin(admin.ModelAdmin):
         return obj.wallet.user.username
 
     user_display.short_description = "Usuario"
+
+    def shelter_display(self, obj):
+        """Shelter where the recharge was made"""
+        return obj.wallet.shelter.name if obj.wallet.shelter else "-"
+
+    shelter_display.short_description = "Albergue"
 
     def status_badge(self, obj):
         """Badge color according to state"""
@@ -614,7 +563,7 @@ class WalletRechargeAdmin(admin.ModelAdmin):
 
         if hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
             if hasattr(request.user, "shelter") and request.user.shelter:
-                return qs.filter(shelter=request.user.shelter)
+                return qs.filter(wallet__shelter=request.user.shelter)
 
         return qs.none()
 
@@ -710,8 +659,8 @@ class DirectPaymentAdmin(admin.ModelAdmin):
         return request.user.is_superuser
 
 
-@admin.register(ShelterWalletBalance)
-class ShelterWalletBalanceAdmin(admin.ModelAdmin):
+@admin.register(Wallet)
+class WalletAdmin(admin.ModelAdmin):
     list_display = [
         "id",
         "user",

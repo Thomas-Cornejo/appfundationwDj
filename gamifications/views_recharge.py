@@ -1,5 +1,6 @@
 import hashlib
 import json
+import time
 
 import requests
 from django.conf import settings
@@ -13,7 +14,7 @@ from django.views.decorators.http import require_POST
 from engagements.models import AnimalEngagement
 from shelters.models import Shelter
 
-from .models import ShelterWalletBalance, VirtualWallet, WalletRecharge
+from .models import Wallet, WalletRecharge
 
 
 @login_required
@@ -23,10 +24,6 @@ def recharge_wallet(request, animal_id=None):
     The user chooses how much they want to recharge.
     If animal_id is provided, pre-select the shelter for that animal.
     """
-    wallet, created = VirtualWallet.objects.get_or_create(
-        user=request.user, defaults={"balance": 1000}
-    )
-
     packages = [
         {"cop": 10000, "coins": 1000, "bonus": 0, "label": "Básico"},
         {"cop": 20000, "coins": 2000, "bonus": 200, "label": "Popular"},
@@ -36,7 +33,6 @@ def recharge_wallet(request, animal_id=None):
 
     shelters = Shelter.objects.filter(is_active=True)
 
-    # Si viene desde un animal específico, preseleccionar su albergue
     selected_shelter_id = None
     from_animal = None
     if animal_id:
@@ -48,10 +44,24 @@ def recharge_wallet(request, animal_id=None):
             from_animal = engagement.animal
         except AnimalEngagement.DoesNotExist:
             messages.warning(request, "No tienes un apadrinamiento activo para este animal.")
+    user_wallets = Wallet.objects.filter(user=request.user).select_related("shelter")
+
+    wallet = None
+    if selected_shelter_id:
+        wallet = user_wallets.filter(shelter_id=selected_shelter_id).first()
+        if not wallet:
+            wallet = Wallet.objects.create(
+                user=request.user, shelter_id=selected_shelter_id, balance=0
+            )
+    elif user_wallets.exists():
+        wallet = user_wallets.first()
+    else:
+        wallet = type("obj", (object,), {"balance": 0})()
 
     wompi_key = settings.WOMPI_PUBLIC_KEY.strip()
 
     context = {
+        "user_wallets": user_wallets,
         "wallet": wallet,
         "packages": packages,
         "shelters": shelters,
@@ -81,9 +91,11 @@ def create_recharge(request):
             )
 
         shelter = get_object_or_404(Shelter, id=shelter_id, is_active=True)
-        wallet, created = VirtualWallet.objects.get_or_create(
-            user=request.user, defaults={"balance": 1000}
+
+        wallet, created = Wallet.objects.get_or_create(
+            user=request.user, shelter=shelter, defaults={"balance": 0}
         )
+
         base_coins = amount_cop // 10
         bonus = 0
         if amount_cop >= 100000:
@@ -94,24 +106,24 @@ def create_recharge(request):
             bonus = int(base_coins * 0.10)
 
         total_coins = base_coins + bonus
+
         recharge = WalletRecharge.objects.create(
             wallet=wallet,
             amount_cop=amount_cop,
             coins_received=total_coins,
             payment_method=payment_method,
             status="P",
-            shelter=shelter,
         )
-        import time
 
         timestamp = int(time.time())
         reference = f"RCG{recharge.id}U{request.user.id}T{timestamp}"
         recharge.payment_reference = reference
         recharge.save()
         amount_in_cents = amount_cop * 100
+        amount_in_cents_str = str(amount_in_cents)
         currency = "COP"
         concatenated_string = (
-            f"{reference}{amount_in_cents}{currency}{settings.WOMPI_INTEGRITY_SECRET}"
+            f"{reference}{amount_in_cents_str}{currency}{settings.WOMPI_INTEGRITY_SECRET}"
         )
         integrity_signature = hashlib.sha256(concatenated_string.encode("utf-8")).hexdigest()
 
@@ -127,6 +139,7 @@ def create_recharge(request):
                 "base_coins": base_coins,
                 "bonus": bonus,
                 "integrity_signature": integrity_signature,
+                "shelter_name": shelter.name,
             }
         )
 
@@ -165,9 +178,9 @@ def wompi_webhook(request):
             status = transaction_data.get("status")
             transaction_id = transaction_data.get("id")
 
-            if reference and reference.startswith("WALLET-"):
+            if reference and reference.startswith("RCG"):
                 try:
-                    recharge_id = reference.split("-")[1]
+                    recharge_id = reference.split("U")[0].replace("RCG", "")
                     recharge = WalletRecharge.objects.get(id=recharge_id)
 
                     if status == "APPROVED":
@@ -257,14 +270,12 @@ def recharge_callback(request):
                         if recharge.status != "A":
                             recharge.transaction_id = transaction_id
                             recharge.approve()
-                            shelter_balance = ShelterWalletBalance.objects.get(
-                                user=request.user, shelter=recharge.shelter
-                            )
+                            wallet = recharge.wallet
                             messages.success(
                                 request,
                                 f"¡Recarga exitosa! Se han agregado {recharge.coins_received} monedas "
-                                f"para {recharge.shelter.name}. "
-                                f"Tu saldo actual para este albergue es: {shelter_balance.balance} monedas.",
+                                f"para {wallet.shelter.name}. "
+                                f"Tu saldo actual para este albergue es: {wallet.balance} monedas.",
                             )
                         else:
                             messages.info(request, "Esta recarga ya fue procesada anteriormente.")
@@ -273,7 +284,6 @@ def recharge_callback(request):
                         recharge.status = "R"
                         recharge.transaction_id = transaction_id
                         recharge.save()
-                        print(f"Pago rechazado")
                         messages.error(
                             request,
                             "El pago fue rechazado. Por favor, intenta nuevamente.",
@@ -282,7 +292,6 @@ def recharge_callback(request):
                     elif status == "PENDING":
                         recharge.transaction_id = transaction_id
                         recharge.save()
-                        print(f"Pago pendiente")
                         messages.info(
                             request,
                             "Tu pago está siendo procesado. Te notificaremos cuando esté aprobado.",
@@ -292,7 +301,6 @@ def recharge_callback(request):
                         recharge.status = "F"
                         recharge.transaction_id = transaction_id
                         recharge.save()
-                        print(f"Error en el pago")
                         messages.error(request, "Ocurrió un error al procesar tu pago.")
 
                     return render(request, "gamifications/recharge_callback.html", context)
@@ -331,9 +339,14 @@ def recharge_history(request):
     """
     User recharge history.
     """
-    wallet = get_object_or_404(VirtualWallet, user=request.user)
-    recharges = WalletRecharge.objects.filter(wallet=wallet).order_by("-created_at")
+    recharges = (
+        WalletRecharge.objects.filter(wallet__user=request.user)
+        .select_related("wallet__shelter")
+        .order_by("-created_at")
+    )
 
-    context = {"wallet": wallet, "recharges": recharges}
+    user_wallets = Wallet.objects.filter(user=request.user).select_related("shelter")
+
+    context = {"user_wallets": user_wallets, "recharges": recharges}
 
     return render(request, "gamifications/recharge_history.html", context)

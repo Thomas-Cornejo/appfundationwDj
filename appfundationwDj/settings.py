@@ -43,6 +43,7 @@ ALLOWED_HOSTS = [
     ".railway.app",
     "solidaridad-cucuta.com",
     "www.solidaridad-cucuta.com",
+    "proresignation-listlessly-hermina.ngrok-free.dev",
 ]
 
 # CSRF Configuration
@@ -50,6 +51,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://solidaridad-cucuta.com",
     "https://www.solidaridad-cucuta.com",
     "https://*.railway.app",
+    "https://proresignation-listlessly-hermina.ngrok-free.dev",
 ]
 
 # Cookie Settings

@@ -123,7 +123,7 @@ def engagement_success(request, engagement_id):
 
 @login_required
 def download_pdf(request, engagement_id):
-    """Vista para descargar el PDF con el nombre correcto"""
+    """Vista para descargar/ver el PDF desde Cloudinary"""
     engagement = get_object_or_404(AnimalEngagement, pk=engagement_id)
 
     if not (request.user == engagement.user or request.user.is_staff):
@@ -132,17 +132,7 @@ def download_pdf(request, engagement_id):
     if not engagement.pdf_file:
         raise Http404("No hay PDF disponible")
 
-    engagement_type_name = "Adopcion" if engagement.engagements_type == "A" else "Apadrinamiento"
-    filename = f"Solicitud_{engagement_type_name}_{engagement.user.username}_para_{engagement.animal.name}.pdf"
-    filename = filename.replace(" ", "_")
-
-    try:
-        pdf_file = engagement.pdf_file.open("rb")
-        response = FileResponse(pdf_file, content_type="application/pdf")
-        response["Content-Disposition"] = f'inline; filename="{filename}"'
-        return response
-    except Exception as e:
-        raise Http404("Error al abrir el archivo")
+    return redirect(engagement.pdf_file.url)
 
 
 @login_required

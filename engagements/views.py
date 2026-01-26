@@ -1,7 +1,7 @@
+import cloudinary.uploader
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.files.base import ContentFile
-from django.http import FileResponse, Http404
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 
 from animals.models import Animal
@@ -40,15 +40,30 @@ def adopt_animal(request, animal_id):
                 form_data=form_data,
             )
 
-            pdf_buffer = generate_adoption_pdf(engagement, form_data)
+            try:
+                pdf_buffer = generate_adoption_pdf(engagement, form_data)
 
-            filename = f"Solicitud_Adopcion_{user.username}_para_{animal.name}.pdf"
-            filename = filename.replace(" ", "_").replace("/", "_").replace("\\", "_")
+                filename = f"adoption_{engagement.id}_{user.username}_{animal.name}"
+                filename = filename.replace(" ", "_").replace("/", "_").replace("\\", "_")
 
-            engagement.pdf_file.save(filename, ContentFile(pdf_buffer.read()), save=True)
+                resultado = cloudinary.uploader.upload(
+                    pdf_buffer,
+                    resource_type="raw", 
+                    folder="adoptions_pdfs", 
+                    public_id=filename,
+                    format="pdf"
+                )
 
-            messages.success(request, f"¡Solicitud de adopción enviada para {animal.name}!")
-            return redirect("engagement_success", engagement_id=engagement.id)
+                engagement.pdf_file = resultado['secure_url']
+                engagement.save()
+
+                messages.success(request, f"¡Solicitud de adopción enviada para {animal.name}!")
+                return redirect("engagement_success", engagement_id=engagement.id)
+
+            except Exception as e:
+                engagement.delete()
+                messages.error(request, f"Error al procesar la solicitud: {str(e)}")
+                return redirect("animals:animal_detail", pk=animal_id)
     else:
         form = AdoptionForm()
 
@@ -88,15 +103,30 @@ def sponsor_animal(request, animal_id):
                 form_data=form_data,
             )
 
-            pdf_buffer = generate_sponsorship_pdf(engagement, form_data)
+            try:
+                pdf_buffer = generate_sponsorship_pdf(engagement, form_data)
 
-            filename = f"Solicitud_Apadrinamiento_{user.username}_para_{animal.name}.pdf"
-            filename = filename.replace(" ", "_").replace("/", "_").replace("\\", "_")
+                filename = f"sponsorship_{engagement.id}_{user.username}_{animal.name}"
+                filename = filename.replace(" ", "_").replace("/", "_").replace("\\", "_")
 
-            engagement.pdf_file.save(filename, ContentFile(pdf_buffer.read()), save=True)
+                resultado = cloudinary.uploader.upload(
+                    pdf_buffer,
+                    resource_type="raw", 
+                    folder="sponsorships_pdfs", 
+                    public_id=filename,
+                    format="pdf"
+                )
 
-            messages.success(request, f"¡Solicitud de apadrinamiento enviada para {animal.name}!")
-            return redirect("engagement_success", engagement_id=engagement.id)
+                engagement.pdf_file = resultado['secure_url']
+                engagement.save()
+
+                messages.success(request, f"¡Solicitud de apadrinamiento enviada para {animal.name}!")
+                return redirect("engagement_success", engagement_id=engagement.id)
+
+            except Exception as e:
+                engagement.delete()
+                messages.error(request, f"Error al procesar la solicitud: {str(e)}")
+                return redirect("animals:animal_detail", pk=animal_id)
     else:
         form = SponsorshipForm()
 
@@ -132,7 +162,7 @@ def download_pdf(request, engagement_id):
     if not engagement.pdf_file:
         raise Http404("No hay PDF disponible")
 
-    return redirect(engagement.pdf_file.url)
+    return redirect(engagement.pdf_file)
 
 
 @login_required
@@ -145,23 +175,19 @@ def animal_visits(request, engagement_id):
         AnimalEngagement,
         pk=engagement_id,
         user=request.user,
-        engagements_type="A",  # Solo adopciones
-        status="A",  # Solo aprobadas
+        engagements_type="A", 
+        status="A", 
     )
 
-    # Obtener visitas programadas (futuras y no completadas)
     from django.utils import timezone
 
     scheduled_visits = Visit.objects.filter(
         animal_engagement=engagement, completed=False, visit_date__gte=timezone.now()
     ).order_by("visit_date")
 
-    # Obtener visitas vencidas (pasadas y no completadas)
     overdue_visits = Visit.objects.filter(
         animal_engagement=engagement, completed=False, visit_date__lt=timezone.now()
     ).order_by("-visit_date")
-
-    # Obtener visitas completadas
     completed_visits = Visit.objects.filter(animal_engagement=engagement, completed=True).order_by(
         "-visit_date"
     )

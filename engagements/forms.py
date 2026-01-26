@@ -58,14 +58,18 @@ class AdoptionForm(forms.Form):
         required=False,
         label="¿Tienes experiencia con mascotas?",
         widget=forms.CheckboxInput(
-            attrs={"class": "w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"}
+            attrs={
+                "class": "w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+            }
         ),
     )
     has_other_pets = forms.BooleanField(
         required=False,
         label="¿Tienes otras mascotas?",
         widget=forms.CheckboxInput(
-            attrs={"class": "w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"}
+            attrs={
+                "class": "w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+            }
         ),
     )
     other_pets_description = forms.CharField(
@@ -93,7 +97,9 @@ class AdoptionForm(forms.Form):
         required=False,
         label="¿Tienes espacio al aire libre?",
         widget=forms.CheckboxInput(
-            attrs={"class": "w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"}
+            attrs={
+                "class": "w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+            }
         ),
     )
     reason_for_adoption = forms.CharField(
@@ -180,7 +186,9 @@ class SponsorshipForm(forms.Form):
             ("professional", "Trabajo o he trabajado con animales"),
         ],
         label="Experiencia con animales",
-        widget=forms.RadioSelect(attrs={"class": "text-purple-600 focus:ring-purple-500"}),
+        widget=forms.RadioSelect(
+            attrs={"class": "text-purple-600 focus:ring-purple-500"}
+        ),
     )
 
     reason_for_sponsorship = forms.CharField(
@@ -191,7 +199,7 @@ class SponsorshipForm(forms.Form):
                 "placeholder": "Cuéntanos qué te motiva a apadrinar a este animal y cómo imaginas tu relación con él...",
             }
         ),
-        label="¿Por qué quieres apadrinar a este animal?",
+        label="Motivación y compromiso - ¿Por qué quieres apadrinar a este animal?",
         help_text="Tu historia nos ayuda a crear una mejor experiencia de apadrinamiento",
     )
 
@@ -228,34 +236,6 @@ class SponsorshipForm(forms.Form):
         help_text="Tiempo estimado de interacción semanal con tu mascota virtual",
     )
 
-    motivation_level = forms.ChoiceField(
-        choices=[
-            ("casual", "🌟 Explorador - Quiero conocer el programa"),
-            ("regular", "⭐⭐ Guardián - Me comprometo a cuidarlo regularmente"),
-            ("dedicated", "⭐⭐⭐ Protector Elite - Seré un padrino muy dedicado"),
-        ],
-        label="Nivel de compromiso deseado",
-        widget=forms.RadioSelect(attrs={"class": "text-purple-600 focus:ring-purple-500"}),
-        help_text="Puedes cambiar tu nivel más adelante según tu progreso",
-    )
-
-    preferred_activities = forms.MultipleChoiceField(
-        choices=[
-            ("feeding", "Alimentación virtual"),
-            ("playing", "Juegos interactivos"),
-            ("grooming", "Cuidado y aseo"),
-            ("training", "Entrenamiento"),
-            ("health", "Monitoreo de salud"),
-            ("socialization", "Socialización con otros"),
-        ],
-        label="¿Qué actividades te interesan más?",
-        widget=forms.CheckboxSelectMultiple(
-            attrs={"class": "text-purple-600 focus:ring-purple-500"}
-        ),
-        required=False,
-        help_text="Esto personalizará tu experiencia de juego",
-    )
-
     notification_preferences = forms.ChoiceField(
         choices=[
             ("all", "Todas las actualizaciones"),
@@ -268,25 +248,5 @@ class SponsorshipForm(forms.Form):
             attrs={
                 "class": "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
             }
-        ),
-    )
-
-    willing_to_contribute = forms.ChoiceField(
-        choices=[
-            ("no", "Solo quiero participar virtualmente"),
-            ("items", "Puedo donar items/suministros ocasionalmente"),
-            ("monthly", "Me gustaría hacer una pequeña contribución mensual"),
-        ],
-        label="¿Te gustaría contribuir de alguna forma? (Opcional)",
-        widget=forms.RadioSelect(attrs={"class": "text-purple-600 focus:ring-purple-500"}),
-        required=False,
-        help_text="El apadrinamiento virtual es completamente gratuito. Cualquier contribución es opcional y bienvenida.",
-    )
-
-    accept_terms = forms.BooleanField(
-        required=True,
-        label="Acepto comprometerme a cuidar virtualmente de este animal, recibir notificaciones y seguir las reglas del programa de apadrinamiento",
-        widget=forms.CheckboxInput(
-            attrs={"class": "w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"}
         ),
     )

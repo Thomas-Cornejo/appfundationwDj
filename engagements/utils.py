@@ -222,6 +222,8 @@ def generate_sponsorship_pdf(engagement, form_data):
         ["Usuario:", engagement.user.username],
         ["Email:", form_data.get("email", engagement.user.email)],
         ["Teléfono:", form_data.get("phone", "N/A")],
+        ["Rango de edad:", form_data.get("age_range", "N/A")],
+        ["Ocupación:", form_data.get("occupation", "N/A")],
     ]
 
     user_table = Table(user_data, colWidths=[2 * inch, 4 * inch])
@@ -241,25 +243,67 @@ def generate_sponsorship_pdf(engagement, form_data):
     elements.append(user_table)
     elements.append(Spacer(1, 0.3 * inch))
 
+    experience_dict = {
+        "none": "Nunca he tenido mascotas",
+        "some": "He tenido mascotas antes",
+        "current": "Actualmente tengo mascotas",
+        "professional": "Trabajo o he trabajado con animales",
+    }
+    
+    experience_title = Paragraph("<b>EXPERIENCIA CON ANIMALES</b>", styles["Heading2"])
+    elements.append(experience_title)
+    elements.append(Spacer(1, 0.1 * inch))
+    
+    experience_text = Paragraph(
+        experience_dict.get(form_data.get("has_pet_experience", ""), "N/A"),
+        styles["BodyText"]
+    )
+    elements.append(experience_text)
+    elements.append(Spacer(1, 0.2 * inch))
+
+    if form_data.get("reason_for_sponsorship"):
+        reason_title = Paragraph("<b>MOTIVACIÓN Y COMPROMISO</b>", styles["Heading2"])
+        elements.append(reason_title)
+        elements.append(Spacer(1, 0.1 * inch))
+        reason_text = Paragraph(form_data.get("reason_for_sponsorship"), styles["BodyText"])
+        elements.append(reason_text)
+        elements.append(Spacer(1, 0.2 * inch))
+
     sponsorship_title = Paragraph("<b>DETALLES DEL APADRINAMIENTO</b>", styles["Heading2"])
     elements.append(sponsorship_title)
     elements.append(Spacer(1, 0.1 * inch))
 
-    duration_dict = {
-        "1": "1 mes",
-        "3": "3 meses",
-        "6": "6 meses",
-        "12": "1 año",
-        "indefinido": "Indefinido",
+    interaction_choices = {
+        "daily_check": "Revisar su estado diariamente",
+        "share_updates": "Compartir actualizaciones con amigos",
+        "earn_badges": "Ganar insignias y logros",
+        "donate_items": "Contribuir con items virtuales",
+        "visit_shelter": "Visitar el refugio físicamente",
+        "track_progress": "Seguir su progreso de salud",
+        "participate_events": "Participar en eventos especiales",
+    }
+    
+    selected_interactions = form_data.get("interaction_goals", [])
+    interaction_text = ", ".join([interaction_choices.get(i, i) for i in selected_interactions]) if selected_interactions else "N/A"
+
+    availability_dict = {
+        "casual": "Casual - Algunas veces al mes",
+        "1-2": "Regular - 1-2 horas por semana",
+        "3-5": "Activo - 3-5 horas por semana",
+        "daily": "Muy activo - Un poco cada día",
+    }
+
+    notification_dict = {
+        "all": "Todas las actualizaciones",
+        "important": "Solo actualizaciones importantes",
+        "weekly": "Resumen semanal",
+        "minimal": "Mínimo - Solo emergencias",
     }
 
     sponsorship_data = [
-        ["Aporte mensual:", f"${form_data.get('monthly_contribution', 0):,.0f} COP"],
-        [
-            "Duración:",
-            duration_dict.get(form_data.get("sponsorship_duration", ""), "N/A"),
-        ],
-        ["Acepta actualizaciones:", "Sí" if form_data.get("accept_terms") else "No"],
+        ["Cómo planea interactuar:", interaction_text],
+        ["Tiempo disponible:", availability_dict.get(form_data.get("availability_hours", ""), "N/A")],
+        ["Preferencias de notificaciones:", notification_dict.get(form_data.get("notification_preferences", ""), "N/A")],
     ]
 
     sponsorship_table = Table(sponsorship_data, colWidths=[2.5 * inch, 3.5 * inch])
@@ -272,20 +316,15 @@ def generate_sponsorship_pdf(engagement, form_data):
                 ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
                 ("FONTSIZE", (0, 0), (-1, -1), 10),
                 ("BOTTOMPADDING", (0, 0), (-1, -1), 12),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
                 ("GRID", (0, 0), (-1, -1), 1, colors.grey),
             ]
         )
     )
     elements.append(sponsorship_table)
-    elements.append(Spacer(1, 0.2 * inch))
+    elements.append(Spacer(1, 0.3 * inch))
 
-    if form_data.get("reason_for_sponsorship"):
-        reason_title = Paragraph("<b>¿Por qué desea apadrinar?</b>", styles["Heading3"])
-        elements.append(reason_title)
-        reason_text = Paragraph(form_data.get("reason_for_sponsorship"), styles["BodyText"])
-        elements.append(reason_text)
-        elements.append(Spacer(1, 0.3 * inch))
-
+    # FECHA
     date_text = Paragraph(
         f"<i>Fecha de solicitud: {engagement.created_at.strftime('%d/%m/%Y %H:%M')}</i>",
         styles["Normal"],

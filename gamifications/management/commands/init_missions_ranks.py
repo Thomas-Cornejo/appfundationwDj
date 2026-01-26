@@ -1,17 +1,55 @@
 """
 Management command para inicializar misiones y rangos por defecto.
 """
+
+import logging
+
 from django.core.management.base import BaseCommand
 
 from gamifications.models import Mission, Rank
 
+logger = logging.getLogger(__name__)
+
 
 class Command(BaseCommand):
+    help = "Inicializa rangos y misiones por defecto del sistema de gamificación"
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--dry-run",
+            action="store_true",
+            help="Simula la inicialización sin escribir en la base de datos",
+        )
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.SUCCESS("=== Inicializando Sistema de Misiones y Rangos ==="))
+        dry_run = options["dry_run"]
 
-        self.stdout.write("\n📊 Creando rangos...")
+        logger.info("Inicializando sistema de gamificación | dry_run=%s", dry_run)
+
+        ranks_created = self._init_ranks(dry_run)
+        daily_created = self._init_missions(self._daily_missions(), "daily", dry_run)
+        weekly_created = self._init_missions(self._weekly_missions(), "weekly", dry_run)
+        achievement_created = self._init_missions(
+            self._achievement_missions(), "achievement", dry_run
+        )
+
+        total_created = ranks_created + daily_created + weekly_created + achievement_created
+
+        if dry_run:
+            logger.warning(
+                "[DRY RUN] Se crearían %s registros (rangos y misiones)",
+                total_created,
+            )
+        else:
+            logger.info(
+                "Inicialización completada | rangos=%s | diarias=%s | semanales=%s | logros=%s",
+                ranks_created,
+                daily_created,
+                weekly_created,
+                achievement_created,
+            )
+
+    def _init_ranks(self, dry_run):
         ranks_data = [
             {"name": "Novato", "min_xp": 0, "icon": "🔰", "color": "gray", "order": 1},
             {"name": "Aprendiz", "min_xp": 100, "icon": "🐣", "color": "blue", "order": 2},
@@ -22,19 +60,47 @@ class Command(BaseCommand):
             {"name": "Leyenda", "min_xp": 2500, "icon": "👑", "color": "gold", "order": 7},
         ]
 
-        for rank_data in ranks_data:
-            rank, created = Rank.objects.get_or_create(name=rank_data["name"], defaults=rank_data)
-            if created:
-                self.stdout.write(
-                    self.style.SUCCESS(
-                        f"  ✓ Creado: {rank_data['icon']} {rank_data['name']} ({rank_data['min_xp']} XP)"
-                    )
-                )
-            else:
-                self.stdout.write(f"  - Ya existe: {rank_data['name']}")
+        created_count = 0
 
-        self.stdout.write("\nCreando misiones diarias...")
-        daily_missions = [
+        for data in ranks_data:
+            if dry_run:
+                exists = Rank.objects.filter(name=data["name"]).exists()
+                if not exists:
+                    created_count += 1
+                continue
+
+            _, created = Rank.objects.get_or_create(name=data["name"], defaults=data)
+            if created:
+                logger.debug("Rango creado: %s", data["name"])
+                created_count += 1
+
+        return created_count
+
+    def _init_missions(self, missions_data, mission_type, dry_run):
+        created_count = 0
+
+        for data in missions_data:
+            if dry_run:
+                exists = Mission.objects.filter(
+                    title=data["title"], mission_type=mission_type
+                ).exists()
+                if not exists:
+                    created_count += 1
+                continue
+
+            _, created = Mission.objects.get_or_create(
+                title=data["title"],
+                mission_type=mission_type,
+                defaults=data,
+            )
+            if created:
+                logger.debug("Misión creada [%s]: %s", mission_type, data["title"])
+                created_count += 1
+
+        return created_count
+
+    def _daily_missions(self):
+        return [
             {
                 "title": "Alimenta a tu mascota",
                 "description": "Dale comida a tu animal apadrinado",
@@ -44,6 +110,7 @@ class Command(BaseCommand):
                 "xp_reward": 10,
                 "coins_reward": 20,
                 "icon": "🍖",
+                "scope": "shelter",
                 "order": 1,
             },
             {
@@ -55,6 +122,7 @@ class Command(BaseCommand):
                 "xp_reward": 10,
                 "coins_reward": 20,
                 "icon": "🧼",
+                "scope": "shelter",
                 "order": 2,
             },
             {
@@ -66,27 +134,13 @@ class Command(BaseCommand):
                 "xp_reward": 30,
                 "coins_reward": 50,
                 "icon": "🌟",
+                "scope": "shelter",
                 "order": 3,
             },
         ]
 
-        for mission_data in daily_missions:
-            mission, created = Mission.objects.get_or_create(
-                title=mission_data["title"],
-                mission_type="daily",
-                defaults=mission_data,
-            )
-            if created:
-                self.stdout.write(
-                    self.style.SUCCESS(
-                        f"  ✓ Creada: {mission_data['icon']} {mission_data['title']}"
-                    )
-                )
-            else:
-                self.stdout.write(f"  - Ya existe: {mission_data['title']}")
-
-        self.stdout.write("\nCreando misiones semanales...")
-        weekly_missions = [
+    def _weekly_missions(self):
+        return [
             {
                 "title": "Cuidador semanal",
                 "description": "Alimenta a tu mascota 10 veces en la semana",
@@ -96,6 +150,7 @@ class Command(BaseCommand):
                 "xp_reward": 100,
                 "coins_reward": 150,
                 "icon": "🏆",
+                "scope": "shelter",
                 "order": 1,
             },
             {
@@ -107,6 +162,7 @@ class Command(BaseCommand):
                 "xp_reward": 80,
                 "coins_reward": 120,
                 "icon": "✨",
+                "scope": "shelter",
                 "order": 2,
             },
             {
@@ -118,27 +174,13 @@ class Command(BaseCommand):
                 "xp_reward": 150,
                 "coins_reward": 200,
                 "icon": "💚",
+                "scope": "shelter",
                 "order": 3,
             },
         ]
 
-        for mission_data in weekly_missions:
-            mission, created = Mission.objects.get_or_create(
-                title=mission_data["title"],
-                mission_type="weekly",
-                defaults=mission_data,
-            )
-            if created:
-                self.stdout.write(
-                    self.style.SUCCESS(
-                        f"  ✓ Creada: {mission_data['icon']} {mission_data['title']}"
-                    )
-                )
-            else:
-                self.stdout.write(f"  - Ya existe: {mission_data['title']}")
-
-        self.stdout.write("\n🏅 Creando logros...")
-        achievement_missions = [
+    def _achievement_missions(self):
+        return [
             {
                 "title": "Primer apadrinamiento",
                 "description": "Apadrina tu primer animal",
@@ -148,6 +190,7 @@ class Command(BaseCommand):
                 "xp_reward": 50,
                 "coins_reward": 100,
                 "icon": "🎉",
+                "scope": "global",
                 "order": 1,
             },
             {
@@ -159,25 +202,19 @@ class Command(BaseCommand):
                 "xp_reward": 200,
                 "coins_reward": 500,
                 "icon": "💖",
+                "scope": "global",
                 "order": 2,
             },
+            {
+                "title": "Ángel guardián",
+                "description": "Apadrina 5 animales",
+                "mission_type": "achievement",
+                "action_type": "sponsor",
+                "target_count": 5,
+                "xp_reward": 500,
+                "coins_reward": 1000,
+                "icon": "😇",
+                "scope": "global",
+                "order": 3,
+            },
         ]
-
-        for mission_data in achievement_missions:
-            mission, created = Mission.objects.get_or_create(
-                title=mission_data["title"],
-                mission_type="achievement",
-                defaults=mission_data,
-            )
-            if created:
-                self.stdout.write(
-                    self.style.SUCCESS(
-                        f"  ✓ Creado: {mission_data['icon']} {mission_data['title']}"
-                    )
-                )
-            else:
-                self.stdout.write(f"  - Ya existe: {mission_data['title']}")
-
-        self.stdout.write(
-            self.style.SUCCESS("\nSistema de Misiones y Rangos inicializado correctamente")
-        )

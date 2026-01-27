@@ -17,7 +17,7 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
         "engagement_type_badge",
         "status_badge",
         "created_at",
-        "view_pdf",
+        "download_pdf_link",
     ]
     list_filter = ["engagements_type", "status", "created_at", "animal__shelter"]
     search_fields = [
@@ -29,7 +29,7 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
-            return ["created_at", "updated_at", "pdf_file", "form_data_display"]
+            return ["created_at", "updated_at", "form_data_display", "download_pdf_button"]
         return ["created_at", "updated_at"]
 
     fieldsets = (
@@ -39,7 +39,13 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
         ),
         (
             "Detalles de la solicitud",
-            {"fields": ("form_data_display", "pdf_file", "admin_notes")},
+            {
+                "fields": (
+                    "form_data_display",
+                    "download_pdf_button",
+                    "admin_notes",
+                )
+            },
         ),
         ("Fechas", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
     )
@@ -110,6 +116,8 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
         if obj and obj.form_data:
             html = "<table style='width:100%; border-collapse: collapse;'>"
             for key, value in obj.form_data.items():
+                if isinstance(value, list):
+                    value = ", ".join(str(v) for v in value)
                 html += f"<tr style='border-bottom: 1px solid #ddd;'>"
                 html += f"<td style='padding: 8px; font-weight: bold;'>{key.replace('_', ' ').title()}:</td>"
                 html += f"<td style='padding: 8px;'>{value if value else 'N/A'}</td>"
@@ -144,20 +152,42 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
 
     status_badge.short_description = "Estado"
 
-    def view_pdf(self, obj):
-        """Stylish link to view/download the PDF"""
-        if obj.pdf_file:
-            download_url = reverse("download_pdf", args=[obj.id])
+    def download_pdf_link(self, obj):
+        """Enlace para descargar PDF en la lista de registros"""
+        if obj.form_data:
+            download_url = reverse("download_engagement_pdf", args=[obj.id])
             return format_html(
                 '<a href="{}" target="_blank" '
                 'style="background-color:#2563eb; color:white; padding:6px 10px; '
-                'border-radius:6px; text-decoration:none; box-shadow:0 2px 4px rgba(0,0,0,0.1);">'
-                "📄 Ver PDF</a>",
+                "border-radius:6px; text-decoration:none; box-shadow:0 2px 4px rgba(0,0,0,0.1); "
+                'display:inline-block;">'
+                "📄 PDF</a>",
                 download_url,
             )
-        return "-"
+        return format_html('<span style="color:#9ca3af; font-size:12px;">Sin datos</span>')
 
-    view_pdf.short_description = "PDF"
+    download_pdf_link.short_description = "Descargar"
+
+    def download_pdf_button(self, obj):
+        """Botón grande para descargar PDF en la vista de detalle"""
+        if obj and obj.pk and obj.form_data:
+            download_url = reverse("download_engagement_pdf", args=[obj.id])
+            tipo = "Adopción" if obj.engagements_type == "A" else "Apadrinamiento"
+            return format_html(
+                '<a href="{}" target="_blank" '
+                'style="display:inline-block; background-color:#2563eb; color:white; '
+                "padding:12px 24px; border-radius:8px; text-decoration:none; "
+                "font-weight:bold; box-shadow:0 4px 6px rgba(0,0,0,0.1); "
+                'transition:all 0.3s;">'
+                "📄 Descargar PDF de {}</a>",
+                download_url,
+                tipo,
+            )
+        return format_html(
+            '<span style="color:#9ca3af;">Guarda el registro primero para generar el PDF</span>'
+        )
+
+    download_pdf_button.short_description = "Documento PDF"
 
     def approve_engagements(self, request, queryset):
         """Mass action to approve applications"""
@@ -290,7 +320,7 @@ El equipo de la Fundación
         if not change and obj.engagements_type == "S" and obj.status == "A":
             self.message_user(
                 request,
-                f"✅ Apadrinamiento creado. El CareIndicator se creará automáticamente por el signal.",
+                f"Apadrinamiento creado. El CareIndicator se creará automáticamente por el signal.",
                 level="SUCCESS",
             )
 
@@ -423,11 +453,11 @@ class VisitAdmin(admin.ModelAdmin):
             )
 
         colors = {
-            1: "#ef4444",  # Rojo - Muy Mala
-            2: "#f97316",  # Naranja - Mala
-            3: "#f59e0b",  # Amarillo - Regular
-            4: "#84cc16",  # Lima - Buena
-            5: "#10b981",  # Verde - Excelente
+            1: "#ef4444",
+            2: "#f97316",
+            3: "#f59e0b",
+            4: "#84cc16",
+            5: "#10b981",
         }
 
         stars = "⭐" * obj.evaluation
@@ -459,34 +489,34 @@ class VisitAdmin(admin.ModelAdmin):
             self.send_visit_notification_email(obj)
             self.message_user(
                 request,
-                f"✅ Visita programada. Se ha enviado un correo a {obj.user.email}",
+                f"Visita programada. Se ha enviado un correo a {obj.animal_engagement.user.email}",
                 level="SUCCESS",
             )
 
     def send_visit_notification_email(self, visit):
         """Enviar correo al usuario adoptante sobre la visita programada"""
-        subject = f"Visita Programada - {visit.animal.name}"
+        subject = f"Visita Programada - {visit.animal_engagement.animal.name}"
 
         message = f"""
-Hola {visit.user.username},
+Hola {visit.animal_engagement.user.username},
 
-Te informamos que se ha programado una visita de seguimiento para {visit.animal.name}.
+Te informamos que se ha programado una visita de seguimiento para {visit.animal_engagement.animal.name}.
 
 Detalles de la visita:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-- Animal: {visit.animal.name}
+- Animal: {visit.animal_engagement.animal.name}
 - Fecha y hora: {visit.visit_date.strftime('%d/%m/%Y a las %H:%M')}
-- Raza: {visit.animal.breed.name}
+- Raza: {visit.animal_engagement.animal.breed.name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Esta visita tiene como objetivo verificar que {visit.animal.name} se encuentre en
+Esta visita tiene como objetivo verificar que {visit.animal_engagement.animal.name} se encuentre en
 óptimas condiciones y evaluar su adaptación a su nuevo hogar.
 
 Por favor, asegúrate de estar disponible en la fecha y hora indicadas.
 
 Puedes ver los detalles de esta y otras visitas en tu perfil, sección "Mis Adopciones".
 
-¡Gracias por cuidar de {visit.animal.name}! 🐾
+¡Gracias por cuidar de {visit.animal_engagement.animal.name}! 🐾
 
 Saludos cordiales,
 El equipo de la Fundación
@@ -497,9 +527,9 @@ El equipo de la Fundación
                 subject,
                 message,
                 settings.DEFAULT_FROM_EMAIL,
-                [visit.user.email],
+                [visit.animal_engagement.user.email],
                 fail_silently=False,
             )
-            print(f"Email de visita enviado exitosamente a {visit.user.email}")
+            print(f"Email de visita enviado exitosamente a {visit.animal_engagement.user.email}")
         except Exception as e:
             print(f"Error enviando email de visita: {e}")

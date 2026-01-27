@@ -15,13 +15,6 @@ STATUS_CHOICES = [
 class AnimalEngagement(models.Model):
     engagements_type = models.CharField(max_length=1, choices=ENGAGEMENTS_TYPES_CHOICES)
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default="P")
-    pdf_file = models.URLField(
-        max_length=500, 
-        blank=True, 
-        null=True, 
-        help_text="URL del PDF almacenado en Cloudinary"
-    )
-    
     form_data = models.JSONField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -38,13 +31,12 @@ class AnimalEngagement(models.Model):
 
     def __str__(self):
         return f"#{self.id} - {self.user.username} - {self.get_engagements_type_display()} - {self.animal.name}"
-    
+
     def get_pdf_filename(self):
         """Nombre del archivo para descarga"""
-        if self.pdf_file:
-            tipo = "Adopcion" if self.engagements_type == 'A' else "Apadrinamiento"
-            return f"{tipo}_{self.animal.name}_{self.id}.pdf"
-        return "documento.pdf"
+        tipo = "Adopcion" if self.engagements_type == "A" else "Apadrinamiento"
+        return f"{tipo}_{self.animal.name}_{self.id}.pdf"
+
 
 class Visit(models.Model):
     """
@@ -64,7 +56,7 @@ class Visit(models.Model):
         AnimalEngagement,
         on_delete=models.CASCADE,
         related_name="visits",
-        limit_choices_to={"status": "A", "engagements_type": "A"},  # Solo adopciones aprobadas
+        limit_choices_to={"status": "A", "engagements_type": "A"},
         help_text="Adopción a la que pertenece esta visita",
     )
     visit_date = models.DateTimeField(help_text="Fecha y hora programada para la visita")

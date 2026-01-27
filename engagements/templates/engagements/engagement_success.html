@@ -98,9 +98,9 @@
 
     <!-- Botones de acción -->
     <div class="flex flex-col gap-3">
-      {% if engagement.pdf_file %}
-      <a href="{{ engagement.pdf_file }}" target="_blank" class="w-full text-center px-6 py-3 {% if engagement.engagements_type == 'A' %}bg-indigo-600 hover:bg-indigo-700{% else %}bg-purple-600 hover:bg-purple-700{% endif %} text-white rounded-full transition font-medium">
-        📄 Ver mi solicitud
+      {% if engagement.form_data %}
+      <a href="{% url 'download_engagement_pdf' engagement.id %}" target="_blank" class="w-full text-center px-6 py-3 {% if engagement.engagements_type == 'A' %}bg-indigo-600 hover:bg-indigo-700{% else %}bg-purple-600 hover:bg-purple-700{% endif %} text-white rounded-full transition font-medium">
+        📄 Descargar mi solicitud (PDF)
       </a>
       {% endif %}
 

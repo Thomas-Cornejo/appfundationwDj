@@ -540,6 +540,11 @@ class Mission(models.Model):
         ("sponsor", "Apadrinar un animal"),
     ]
 
+    SCOPE_CHOICES = [
+        ("shelter", "Refugio específico"),
+        ("global", "Global"),
+    ]
+
     title = models.CharField(max_length=100, verbose_name="Título")
     description = models.TextField(verbose_name="Descripción")
     mission_type = models.CharField(
@@ -555,6 +560,12 @@ class Mission(models.Model):
     xp_reward = models.IntegerField(default=10, verbose_name="Recompensa XP")
     coins_reward = models.IntegerField(default=50, verbose_name="Recompensa en monedas")
     icon = models.CharField(max_length=10, default="🎯", verbose_name="Icono")
+    scope = models.CharField(
+        max_length=20,
+        choices=SCOPE_CHOICES,
+        default="shelter",
+        verbose_name="Alcance",
+    )
     is_active = models.BooleanField(default=True, verbose_name="Activa")
     order = models.IntegerField(default=0, verbose_name="Orden de visualización")
 

@@ -10,6 +10,7 @@ from shelters.models import Shelter
 SEX_CHOICES = [("M", "Macho"), ("H", "Hembra")]
 SIZE_CHOICES = [("G", "Grande"), ("M", "Mediano"), ("P", "Pequeño")]
 AVAILABILITY_CHOICES = [("A", "Adoption"), ("S", "Sponsorship"), ("B", "Both")]
+STATUS_CHOICES = [("O", "Huerfano"), ("S", "Apadrinado"), ("A", "Adoptado")]
 
 
 class Animal(models.Model):
@@ -24,6 +25,9 @@ class Animal(models.Model):
         choices=AVAILABILITY_CHOICES,
         default="A",
         verbose_name="Disponibilidad",
+    )
+    status = models.CharField(
+        max_length=1, choices=STATUS_CHOICES, default="O", verbose_name="Estado del animal"
     )
     is_active = models.BooleanField(default=True, verbose_name="Activo")
     breed = models.ForeignKey(Breed, on_delete=models.PROTECT, verbose_name="Raza")
@@ -92,12 +96,8 @@ class History(models.Model):
         null=True,
         help_text="Solo llenar si es un ingreso. Dejar vacío para eventos médicos.",
     )
-    entry_date = models.DateTimeField(
-        default=timezone.now, verbose_name="Fecha de historia"
-    )
-    exit_date = models.DateTimeField(
-        null=True, blank=True, verbose_name="Fecha de salida"
-    )
+    entry_date = models.DateTimeField(default=timezone.now, verbose_name="Fecha de historia")
+    exit_date = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de salida")
     status = models.CharField(
         max_length=1,
         choices=STATUS_CHOICES,
@@ -186,9 +186,7 @@ class History(models.Model):
 
                 if engagement and hasattr(engagement, "care_indicator"):
                     indicator = engagement.care_indicator
-                    indicator.health_level = max(
-                        0, indicator.health_level - self.health_impact
-                    )
+                    indicator.health_level = max(0, indicator.health_level - self.health_impact)
                     indicator.last_health_update = timezone.now()
                     indicator.save()
                     return True
@@ -219,9 +217,7 @@ class History(models.Model):
 
                 if engagement and hasattr(engagement, "care_indicator"):
                     indicator = engagement.care_indicator
-                    indicator.health_level = min(
-                        100, indicator.health_level + self.health_impact
-                    )
+                    indicator.health_level = min(100, indicator.health_level + self.health_impact)
                     indicator.last_health_update = timezone.now()
                     indicator.save()
                     return True

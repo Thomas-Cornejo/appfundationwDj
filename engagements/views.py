@@ -35,8 +35,6 @@ def adopt_animal(request, animal_id):
         form = AdoptionForm(request.POST)
         if form.is_valid():
             form_data = form.cleaned_data
-
-            # Simplemente crear el engagement - no generamos PDF aquí
             engagement = AnimalEngagement.objects.create(
                 user=user,
                 animal=animal,
@@ -77,8 +75,6 @@ def sponsor_animal(request, animal_id):
         form = SponsorshipForm(request.POST)
         if form.is_valid():
             form_data = form.cleaned_data
-
-            # Simplemente crear el engagement - no generamos PDF aquí
             engagement = AnimalEngagement.objects.create(
                 user=user,
                 animal=animal,

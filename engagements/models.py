@@ -3,12 +3,12 @@ from django.db import models
 
 from animals.models import Animal
 
-ENGAGEMENTS_TYPES_CHOICES = [("A", "Adoption"), ("S", "Sponsorship"), ("D", "Donate")]
+ENGAGEMENTS_TYPES_CHOICES = [("A", "Adopcion"), ("S", "Apadrinamiento"), ("D", "Donacion")]
 
 STATUS_CHOICES = [
-    ("P", "Pending"),
-    ("A", "Approved"),
-    ("R", "Rejected"),
+    ("P", "Pendiente"),
+    ("A", "Aprobada"),
+    ("R", "Rechazada"),
 ]
 
 

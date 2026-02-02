@@ -249,14 +249,13 @@ def generate_sponsorship_pdf(engagement, form_data):
         "current": "Actualmente tengo mascotas",
         "professional": "Trabajo o he trabajado con animales",
     }
-    
+
     experience_title = Paragraph("<b>EXPERIENCIA CON ANIMALES</b>", styles["Heading2"])
     elements.append(experience_title)
     elements.append(Spacer(1, 0.1 * inch))
-    
+
     experience_text = Paragraph(
-        experience_dict.get(form_data.get("has_pet_experience", ""), "N/A"),
-        styles["BodyText"]
+        experience_dict.get(form_data.get("has_pet_experience", ""), "N/A"), styles["BodyText"]
     )
     elements.append(experience_text)
     elements.append(Spacer(1, 0.2 * inch))
@@ -282,9 +281,13 @@ def generate_sponsorship_pdf(engagement, form_data):
         "track_progress": "Seguir su progreso de salud",
         "participate_events": "Participar en eventos especiales",
     }
-    
+
     selected_interactions = form_data.get("interaction_goals", [])
-    interaction_text = ", ".join([interaction_choices.get(i, i) for i in selected_interactions]) if selected_interactions else "N/A"
+    interaction_text = (
+        ", ".join([interaction_choices.get(i, i) for i in selected_interactions])
+        if selected_interactions
+        else "N/A"
+    )
 
     availability_dict = {
         "casual": "Casual - Algunas veces al mes",
@@ -302,8 +305,14 @@ def generate_sponsorship_pdf(engagement, form_data):
 
     sponsorship_data = [
         ["Cómo planea interactuar:", interaction_text],
-        ["Tiempo disponible:", availability_dict.get(form_data.get("availability_hours", ""), "N/A")],
-        ["Preferencias de notificaciones:", notification_dict.get(form_data.get("notification_preferences", ""), "N/A")],
+        [
+            "Tiempo disponible:",
+            availability_dict.get(form_data.get("availability_hours", ""), "N/A"),
+        ],
+        [
+            "Preferencias de notificaciones:",
+            notification_dict.get(form_data.get("notification_preferences", ""), "N/A"),
+        ],
     ]
 
     sponsorship_table = Table(sponsorship_data, colWidths=[2.5 * inch, 3.5 * inch])
@@ -324,7 +333,6 @@ def generate_sponsorship_pdf(engagement, form_data):
     elements.append(sponsorship_table)
     elements.append(Spacer(1, 0.3 * inch))
 
-    # FECHA
     date_text = Paragraph(
         f"<i>Fecha de solicitud: {engagement.created_at.strftime('%d/%m/%Y %H:%M')}</i>",
         styles["Normal"],

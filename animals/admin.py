@@ -18,9 +18,10 @@ class HistoryInline(admin.StackedInline):
                     "history_type",
                     "description",
                     "location_found",
+                    "clinical_document",
                     "entry_date",
                 ),
-                "description": "📝 Registra cómo y dónde llegó el animal. Para eventos médicos, usa el admin de 'Historias' después de guardar.",
+                "description": "Registra cómo y dónde llegó el animal. Para eventos médicos, usa el admin de 'Historias' después de guardar.",
             },
         ),
     )
@@ -248,6 +249,7 @@ class HistoryAdmin(admin.ModelAdmin):
         "history_type_badge",
         "status_badge",
         "urgent_icon",
+        "has_document",
         "progress_bar",
         "remaining_display",
         "description_preview",
@@ -264,14 +266,14 @@ class HistoryAdmin(admin.ModelAdmin):
     search_fields = ["animal__name", "description", "animal__shelter__name"]
 
     readonly_fields = [
-        "entry_date",
-        "created_at",
-        "updated_at",
-        "contributed_coins",
-        "progress_percentage",
-        "remaining_coins",
-        "is_fully_funded",
-        "is_health_event",
+        "entry_date_display",
+        "created_at_display",
+        "updated_at_display",
+        "contributed_coins_display",
+        "progress_percentage_display",
+        "remaining_coins_display",
+        "is_fully_funded_display",
+        "is_health_event_display",
     ]
 
     fieldsets = (
@@ -282,6 +284,7 @@ class HistoryAdmin(admin.ModelAdmin):
                     "animal",
                     "history_type",
                     "description",
+                    "clinical_document",
                     ("entry_date", "exit_date"),
                 )
             },
@@ -301,11 +304,11 @@ class HistoryAdmin(admin.ModelAdmin):
             "Financiamiento",
             {
                 "fields": (
-                    ("cost_coins", "contributed_coins"),
-                    "progress_percentage",
-                    "remaining_coins",
-                    "is_fully_funded",
-                    "is_health_event",
+                    ("cost_coins", "contributed_coins_display"),
+                    "progress_percentage_display",
+                    "remaining_coins_display",
+                    "is_fully_funded_display",
+                    "is_health_event_display",
                 ),
                 "classes": ("collapse",),
                 "description": "Sistema de contribuciones para tratamientos médicos",
@@ -313,7 +316,7 @@ class HistoryAdmin(admin.ModelAdmin):
         ),
         (
             "Metadatos",
-            {"fields": ("created_at", "updated_at"), "classes": ("collapse",)},
+            {"fields": ("created_at_display", "updated_at_display"), "classes": ("collapse",)},
         ),
     )
 
@@ -459,10 +462,10 @@ class HistoryAdmin(admin.ModelAdmin):
 
         self.message_user(
             request,
-            f"✅ {count} evento(s) marcado(s) como completado(s) y salud restaurada.",
+            f"{count} evento(s) marcado(s) como completado(s) y salud restaurada.",
         )
 
-    mark_as_completed.short_description = "✅ Marcar como completados"
+    mark_as_completed.short_description = "Marcar como completados"
 
     def apply_health_impact_action(self, request, queryset):
         """Aplica el impacto de salud para eventos pendientes"""
@@ -476,16 +479,16 @@ class HistoryAdmin(admin.ModelAdmin):
                 errors += 1
 
         if count > 0:
-            self.message_user(request, f"⚠️ Impacto aplicado a {count} animal(es). Salud reducida.")
+            self.message_user(request, f"Impacto aplicado a {count} animal(es). Salud reducida.")
 
         if errors > 0:
             self.message_user(
                 request,
-                f"⚠️ {errors} evento(s) no pudieron aplicarse (animal sin CareIndicator activo)",
+                f"{errors} evento(s) no pudieron aplicarse (animal sin CareIndicator activo)",
                 level="warning",
             )
 
-    apply_health_impact_action.short_description = "⚠️ Aplicar impacto en salud"
+    apply_health_impact_action.short_description = "Aplicar impacto en salud"
 
     def get_queryset(self, request):
         """Filtrar historial según albergue del animal"""
@@ -516,6 +519,76 @@ class HistoryAdmin(admin.ModelAdmin):
                             kwargs["queryset"] = Animal.objects.filter(shelter=request.user.shelter)
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def has_document(self, obj):
+        """Indica si tiene documento clínico adjunto"""
+        if obj.clinical_document:
+            return format_html(
+                '<a href="{}" target="_blank" style="background-color: #10b981; color: white; '
+                "padding: 4px 12px; border-radius: 6px; text-decoration: none; font-size: 11px; "
+                'font-weight: bold; display: inline-block;">📄 Ver Documento</a>',
+                obj.clinical_document.url,
+            )
+        return format_html('<span style="color: #9ca3af; font-size: 11px;">Sin documento</span>')
+
+    has_document.short_description = "Historia Clínica"
+
+    def entry_date_display(self, obj):
+        """Muestra fecha del evento en español"""
+        return obj.entry_date
+
+    entry_date_display.short_description = "Fecha del evento"
+
+    def created_at_display(self, obj):
+        """Muestra fecha de creación en español"""
+        return obj.created_at
+
+    created_at_display.short_description = "Fecha de creación"
+
+    def updated_at_display(self, obj):
+        """Muestra última actualización en español"""
+        return obj.updated_at
+
+    updated_at_display.short_description = "Última actualización"
+
+    def contributed_coins_display(self, obj):
+        """Muestra monedas contribuidas en español"""
+        return f"{obj.contributed_coins} monedas"
+
+    contributed_coins_display.short_description = "Monedas contribuidas"
+
+    def progress_percentage_display(self, obj):
+        """Muestra porcentaje de progreso en español"""
+        return f"{obj.progress_percentage}%"
+
+    progress_percentage_display.short_description = "Progreso del financiamiento"
+
+    def remaining_coins_display(self, obj):
+        """Muestra monedas restantes en español"""
+        if obj.remaining_coins == 0:
+            return format_html('<span style="color: #10b981; font-weight: bold;">Completado</span>')
+        return format_html(
+            '<span style="color: #ef4444; font-weight: bold;">{} monedas</span>',
+            obj.remaining_coins,
+        )
+
+    remaining_coins_display.short_description = "Monedas restantes"
+
+    def is_fully_funded_display(self, obj):
+        """Muestra si está completamente financiado en español"""
+        if obj.is_fully_funded:
+            return format_html('<span style="color: #10b981; font-weight: bold;">Sí</span>')
+        return format_html('<span style="color: #ef4444;">No</span>')
+
+    is_fully_funded_display.short_description = "¿Financiamiento completo?"
+
+    def is_health_event_display(self, obj):
+        """Muestra si es evento de salud en español"""
+        if obj.is_health_event:
+            return format_html('<span style="color: #3b82f6; font-weight: bold;">Sí</span>')
+        return format_html('<span style="color: #9ca3af;">No</span>')
+
+    is_health_event_display.short_description = "¿Es evento de salud?"
 
     def has_delete_permission(self, request, obj=None):
         """Solo Super Admin puede eliminar historial"""

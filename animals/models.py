@@ -1,6 +1,7 @@
 from datetime import date
 
 from cloudinary.models import CloudinaryField
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
@@ -9,7 +10,7 @@ from shelters.models import Shelter
 
 SEX_CHOICES = [("M", "Macho"), ("H", "Hembra")]
 SIZE_CHOICES = [("G", "Grande"), ("M", "Mediano"), ("P", "Pequeño")]
-AVAILABILITY_CHOICES = [("A", "Adoption"), ("S", "Sponsorship"), ("B", "Both")]
+AVAILABILITY_CHOICES = [("A", "Adopcion"), ("S", "Apadrinamiento"), ("B", "Ambos")]
 STATUS_CHOICES = [("O", "Huerfano"), ("S", "Apadrinado"), ("A", "Adoptado")]
 
 
@@ -74,7 +75,7 @@ HISTORY_TYPE_CHOICES = [
     ("O", "Otro"),
 ]
 
-STATUS_CHOICES = [
+HISTORY_STATUS_CHOICES = [
     ("P", "Pendiente"),
     ("T", "En tratamiento"),
     ("C", "Completado"),
@@ -96,11 +97,21 @@ class History(models.Model):
         null=True,
         help_text="Solo llenar si es un ingreso. Dejar vacío para eventos médicos.",
     )
+
+    clinical_document = CloudinaryField(
+        blank=True,
+        null=True,
+        resource_type="auto",
+        folder="clinical_histories",
+        verbose_name="Documento clínico",
+        help_text="Sube la historia clínica en formato PDF, JPG, JPEG, PNG o WEBP",
+    )
+
     entry_date = models.DateTimeField(default=timezone.now, verbose_name="Fecha de historia")
     exit_date = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de salida")
     status = models.CharField(
         max_length=1,
-        choices=STATUS_CHOICES,
+        choices=HISTORY_STATUS_CHOICES,
         default="C",
         verbose_name="Estado",
     )
@@ -143,6 +154,26 @@ class History(models.Model):
 
     def __str__(self):
         return f"{self.get_history_type_display()} - {self.animal.name if self.animal else 'Sin animal'}"
+
+    def clean(self):
+        """Validar formato de archivo clínico"""
+        super().clean()
+
+        if self.clinical_document:
+            try:
+                file_url = str(self.clinical_document.url)
+                extension = file_url.split(".")[-1].lower().split("?")[0]
+
+                allowed_formats = ["pdf", "jpg", "jpeg", "png", "webp"]
+
+                if extension not in allowed_formats:
+                    raise ValidationError(
+                        {
+                            "clinical_document": f'Formato no permitido. Solo se aceptan: {", ".join(allowed_formats).upper()}'
+                        }
+                    )
+            except Exception as e:
+                pass
 
     @property
     def is_health_event(self):

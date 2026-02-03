@@ -12,21 +12,21 @@
         Volver
       </a>
 
-      <a href="{% url 'gamifications:recharge_wallet' %}" class="px-6 py-3 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition font-semibold">
-        💰 Nueva Recarga
+      <a href="{% url 'gamifications:recharge_wallet' %}" class="px-6 py-3 bg-orange-400 text-white rounded-xl hover:bg-orange-600 transition font-semibold">
+        Nueva Recarga
       </a>
     </div>
 
     <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
 
-      <div class="bg-gradient-to-r from-blue-500 to-purple-600 p-8 text-white">
-        <h1 class="text-4xl font-bold mb-2">📜 Historial de Recargas</h1>
+      <div class="bg-blue-500 p-8 text-white">
+        <h1 class="text-4xl font-bold mb-2">Historial de Recargas</h1>
         <p class="text-blue-100">Todas tus transacciones y donaciones</p>
       </div>
 
       <div class="p-8">
 
-        <div class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-6 mb-8">
+        <div class="bg-zinc-50 rounded-2xl p-6 mb-8">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-gray-600 text-sm mb-1">Saldo Actual</p>
@@ -43,7 +43,7 @@
         <div class="space-y-4">
           {% for recharge in recharges %}
           <div class="border-2 {% if recharge.status == 'A' %}border-green-200 bg-green-50
-               {% elif recharge.status == 'P' %}border-yellow-200 bg-yellow-50
+               {% elif recharge.status == 'P' %}border-zinc-200 bg-zinc-50
                {% elif recharge.status == 'R' %}border-red-200 bg-red-50
                {% else %}border-gray-200 bg-gray-50{% endif %} rounded-2xl p-6">
 
@@ -51,9 +51,9 @@
               <div class="flex-1">
                 <div class="flex items-center space-x-3 mb-2">
                   <span class="text-3xl">
-                    {% if recharge.status == 'A' %}✅
-                    {% elif recharge.status == 'P' %}⏳
-                    {% elif recharge.status == 'R' %}❌
+                    {% if recharge.status == 'A' %}
+                    {% elif recharge.status == 'P' %}
+                    {% elif recharge.status == 'R' %}
                     {% else %}⚠️{% endif %}
                   </span>
                   <div>

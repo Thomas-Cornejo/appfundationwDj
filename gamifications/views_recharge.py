@@ -246,6 +246,7 @@ def recharge_callback(request):
         response = requests.get(
             f"{api_url}/{transaction_id}",
             headers={"Authorization": f"Bearer {settings.WOMPI_PUBLIC_KEY}"},
+            timeout=10,
         )
 
         if response.status_code == 200:

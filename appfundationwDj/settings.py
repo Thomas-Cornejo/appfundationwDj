@@ -146,9 +146,10 @@ if ENVIRONMENT == "local":
     }
 else:
     database_url = os.environ.get("DATABASE_URL")
-    
+
     if database_url:
         import dj_database_url
+
         DATABASES = {
             "default": dj_database_url.config(
                 default=database_url,

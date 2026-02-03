@@ -155,25 +155,33 @@ class History(models.Model):
     def __str__(self):
         return f"{self.get_history_type_display()} - {self.animal.name if self.animal else 'Sin animal'}"
 
-    def clean(self):
-        """Validar formato de archivo clínico"""
-        super().clean()
 
-        if self.clinical_document:
-            try:
-                file_url = str(self.clinical_document.url)
-                extension = file_url.split(".")[-1].lower().split("?")[0]
+def clean(self):
+    """Validar formato de archivo clínico"""
+    super().clean()
 
-                allowed_formats = ["pdf", "jpg", "jpeg", "png", "webp"]
+    if self.clinical_document:
+        try:
+            file_url = str(self.clinical_document.url)
+            extension = file_url.split(".")[-1].lower().split("?")[0]
 
-                if extension not in allowed_formats:
-                    raise ValidationError(
-                        {
-                            "clinical_document": f'Formato no permitido. Solo se aceptan: {", ".join(allowed_formats).upper()}'
-                        }
-                    )
-            except Exception as e:
-                pass
+            allowed_formats = ["pdf", "jpg", "jpeg", "png", "webp"]
+
+            if extension not in allowed_formats:
+                raise ValidationError(
+                    {
+                        "clinical_document": f'Formato no permitido. Solo se aceptan: {", ".join(allowed_formats).upper()}'
+                    }
+                )
+        except ValidationError:
+            raise
+        except AttributeError:
+            pass
+        except Exception as e:
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Error al validar documento clínico: {e}")
 
     @property
     def is_health_event(self):

@@ -1,0 +1,26 @@
+[MASTER]
+load-plugins=pylint_django
+django-settings-module=appfundationwDj.settings
+ignore=migrations
+
+[MESSAGES CONTROL]
+disable=
+    C0111,
+    R0903,
+    C0103,
+    W0212,
+    E1101
+
+[FORMAT]
+max-line-length=120
+indent-string='    '
+
+[BASIC]
+good-names=i,j,k,ex,Run,_,pk,id
+
+[DESIGN]
+max-args=7
+max-locals=15
+max-attributes=10
+min-public-methods=1
+max-public-methods=25

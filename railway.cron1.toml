@@ -1,0 +1,7 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "python manage.py degrade_indicators"
+cronSchedule = "0 */4 * * *"
+restartPolicyType = "NEVER"

@@ -1,7 +1,0 @@
-[build]
-builder = "nixpacks"
-
-[deploy]
-startCommand = "python manage.py reset_missions"
-cronSchedule = "1 5 * * *"
-restartPolicyType = "NEVER"

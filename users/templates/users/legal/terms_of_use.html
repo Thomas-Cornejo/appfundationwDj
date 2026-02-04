@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-12">
+  <h1 class="text-3xl font-bold text-gray-800 mb-6">Términos de Uso</h1>
+  <p class="text-sm text-gray-500 mb-8">Última actualización: {{ current_date|date:"d/m/Y" }}</p>
+
+  <div class="prose prose-sm max-w-none space-y-6 text-gray-700">
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-800 mb-3">1. Aceptación de los Términos</h2>
+      <p>
+        Al acceder y utilizar Zoolidaridad-Cúcuta, aceptas cumplir con estos Términos de Uso.
+        Si no estás de acuerdo, no debes utilizar la aplicación.
+      </p>
+    </section>
+    <section>
+        <h2 class="text-xl font-bold text-gray-800 mb-3">
+            Responsable del Servicio
+        </h2>
+        <p>
+            El responsable de la administración y operación de la plataforma
+            Zoolidaridad-Cúcuta es Thomas Cornejo, en calidad de desarrollador del
+            sistema y responsable del servicio.
+        </p>
+    </section>
+
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-800 mb-3">2. Descripción del Servicio</h2>
+      <p>
+        Zoolidaridad-Cúcuta es una aplicación web desarrollada por Thomas Cornejo, esta
+        facilita la gestión de adopciones y apadrinamientos de animales alojados en los diferentes albergues registrados en la aplicación.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-800 mb-3">3. Registro y Cuenta de Usuario</h2>
+      <ul class="list-disc list-inside space-y-2">
+        <li>Debes proporcionar información veraz y actualizada al registrarte.</li>
+        <li>Eres responsable de mantener la confidencialidad de tu contraseña.</li>
+        <li>Debes notificar inmediatamente cualquier uso no autorizado de tu cuenta.</li>
+        <li>Debes ser mayor de 18 años para crear una cuenta.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-800 mb-3">4. Uso Aceptable</h2>
+      <p>Te comprometes a:</p>
+      <ul class="list-disc list-inside space-y-2">
+        <li>Utilizar la aplicación de manera responsable y legal.</li>
+        <li>No proporcionar información falsa en solicitudes de adopción o apadrinamiento.</li>
+        <li>No utilizar la aplicación para fines comerciales no autorizados.</li>
+        <li>Cumplir con todos los requisitos establecidos para adopciones y apadrinamientos.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-800 mb-3">5. Proceso de Adopción y Apadrinamiento</h2>
+      <ul class="list-disc list-inside space-y-2">
+        <li>Las solicitudes están sujetas a aprobación por parte de la fundación.</li>
+        <li>La fundación se reserva el derecho de rechazar solicitudes sin dar explicaciones.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-800 mb-3">6. Pagos y Donaciones</h2>
+      <ul class="list-disc list-inside space-y-2">
+        <li>Los pagos de apadrinamiento son por medio de monedas virtuales y no son reembolsables, salvo disposición legal en contrario.</li>
+        <li>Las donaciones son voluntarias y no reembolsables.</li>
+        <li>Toda transacción genera un comprobante electrónico.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-800 mb-3">7. Propiedad Intelectual</h2>
+      <p>
+        Todo el contenido de Zoolidaridad-Cúcuta (textos, imágenes, logos, diseños) es propiedad
+        de la aplicación.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-800 mb-3">8. Limitación de Responsabilidad</h2>
+      <p>
+        La aplicación no se hace responsable por:
+      </p>
+      <ul class="list-disc list-inside space-y-2">
+        <li>Problemas técnicos o interrupciones del servicio.</li>
+        <li>Pérdida de datos por causas ajenas a la aplicación.</li>
+        <li>Comportamiento de los animales después de la adopción.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-800 mb-3">9. Modificaciones</h2>
+      <p>
+        Nos reservamos el derecho de modificar estos términos en cualquier momento.
+        Los cambios serán notificados a través de correo electrónico.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-800 mb-3">10. Contacto</h2>
+      <p>
+        Para cualquier consulta sobre estos términos:<br>
+        <strong>Email:</strong>contacto@zoolidaridad.com<br>
+        <strong>Dirección:</strong><br>
+        <strong>Teléfono:</strong>
+      </p>
+    </section>
+
+  </div>
+
+  <div class="mt-12 text-center">
+    <a href="javascript:history.back()" class="text-indigo-600 hover:underline">← Volver</a>
+  </div>
+</div>
+{% endblock %}

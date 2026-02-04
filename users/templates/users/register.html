@@ -3,12 +3,10 @@
 {% load crispy_forms_tags %}
 {% load static %}
 
-
 {% block content %}
 <div class="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-  <div
-    class="w-full max-w-4xl overflow-hidden rounded-2xl shadow-lg bg-white grid grid-cols-1 md:grid-cols-2"
-  >
+  <div class="w-full max-w-4xl overflow-hidden rounded-2xl shadow-lg bg-white grid grid-cols-1 md:grid-cols-2">
+
     <div class="p-8 sm:p-12 flex flex-col justify-center">
       <h2 class="text-3xl font-bold text-gray-800 mb-6">Bienvenido 👋</h2>
       <p class="text-gray-500 mb-6">
@@ -16,11 +14,39 @@
       </p>
 
       <form action="" method="post" class="space-y-4">
-        {% csrf_token %} {{ form|crispy }}
+        {% csrf_token %}
+
+        {{ form.username|as_crispy_field }}
+        {{ form.email|as_crispy_field }}
+        {{ form.phone_number|as_crispy_field }}
+        {{ form.password1|as_crispy_field }}
+        {{ form.password2|as_crispy_field }}
+
+        <div class="pt-4">
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              name="accepted_data_policy"
+              id="id_accepted_data_policy"
+              class="mt-1 w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
+              required
+            >
+            <span class="text-sm text-gray-600 leading-relaxed -mt-0.5">
+              Al hacer clic en «Registrarse» a continuación, aceptas los
+              <a href="{% url 'terms_of_use' %}" target="_blank" class="text-indigo-600 hover:underline font-medium">Términos de Uso</a>
+              y la
+              <a href="{% url 'privacy_policy' %}" target="_blank" class="text-indigo-600 hover:underline font-medium">Política de Privacidad</a>
+              de Zoolidaridad-Cúcuta.
+            </span>
+          </label>
+          {% if form.accepted_data_policy.errors %}
+            <p class="text-red-600 text-sm mt-2">{{ form.accepted_data_policy.errors.0 }}</p>
+          {% endif %}
+        </div>
 
         <button
           type="submit"
-          class="w-full rounded-lg bg-indigo-600 px-4 py-2 text-white font-semibold hover:bg-blue-500 transition duration-200"
+          class="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-white font-semibold hover:bg-indigo-700 transition duration-200"
         >
           Registrarse
         </button>

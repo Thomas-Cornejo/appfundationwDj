@@ -1,7 +1,9 @@
 from django.contrib import messages
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views.generic import CreateView, TemplateView
 
 from .forms import CustomUserCreationForm
@@ -78,3 +80,20 @@ def edit_profile(request):
             messages.error(request, f"Error al actualizar: {str(e)}")
 
     return render(request, "users/edit_profile.html", {"user": request.user})
+
+
+def register(request):
+    if request.method == "POST":
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            if form.cleaned_data.get("accepted_data_policy"):
+                user.accepted_data_policy = True
+                user.accepted_data_policy_at = timezone.now()
+            user.save()
+            login(request, user)
+            return redirect("home")
+    else:
+        form = CustomUserCreationForm()
+
+    return render(request, "users/register.html", {"form": form})

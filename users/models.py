@@ -22,6 +22,12 @@ class CustomUser(AbstractUser):
         verbose_name="Albergue asignado",
         help_text="Solo para Shelter Admins: albergue que gestionan",
     )
+    accepted_data_policy = models.BooleanField(
+        default=False, verbose_name="Términos y condicones aceptados"
+    )
+    accepted_data_policy_at = models.DateTimeField(
+        null=True, blank=True, verbose_name="Fecha de aceptación de términos"
+    )
     experience_points = models.PositiveIntegerField(default=0, verbose_name="Puntos de experiencia")
     coins = models.PositiveIntegerField(default=0, verbose_name="Monedas virtuales")
     created_at = models.DateTimeField(auto_now_add=True)

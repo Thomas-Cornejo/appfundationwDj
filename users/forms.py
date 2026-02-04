@@ -19,10 +19,22 @@ class CustomUserCreationForm(UserCreationForm):
         ),
         required=False,
     )
+    accepted_data_policy = forms.BooleanField(
+        required=True,
+        label="",
+        error_messages={"required": "Debes de aceptar los terminos y condiciones para continuar."},
+    )
 
     class Meta:
         model = CustomUser
-        fields = ("username", "email", "phone_number", "password1", "password2")
+        fields = (
+            "username",
+            "email",
+            "phone_number",
+            "password1",
+            "password2",
+            "accepted_data_policy",
+        )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

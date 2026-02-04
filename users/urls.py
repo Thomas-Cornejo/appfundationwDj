@@ -3,7 +3,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
 from . import views
-from .views import HomeView, RegisterView
+from .views import HomeView, RegisterView, TemplateView
 
 urlpatterns = [
     path("login/", LoginView.as_view(template_name="users/login.html"), name="login"),
@@ -39,5 +39,15 @@ urlpatterns = [
             template_name="users/password_reset_complete.html"
         ),
         name="password_reset_complete",
+    ),
+    path(
+        "terminos-de-uso/",
+        TemplateView.as_view(template_name="users/legal/terms_of_use.html"),
+        name="terms_of_use",
+    ),
+    path(
+        "politica-de-privacidad/",
+        TemplateView.as_view(template_name="users/legal/privacy_policy.html"),
+        name="privacy_policy",
     ),
 ]

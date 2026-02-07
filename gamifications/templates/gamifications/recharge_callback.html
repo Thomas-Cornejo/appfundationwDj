@@ -7,7 +7,7 @@
     {% if status == 'APPROVED' %}
     <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
       <div class="bg-gradient-to-r from-green-400 to-emerald-500 p-8 text-white text-center">
-        <div class="text-8xl mb-4">✅</div>
+        <div class="text-8xl mb-4"></div>
         <h1 class="text-4xl font-bold mb-2">¡Recarga Exitosa!</h1>
         <p class="text-green-100">Tu pago ha sido procesado correctamente</p>
       </div>
@@ -41,12 +41,12 @@
 
         <div class="flex space-x-4">
           <a href="{% url 'profile' %}"
-            class="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-4 rounded-xl text-center hover:from-purple-600 hover:to-pink-600 transition">
-            🏠 Ir al Perfil
+            class="flex-1 bg-sky-500 text-white font-bold py-4 rounded-xl text-center hover:bg-blue-600 transition">
+            Ir al Perfil
           </a>
           <a href="{% url 'gamifications:recharge_history' %}"
             class="flex-1 bg-gray-200 text-gray-800 font-bold py-4 rounded-xl text-center hover:bg-gray-300 transition">
-            📜 Ver Historial
+            Ver Historial
           </a>
         </div>
       </div>

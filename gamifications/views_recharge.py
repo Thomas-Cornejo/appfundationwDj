@@ -6,6 +6,7 @@ import requests
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Sum
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
@@ -347,7 +348,17 @@ def recharge_history(request):
     )
 
     user_wallets = Wallet.objects.filter(user=request.user).select_related("shelter")
+    total_coins = user_wallets.aggregate(total=Sum("balance"))["total"] or 0
 
-    context = {"user_wallets": user_wallets, "recharges": recharges}
+    total_cop_recharged = (
+        recharges.filter(status="A").aggregate(total=Sum("amount_cop"))["total"] or 0
+    )
+
+    context = {
+        "user_wallets": user_wallets,
+        "recharges": recharges,
+        "total_coins": total_coins,
+        "total_cop_recharged": total_cop_recharged,
+    }
 
     return render(request, "gamifications/recharge_history.html", context)

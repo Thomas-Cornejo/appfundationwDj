@@ -234,15 +234,14 @@
               <p class="text-sm text-gray-600">{{ event.entry_date|date:"d/m/Y" }}</p>
             </div>
           </div>
-
           <div class="mb-3">
             <div class="flex justify-between text-sm mb-2">
               <span class="text-gray-600">Progreso</span>
-              <span class="font-medium text-gray-900">{{ event.contributed_coins }}/{{ event.cost_coins }} monedas</span>
+              <span class="font-medium text-gray-900">{{ event.contributed_coins }}/{{ event.cost_coins }} monedas ({{ event.progress_percentage }}%)</span>
             </div>
             <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div class="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
-                style="width: {{ event.contributed_coins|floatformat:0 }}{{ event.cost_coins|floatformat:0 }}%"></div>
+              <div class="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500"
+                style="width: {{ event.progress_percentage }}%"></div>
             </div>
           </div>
 
@@ -349,28 +348,38 @@ async function contributeHealth(historyId, totalCost, contributed) {
   const remaining = totalCost - contributed;
   const amount = prompt(`¿Cuántas monedas quieres contribuir? (Faltan ${remaining})`);
 
-  if (!amount || isNaN(amount)) return;
+  if (!amount || isNaN(amount) || amount <= 0) {
+    showToast('Cantidad inválida', 'error');
+    return;
+  }
 
   try {
-    const formData = new FormData();
-    formData.append('amount', amount);
-
     const response = await fetch(`/gamifications/animal/${animalId}/health/${historyId}/contribute/`, {
       method: 'POST',
-      headers: {'X-CSRFToken': csrfToken},
-      body: formData
+      headers: {
+        'X-CSRFToken': csrfToken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ amount: parseInt(amount) })
     });
+
+    if (!response.ok) {
+      showToast(`Error del servidor (${response.status})`, 'error');
+      return;
+    }
 
     const data = await response.json();
 
     if (data.success) {
+      document.querySelector('.text-amber-900').textContent = data.new_balance;
       showToast(data.message);
-      setTimeout(() => location.reload(), 2000);
+      setTimeout(() => location.reload(), 1500);
     } else {
       showToast(data.error, 'error');
     }
+
   } catch (error) {
-    showToast('Error al contribuir', 'error');
+    showToast('Error de conexión', 'error');
   }
 }
 </script>

@@ -68,4 +68,10 @@ def animal_list(request, *args, **kwargs):
 
 def animal_detail(request, animal_id):
     animal = get_object_or_404(Animal, id=animal_id)
-    return render(request, "animals/animal_detail.html", {"animal": animal})
+
+    source = request.GET.get("source", None)
+    context = {
+        "animal": animal,
+        "source": source,
+    }
+    return render(request, "animals/animal_detail.html", context)

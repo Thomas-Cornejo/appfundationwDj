@@ -29,12 +29,12 @@
         <div class="bg-zinc-50 rounded-2xl p-6 mb-8">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-gray-600 text-sm mb-1">Saldo Actual</p>
-              <p class="text-5xl font-bold text-orange-600">{{ wallet.balance }} 🪙</p>
+              <p class="text-gray-600 text-sm mb-1">Saldo Total (Todas las billeteras)</p>
+              <p class="text-5xl font-bold text-orange-600">{{ total_coins }} 🪙</p>
             </div>
             <div class="text-right">
               <p class="text-gray-600 text-sm mb-1">Total Recargado</p>
-              <p class="text-2xl font-bold text-gray-800">${{ wallet.total_earned|floatformat:0 }} COP</p>
+              <p class="text-2xl font-bold text-gray-800">${{ total_cop_recharged|floatformat:0 }} COP</p>
             </div>
           </div>
         </div>
@@ -85,7 +85,7 @@
               </div>
               <div>
                 <p class="text-sm text-gray-600 mb-1">Albergue</p>
-                <p class="font-semibold text-gray-800">{{ recharge.shelter.name }}</p>
+                <p class="font-semibold text-gray-800">{{ recharge.wallet.shelter.name }}</p>
               </div>
             </div>
 

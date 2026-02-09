@@ -27,7 +27,6 @@ urlpatterns = [
     path("animals/", include("animals.urls")),
     path("engagements/", include("engagements.urls")),
     path("gamifications/", include("gamifications.urls")),
-    path("silk/", include("silk.urls", namespace="silk")),
     path("", RedirectView.as_view(url="/users/home/", permanent=False), name="index"),
 ]
 

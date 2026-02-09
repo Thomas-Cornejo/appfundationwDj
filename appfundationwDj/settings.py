@@ -95,7 +95,6 @@ INSTALLED_APPS = [
     "cloudinary_storage",
     "phonenumber_field",
     "shelters",
-    "silk",
     "users",
     "breeds",
     "animals",
@@ -108,7 +107,6 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "silk.middleware.SilkyMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -340,11 +338,3 @@ JAZZMIN_SETTINGS = {
     ],
     "navigation_expanded": True,
 }
-
-SILKY_PYTHON_PROFILER = True
-SILKY_PYTHON_PROFILER_BINARY = True
-SILKY_MAX_REQUEST_BODY_SIZE = -1  # Sin límite
-SILKY_MAX_RESPONSE_BODY_SIZE = -1
-SILKY_INTERCEPT_PERCENT = 100  # Registrar 100% de peticiones
-SILKY_MAX_RECORDED_REQUESTS = 10000
-SILKY_META = True

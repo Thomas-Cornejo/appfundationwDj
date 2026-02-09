@@ -75,15 +75,19 @@ class CareIndicatorAdmin(admin.ModelAdmin):
     actions = ["reset_indicators"]
 
     def has_add_permission(self, request):
-        """Disable the creation of indicators from the admin panel"""
+        """Los indicadores se crean automáticamente"""
         return False
     
     def has_delete_permission(self, request, obj=None):
-        """Disable the elimiantions of indicators from the admin panel"""
+        """Solo Super Admin puede eliminar indicadores"""
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name="Super Admin").exists():
+            return True
         return False
 
     def user_display(self, obj):
-        """Shows the user (godfather)"""
+        """Muestra el usuario (padrino)"""
         try:
             return obj.user.username
         except Exception as e:
@@ -92,7 +96,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
     user_display.short_description = "Usuario"
 
     def animal_display(self, obj):
-        """Show the animal"""
+        """Muestra el animal"""
         try:
             return obj.animal.name
         except Exception as e:
@@ -101,7 +105,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
     animal_display.short_description = "Animal"
 
     def shelter_display(self, obj):
-        """Show the hostel"""
+        """Muestra el albergue"""
         try:
             return obj.shelter.name
         except Exception as e:
@@ -110,7 +114,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
     shelter_display.short_description = "Albergue"
 
     def food_badge(self, obj):
-        """Colored badge for food level"""
+        """Badge colorizado para nivel de comida"""
         try:
             return self._create_level_badge(obj.food_level, "🍖")
         except Exception as e:
@@ -119,7 +123,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
     food_badge.short_description = "Comida"
 
     def hygiene_badge(self, obj):
-        """Colored badge for hygiene level"""
+        """Badge colorizado para nivel de higiene"""
         try:
             return self._create_level_badge(obj.hygiene_level, "🧼")
         except Exception as e:
@@ -128,7 +132,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
     hygiene_badge.short_description = "Higiene"
 
     def health_badge(self, obj):
-        """Colored badge for health level"""
+        """Badge colorizado para nivel de salud"""
         try:
             return self._create_level_badge(obj.health_level, "❤️")
         except Exception as e:
@@ -137,7 +141,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
     health_badge.short_description = "Salud"
 
     def overall_badge(self, obj):
-        """Badge for general status"""
+        """Badge para estado general"""
         try:
             status = obj.overall_status
             color = self._get_color_by_level(status)
@@ -153,7 +157,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
     overall_badge.short_description = "Estado General"
 
     def needs_attention_icon(self, obj):
-        """Alert icon if you need attention"""
+        """Icono de alerta si necesita atención"""
         try:
             if obj.needs_attention():
                 return format_html(
@@ -166,7 +170,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
     needs_attention_icon.short_description = "Alerta"
 
     def has_health_events_icon(self, obj):
-        """It shows if the animal has any pending health events."""
+        """Muestra si el animal tiene eventos de salud pendientes"""
         try:
             from animals.models import History
 
@@ -187,7 +191,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
     has_health_events_icon.short_description = "🏥 Eventos"
 
     def _create_level_badge(self, level, icon):
-        """Create a color-coded badge according to the level"""
+        """Crea un badge colorizado según el nivel"""
         try:
             level = int(level) if level is not None else 0
             color = self._get_color_by_level(level)
@@ -203,7 +207,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
             return format_html('<span style="color: red;">Error: {}</span>', str(e))
 
     def _get_color_by_level(self, level):
-        """Returns color according to level"""
+        """Retorna color según nivel"""
         try:
             level = int(level) if level is not None else 0
             if level >= 70:
@@ -216,7 +220,7 @@ class CareIndicatorAdmin(admin.ModelAdmin):
             return "#6b7280"
 
     def reset_indicators(self, request, queryset):
-        """Reset all indicators to 100%"""
+        """Resetear todos los indicadores al 100%"""
         try:
             count = queryset.count()
             queryset.update(
@@ -227,25 +231,25 @@ class CareIndicatorAdmin(admin.ModelAdmin):
                 last_hygiene_update=timezone.now(),
                 last_health_update=timezone.now(),
             )
-            self.message_user(request, f"{count} indicador(es) reseteado(s) al 100%%.")
+            self.message_user(request, f"{count} indicador(es) reseteado(s) al 100%.")
         except Exception as e:
             self.message_user(request, f"Error al resetear: {str(e)}", level="error")
 
-    reset_indicators.short_description = "Resetear al 100%%"
+    reset_indicators.short_description = "Resetear al 100%"
 
     def get_queryset(self, request):
-        """Filter by permissions"""
+        """Filtrar por permisos usando Groups"""
         qs = super().get_queryset(request)
 
         if request.user.is_superuser:
             return qs
-
-        if hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
+        if request.user.groups.filter(name="Super Admin").exists():
             return qs
 
-        if hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
+        if request.user.groups.filter(name="Shelter Admin").exists():
             if hasattr(request.user, "shelter") and request.user.shelter:
                 return qs.filter(engagement__animal__shelter=request.user.shelter)
+            return qs.none()
 
         return qs.none()
 
@@ -292,19 +296,19 @@ class CareActionAdmin(admin.ModelAdmin):
     )
 
     def user_display(self, obj):
-        """User who performed the action"""
+        """Usuario que realizó la acción"""
         return obj.user.username
 
     user_display.short_description = "Usuario"
 
     def animal_display(self, obj):
-        """Animal that was cared for"""
+        """Animal que fue cuidado"""
         return obj.animal.name
 
     animal_display.short_description = "Animal"
 
     def action_badge(self, obj):
-        """Badge color according to the type of action"""
+        """Badge colorizado según el tipo de acción"""
         colors = {
             "F": "#10b981",
             "H": "#3b82f6",
@@ -325,30 +329,113 @@ class CareActionAdmin(admin.ModelAdmin):
     action_badge.short_description = "Tipo"
 
     def has_add_permission(self, request):
-        """No se pueden crear acciones manualmente desde el admin"""
+        """Las acciones se crean desde la aplicación"""
         return False
 
     def has_delete_permission(self, request, obj=None):
-        """Only Super Admin can delete actions"""
+        """Solo Super Admin puede eliminar acciones"""
         if request.user.is_superuser:
             return True
-        if hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
+        if request.user.groups.filter(name="Super Admin").exists():
             return True
         return False
 
     def get_queryset(self, request):
-        """Filter by permissions"""
+        """Filtrar por permisos usando Groups"""
         qs = super().get_queryset(request)
 
         if request.user.is_superuser:
             return qs
-
-        if hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
+        if request.user.groups.filter(name="Super Admin").exists():
             return qs
 
-        if hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
+        if request.user.groups.filter(name="Shelter Admin").exists():
             if hasattr(request.user, "shelter") and request.user.shelter:
                 return qs.filter(care_indicator__engagement__animal__shelter=request.user.shelter)
+            return qs.none()
+
+        return qs.none()
+
+
+@admin.register(Wallet)
+class WalletAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "user",
+        "shelter",
+        "balance_display",
+        "total_earned",
+        "total_spent",
+        "created_at",
+    ]
+    list_filter = ["shelter", "created_at"]
+    search_fields = ["user__username", "shelter__name"]
+    readonly_fields = [
+        "user",
+        "shelter",
+        "balance",
+        "total_earned",
+        "total_spent",
+        "created_at",
+        "updated_at",
+    ]
+
+    fieldsets = (
+        (
+            "Información de la Billetera",
+            {"fields": ("user", "shelter")},
+        ),
+        (
+            "Monedas",
+            {
+                "fields": (
+                    "balance",
+                    "total_earned",
+                    "total_spent",
+                )
+            },
+        ),
+        (
+            "Fechas",
+            {"fields": ("created_at", "updated_at"), "classes": ("collapse",)},
+        ),
+    )
+
+    def balance_display(self, obj):
+        """Formato bonito para el balance"""
+        return format_html(
+            '<span style="background-color: #10b981; color: white; padding: 4px 12px; '
+            'border-radius: 12px; font-weight: bold;">🪙 {} monedas</span>',
+            obj.balance,
+        )
+
+    balance_display.short_description = "Balance"
+
+    def has_add_permission(self, request):
+        """Las billeteras se crean automáticamente"""
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """Solo Super Admin puede eliminar billeteras"""
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name="Super Admin").exists():
+            return True
+        return False
+
+    def get_queryset(self, request):
+        """Filtrar billeteras por permisos usando Groups"""
+        qs = super().get_queryset(request)
+
+        if request.user.is_superuser:
+            return qs
+        if request.user.groups.filter(name="Super Admin").exists():
+            return qs
+
+        if request.user.groups.filter(name="Shelter Admin").exists():
+            if hasattr(request.user, "shelter") and request.user.shelter:
+                return qs.filter(shelter=request.user.shelter)
+            return qs.none()
 
         return qs.none()
 
@@ -359,14 +446,15 @@ class WalletTransactionAdmin(admin.ModelAdmin):
         "id",
         "created_at",
         "user_display",
+        "shelter_display",
         "transaction_badge",
         "amount_display",
         "description",
     ]
 
-    list_filter = ["transaction_type", "created_at"]
+    list_filter = ["transaction_type", "created_at", "wallet__shelter"]
 
-    search_fields = ["wallet__user__username", "description"]
+    search_fields = ["wallet__user__username", "description", "wallet__shelter__name"]
 
     readonly_fields = [
         "wallet",
@@ -392,13 +480,19 @@ class WalletTransactionAdmin(admin.ModelAdmin):
     )
 
     def user_display(self, obj):
-        """Transaction user"""
+        """Usuario de la transacción"""
         return obj.wallet.user.username
 
     user_display.short_description = "Usuario"
 
+    def shelter_display(self, obj):
+        """Albergue de la transacción"""
+        return obj.wallet.shelter.name if obj.wallet.shelter else "-"
+
+    shelter_display.short_description = "Albergue"
+
     def transaction_badge(self, obj):
-        """Badge according to transaction type"""
+        """Badge según tipo de transacción"""
         if obj.transaction_type == "E":
             color = "#10b981"
             icon = "💰"
@@ -419,11 +513,11 @@ class WalletTransactionAdmin(admin.ModelAdmin):
     transaction_badge.short_description = "Tipo"
 
     def amount_display(self, obj):
-        """Show the signed amount"""
+        """Muestra el monto con signo"""
         symbol = "+" if obj.transaction_type == "E" else "-"
         color = "#10b981" if obj.transaction_type == "E" else "#ef4444"
         return format_html(
-            '<span style="color: {}; font-weight: bold;">{}{}</span>',
+            '<span style="color: {}; font-weight: bold;">{}{} 🪙</span>',
             color,
             symbol,
             obj.amount,
@@ -432,16 +526,32 @@ class WalletTransactionAdmin(admin.ModelAdmin):
     amount_display.short_description = "Monto"
 
     def has_add_permission(self, request):
-        """Transactions cannot be created manually"""
+        """Las transacciones se crean automáticamente"""
         return False
 
     def has_delete_permission(self, request, obj=None):
-        """Only Super Admin can delete transactions"""
+        """Solo Super Admin puede eliminar transacciones"""
         if request.user.is_superuser:
             return True
-        if hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
+        if request.user.groups.filter(name="Super Admin").exists():
             return True
         return False
+
+    def get_queryset(self, request):
+        """Filtrar transacciones por permisos usando Groups"""
+        qs = super().get_queryset(request)
+
+        if request.user.is_superuser:
+            return qs
+        if request.user.groups.filter(name="Super Admin").exists():
+            return qs
+
+        if request.user.groups.filter(name="Shelter Admin").exists():
+            if hasattr(request.user, "shelter") and request.user.shelter:
+                return qs.filter(wallet__shelter=request.user.shelter)
+            return qs.none()
+
+        return qs.none()
 
 
 @admin.register(WalletRecharge)
@@ -458,9 +568,9 @@ class WalletRechargeAdmin(admin.ModelAdmin):
         "approve_button",
     ]
 
-    list_filter = ["status", "payment_method", "created_at"]
+    list_filter = ["status", "payment_method", "created_at", "wallet__shelter"]
 
-    search_fields = ["wallet__user__username", "transaction_id", "payment_reference"]
+    search_fields = ["wallet__user__username", "transaction_id", "payment_reference", "wallet__shelter__name"]
 
     readonly_fields = [
         "wallet",
@@ -483,23 +593,23 @@ class WalletRechargeAdmin(admin.ModelAdmin):
     actions = ["approve_recharges", "reject_recharges"]
 
     def has_add_permission(self, request):
-        """Disable the creation of recharge from the admin panel"""
+        """Las recargas se crean desde la aplicación"""
         return False
 
     def user_display(self, obj):
-        """User who made the recharge"""
+        """Usuario que hizo la recarga"""
         return obj.wallet.user.username
 
     user_display.short_description = "Usuario"
 
     def shelter_display(self, obj):
-        """Shelter where the recharge was made"""
+        """Albergue donde se hizo la recarga"""
         return obj.wallet.shelter.name if obj.wallet.shelter else "-"
 
     shelter_display.short_description = "Albergue"
 
     def status_badge(self, obj):
-        """Badge color according to state"""
+        """Badge colorizado según estado"""
         colors = {
             "P": "#f59e0b",
             "A": "#10b981",
@@ -518,7 +628,7 @@ class WalletRechargeAdmin(admin.ModelAdmin):
     status_badge.short_description = "Estado"
 
     def approve_button(self, obj):
-        """Button for quick approval"""
+        """Botón para aprobación rápida"""
         if obj.status == "P":
             return format_html(
                 '<a class="button" href="#" onclick="return false;" '
@@ -530,7 +640,7 @@ class WalletRechargeAdmin(admin.ModelAdmin):
     approve_button.short_description = "Acción"
 
     def approve_recharges(self, request, queryset):
-        """Approve pending recharges"""
+        """Aprobar recargas pendientes"""
         count = 0
         for recharge in queryset.filter(status="P"):
             if recharge.approve():
@@ -541,7 +651,7 @@ class WalletRechargeAdmin(admin.ModelAdmin):
     approve_recharges.short_description = "Aprobar recargas seleccionadas"
 
     def reject_recharges(self, request, queryset):
-        """Approve pending recharges"""
+        """Rechazar recargas pendientes"""
         count = 0
         for recharge in queryset.filter(status="P"):
             if recharge.reject():
@@ -552,18 +662,18 @@ class WalletRechargeAdmin(admin.ModelAdmin):
     reject_recharges.short_description = "Rechazar recargas seleccionadas"
 
     def get_queryset(self, request):
-        """Filter by permissions"""
+        """Filtrar recargas por permisos usando Groups"""
         qs = super().get_queryset(request)
 
         if request.user.is_superuser:
             return qs
-
-        if hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
+        if request.user.groups.filter(name="Super Admin").exists():
             return qs
 
-        if hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
+        if request.user.groups.filter(name="Shelter Admin").exists():
             if hasattr(request.user, "shelter") and request.user.shelter:
                 return qs.filter(wallet__shelter=request.user.shelter)
+            return qs.none()
 
         return qs.none()
 
@@ -615,12 +725,12 @@ class DirectPaymentAdmin(admin.ModelAdmin):
     )
 
     def amount_cop_formatted(self, obj):
-        return f"${obj.amount_cop:,.2f}"
+        return f"${obj.amount_cop:,.2f} COP"
 
     amount_cop_formatted.short_description = "Monto"
 
     def animal(self, obj):
-        return obj.history.animal.name
+        return obj.history.animal.name if obj.history else "-"
 
     animal.short_description = "Animal"
 
@@ -653,71 +763,32 @@ class DirectPaymentAdmin(admin.ModelAdmin):
     transfer_action.short_description = "Acción"
 
     def has_add_permission(self, request):
+        """Los pagos directos se crean desde la aplicación"""
         return False
 
     def has_delete_permission(self, request, obj=None):
-        return request.user.is_superuser
-
-
-@admin.register(Wallet)
-class WalletAdmin(admin.ModelAdmin):
-    list_display = [
-        "id",
-        "user",
-        "shelter",
-        "balance_display",
-        "total_earned",
-        "total_spent",
-        "created_at",
-    ]
-    list_filter = ["shelter", "created_at"]
-    search_fields = ["user__username", "shelter__name"]
-    readonly_fields = [
-        "user",
-        "shelter",
-        "balance",
-        "total_earned",
-        "total_spent",
-        "created_at",
-        "updated_at",
-    ]
-
-    fieldsets = (
-        (
-            "Información del Balance",
-            {"fields": ("user", "shelter")},
-        ),
-        (
-            "Monedas",
-            {
-                "fields": (
-                    "balance",
-                    "total_earned",
-                    "total_spent",
-                )
-            },
-        ),
-        (
-            "Fechas",
-            {"fields": ("created_at", "updated_at"), "classes": ("collapse",)},
-        ),
-    )
-
-    def balance_display(self, obj):
-        """Formato bonito para el balance"""
-        return format_html(
-            '<span style="background-color: #10b981; color: white; padding: 4px 12px; '
-            'border-radius: 12px; font-weight: bold;">{} monedas</span>',
-            obj.balance,
-        )
-
-    balance_display.short_description = "Balance"
-
-    def has_add_permission(self, request):
+        """Solo Super Admin puede eliminar pagos"""
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name="Super Admin").exists():
+            return True
         return False
 
-    def has_delete_permission(self, request, obj=None):
-        return request.user.is_superuser
+    def get_queryset(self, request):
+        """Filtrar pagos directos por permisos usando Groups"""
+        qs = super().get_queryset(request)
+
+        if request.user.is_superuser:
+            return qs
+        if request.user.groups.filter(name="Super Admin").exists():
+            return qs
+
+        if request.user.groups.filter(name="Shelter Admin").exists():
+            if hasattr(request.user, "shelter") and request.user.shelter:
+                return qs.filter(shelter=request.user.shelter)
+            return qs.none()
+
+        return qs.none()
 
 
 @admin.register(Rank)
@@ -740,6 +811,46 @@ class RankAdmin(admin.ModelAdmin):
             },
         ),
     )
+
+    def has_module_permission(self, request):
+        """Solo Super Admin puede ver el módulo de Rangos"""
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name="Super Admin").exists():
+            return True
+        return False
+
+    def has_view_permission(self, request, obj=None):
+        """Solo Super Admin puede ver rangos"""
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name="Super Admin").exists():
+            return True
+        return False
+
+    def has_add_permission(self, request):
+        """Solo Super Admin puede crear rangos"""
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name="Super Admin").exists():
+            return True
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        """Solo Super Admin puede editar rangos"""
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name="Super Admin").exists():
+            return True
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """Solo Super Admin puede eliminar rangos"""
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name="Super Admin").exists():
+            return True
+        return False
 
 
 @admin.register(Mission)
@@ -785,6 +896,46 @@ class MissionAdmin(admin.ModelAdmin):
             },
         ),
     )
+
+    def has_module_permission(self, request):
+        """Solo Super Admin puede ver el módulo de Misiones"""
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name="Super Admin").exists():
+            return True
+        return False
+
+    def has_view_permission(self, request, obj=None):
+        """Solo Super Admin puede ver misiones"""
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name="Super Admin").exists():
+            return True
+        return False
+
+    def has_add_permission(self, request):
+        """Solo Super Admin puede crear misiones"""
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name="Super Admin").exists():
+            return True
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        """Solo Super Admin puede editar misiones"""
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name="Super Admin").exists():
+            return True
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """Solo Super Admin puede eliminar misiones"""
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name="Super Admin").exists():
+            return True
+        return False
 
 
 @admin.register(UserMissionProgress)
@@ -839,3 +990,15 @@ class UserMissionProgressAdmin(admin.ModelAdmin):
             },
         ),
     )
+
+    def has_add_permission(self, request):
+        """El progreso se crea automáticamente"""
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """Solo Super Admin puede eliminar progreso"""
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name="Super Admin").exists():
+            return True
+        return False

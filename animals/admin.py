@@ -128,15 +128,50 @@ class AnimalAdmin(admin.ModelAdmin):
 
         if request.user.is_superuser:
             return qs
-
         if hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
             return qs
 
         if hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
             if hasattr(request.user, "shelter") and request.user.shelter:
                 return qs.filter(shelter=request.user.shelter)
+            return qs.none()
 
         return qs.none()
+
+    def get_readonly_fields(self, request, obj=None):
+        """Hacer shelter readonly para Shelter Admins al EDITAR"""
+        readonly = list(self.readonly_fields)
+
+        if obj is not None:
+            if hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
+                if "shelter" not in readonly:
+                    readonly.append("shelter")
+
+        return readonly
+
+    def get_fieldsets(self, request, obj=None):
+        """Ocultar campo shelter para Shelter Admins al CREAR"""
+        fieldsets = list(super().get_fieldsets(request, obj))
+
+        if obj is None:
+            if hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
+                for i, (name, opts) in enumerate(fieldsets):
+                    if name == "Albergue y Disponibilidad":
+                        fields = list(opts["fields"])
+                        if "shelter" in fields:
+                            fields.remove("shelter")
+                        fieldsets[i] = (name, {**opts, "fields": tuple(fields)})
+
+        return tuple(fieldsets)
+
+    def save_model(self, request, obj, form, change):
+        """Auto-asignar el shelter del Shelter Admin al CREAR"""
+        if not change:
+            if hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
+                if hasattr(request.user, "shelter") and request.user.shelter:
+                    obj.shelter = request.user.shelter
+
+        super().save_model(request, obj, form, change)
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         """Restringir opciones de ForeignKey según permisos"""
@@ -148,8 +183,8 @@ class AnimalAdmin(admin.ModelAdmin):
             elif hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
                 if hasattr(request.user, "shelter") and request.user.shelter:
                     kwargs["queryset"] = Shelter.objects.filter(id=request.user.shelter.id)
-                    if not kwargs.get("initial"):
-                        kwargs["initial"] = request.user.shelter.id
+                else:
+                    kwargs["queryset"] = Shelter.objects.none()
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
@@ -172,7 +207,7 @@ class AnimalAdmin(admin.ModelAdmin):
         return False
 
     def has_change_permission(self, request, obj=None):
-        """Super Admin y Shelter Admin pueden editar animales"""
+        """Super Admin y Shelter Admin pueden editar animales DE SU ALBERGUE"""
         if request.user.is_superuser:
             return True
         if hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
@@ -181,7 +216,7 @@ class AnimalAdmin(admin.ModelAdmin):
         if hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
             if obj is None:
                 return True
-            if hasattr(request.user, "shelter"):
+            if hasattr(request.user, "shelter") and request.user.shelter:
                 return obj.shelter == request.user.shelter
 
         return False
@@ -232,7 +267,7 @@ class AnimalAdmin(admin.ModelAdmin):
 
                 messages.warning(
                     request,
-                    f"⚠️ Advertencia: {animal.name} fue creado sin historia de ingreso. "
+                    f"Advertencia: {animal.name} fue creado sin historia de ingreso. "
                     "Por favor, agrega una historia en la pestaña 'Historias'.",
                 )
 
@@ -496,27 +531,28 @@ class HistoryAdmin(admin.ModelAdmin):
 
         if request.user.is_superuser:
             return qs
-
         if hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
             return qs
 
         if hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
             if hasattr(request.user, "shelter") and request.user.shelter:
                 return qs.filter(animal__shelter=request.user.shelter)
+            return qs.none()
 
         return qs.none()
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         """Restringir animales visibles al crear historial"""
         if db_field.name == "animal":
-            if not request.user.is_superuser:
-                if not (hasattr(request.user, "is_superadmin") and request.user.is_superadmin()):
-                    if (
-                        hasattr(request.user, "is_shelter_admin")
-                        and request.user.is_shelter_admin()
-                    ):
-                        if hasattr(request.user, "shelter") and request.user.shelter:
-                            kwargs["queryset"] = Animal.objects.filter(shelter=request.user.shelter)
+            if request.user.is_superuser:
+                pass
+            elif hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
+                pass
+            elif hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
+                if hasattr(request.user, "shelter") and request.user.shelter:
+                    kwargs["queryset"] = Animal.objects.filter(shelter=request.user.shelter)
+                else:
+                    kwargs["queryset"] = Animal.objects.none()
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 

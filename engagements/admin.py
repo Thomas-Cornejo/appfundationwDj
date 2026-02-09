@@ -68,7 +68,7 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
 
     def shelter_display(self, obj):
         """Show the animal's shelter"""
-        return obj.animal.shelter.name
+        return obj.animal.shelter.name if obj.animal.shelter else "-"
 
     shelter_display.short_description = "Albergue"
 
@@ -76,23 +76,50 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
         """Filter engagements based on user role"""
         qs = super().get_queryset(request)
 
-        if request.user.is_superuser or request.user.is_superadmin():
+        if request.user.is_superuser:
+            return qs
+        if request.user.groups.filter(name="Super Admin").exists():
             return qs
 
-        if request.user.is_shelter_admin() and request.user.shelter:
-            return qs.filter(animal__shelter=request.user.shelter)
+        if request.user.groups.filter(name="Shelter Admin").exists():
+            if hasattr(request.user, "shelter") and request.user.shelter:
+                return qs.filter(animal__shelter=request.user.shelter)
+            return qs.none()
 
         return qs.none()
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        """Limitar animales disponibles según el rol"""
+        if db_field.name == "animal":
+            if request.user.is_superuser:
+                pass
+            elif request.user.groups.filter(name="Super Admin").exists():
+                pass
+            elif request.user.groups.filter(name="Shelter Admin").exists():
+                if hasattr(request.user, "shelter") and request.user.shelter:
+                    from animals.models import Animal
+
+                    kwargs["queryset"] = Animal.objects.filter(shelter=request.user.shelter)
+                else:
+                    from animals.models import Animal
+
+                    kwargs["queryset"] = Animal.objects.none()
+
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
     def has_add_permission(self, request):
-        """Superadmins y superusers pueden crear engagements manualmente (para pruebas)"""
-        if request.user.is_superuser or request.user.is_superadmin():
+        """Super Admin y Shelter Admin pueden crear engagements manualmente"""
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name__in=["Super Admin", "Shelter Admin"]).exists():
             return True
         return False
 
     def has_delete_permission(self, request, obj=None):
         """Only Super Admin can delete engagements"""
-        if request.user.is_superuser or request.user.is_superadmin():
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name="Super Admin").exists():
             return True
         return False
 
@@ -101,13 +128,17 @@ class AnimalEngagementAdmin(admin.ModelAdmin):
         Super Admin and Shelter Admin can change the status.
         Shelter Admin can only change engagements for their shelter.
         """
-        if request.user.is_superuser or request.user.is_superadmin():
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name="Super Admin").exists():
             return True
 
-        if request.user.is_shelter_admin():
+        if request.user.groups.filter(name="Shelter Admin").exists():
             if obj is None:
                 return True
-            return obj.animal.shelter == request.user.shelter
+            if hasattr(request.user, "shelter") and request.user.shelter:
+                return obj.animal.shelter == request.user.shelter
+            return False
 
         return False
 
@@ -266,39 +297,66 @@ class VisitAdmin(admin.ModelAdmin):
         """Filtrar visitas según el rol del usuario"""
         qs = super().get_queryset(request)
 
-        if request.user.is_superuser or request.user.is_superadmin():
+        if request.user.is_superuser:
+            return qs
+        if request.user.groups.filter(name="Super Admin").exists():
             return qs
 
-        if request.user.is_shelter_admin() and request.user.shelter:
-            return qs.filter(animal_engagement__animal__shelter=request.user.shelter)
+        if request.user.groups.filter(name="Shelter Admin").exists():
+            if hasattr(request.user, "shelter") and request.user.shelter:
+                return qs.filter(animal_engagement__animal__shelter=request.user.shelter)
+            return qs.none()
 
         return qs.none()
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        """Limitar engagements disponibles según el rol"""
+        if db_field.name == "animal_engagement":
+            if request.user.is_superuser:
+                pass
+            elif request.user.groups.filter(name="Super Admin").exists():
+                pass
+
+            elif request.user.groups.filter(name="Shelter Admin").exists():
+                if hasattr(request.user, "shelter") and request.user.shelter:
+                    kwargs["queryset"] = AnimalEngagement.objects.filter(
+                        animal__shelter=request.user.shelter
+                    )
+                else:
+                    kwargs["queryset"] = AnimalEngagement.objects.none()
+
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
     def has_add_permission(self, request):
-        """Superadmins y Shelter Admins pueden crear visitas"""
-        if (
-            request.user.is_superuser
-            or request.user.is_superadmin()
-            or request.user.is_shelter_admin()
-        ):
+        """Super Admin y Shelter Admins pueden crear visitas"""
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name__in=["Super Admin", "Shelter Admin"]).exists():
             return True
         return False
 
     def has_delete_permission(self, request, obj=None):
         """Solo Super Admin puede eliminar visitas"""
-        if request.user.is_superuser or request.user.is_superadmin():
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name="Super Admin").exists():
             return True
         return False
 
     def has_change_permission(self, request, obj=None):
         """Super Admin y Shelter Admin pueden modificar visitas"""
-        if request.user.is_superuser or request.user.is_superadmin():
+
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name="Super Admin").exists():
             return True
 
-        if request.user.is_shelter_admin():
+        if request.user.groups.filter(name="Shelter Admin").exists():
             if obj is None:
                 return True
-            return obj.animal_engagement.animal.shelter == request.user.shelter
+            if hasattr(request.user, "shelter") and request.user.shelter:
+                return obj.animal_engagement.animal.shelter == request.user.shelter
+            return False
 
         return False
 

@@ -1,6 +1,7 @@
 # users/admin.py
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.utils.html import format_html
 
 from shelters.models import Shelter
 
@@ -14,8 +15,8 @@ class CustomUserAdmin(UserAdmin):
         "email",
         "first_name",
         "last_name",
-        "shelter",
-        "get_groups",
+        "shelter_display",
+        "groups_display",
         "is_staff",
         "is_active",
         "date_joined",
@@ -67,42 +68,143 @@ class CustomUserAdmin(UserAdmin):
 
     readonly_fields = ["created_at", "updated_at"]
 
-    def get_groups(self, obj):
-        """Displays user groups"""
+    def shelter_display(self, obj):
+        """Muestra el albergue con formato"""
+        if obj.shelter:
+            return format_html(
+                '<span style="background-color: #3b82f6; color: white; padding: 2px 8px; '
+                'border-radius: 6px; font-size: 11px;">{}</span>',
+                obj.shelter.name
+            )
+        return format_html('<span style="color: #9ca3af;">Sin albergue</span>')
+
+    shelter_display.short_description = "Albergue"
+
+    def groups_display(self, obj):
+        """Muestra los grupos del usuario con badges"""
         groups = obj.groups.all()
         if groups:
-            return ", ".join([g.name for g in groups])
-        return "Sin grupo"
+            colors = {
+                "Super Admin": "#ef4444",
+                "Shelter Admin": "#f59e0b",
+                "Regular User": "#10b981",
+            }
+            badges = []
+            for group in groups:
+                color = colors.get(group.name, "#6b7280")
+                badges.append(
+                    f'<span style="background-color: {color}; color: white; padding: 2px 8px; '
+                    f'border-radius: 6px; font-size: 11px; margin-right: 4px;">{group.name}</span>'
+                )
+            return format_html("".join(badges))
+        return format_html('<span style="color: #9ca3af;">Sin grupo</span>')
 
-    get_groups.short_description = "Grupos"
+    groups_display.short_description = "Grupos"
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         """
-        Customize the ForeignKey fields in the admin form.
-        Restrict visible shelters based on user role.
+        Personalizar campos ForeignKey en el formulario.
+        Restringir albergues visibles según el rol.
         """
         if db_field.name == "shelter":
             if request.user.is_superuser:
                 kwargs["queryset"] = Shelter.objects.all()
-            elif hasattr(request.user, "shelter") and request.user.shelter:
-                kwargs["queryset"] = Shelter.objects.filter(id=request.user.shelter.id)
+            elif request.user.groups.filter(name="Super Admin").exists():
+                kwargs["queryset"] = Shelter.objects.all()
+            elif request.user.groups.filter(name="Shelter Admin").exists():
+                if hasattr(request.user, "shelter") and request.user.shelter:
+                    kwargs["queryset"] = Shelter.objects.filter(id=request.user.shelter.id)
+                else:
+                    kwargs["queryset"] = Shelter.objects.none()
             else:
                 kwargs["queryset"] = Shelter.objects.all()
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        """
+        Restringir grupos que pueden ser asignados según el rol del admin.
+        """
+        if db_field.name == "groups":
+            from django.contrib.auth.models import Group
+            
+            if request.user.is_superuser:
+                kwargs["queryset"] = Group.objects.all()
+            elif request.user.groups.filter(name="Super Admin").exists():
+                kwargs["queryset"] = Group.objects.all()
+            elif request.user.groups.filter(name="Shelter Admin").exists():
+                kwargs["queryset"] = Group.objects.filter(name="Regular User")
+            else:
+                kwargs["queryset"] = Group.objects.none()
+
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
+
     def get_queryset(self, request):
         """
-        Filter users based on permissions. Super Admin sees everyone,
-        Shelter Admin only sees users in their shelter.
+        Filtrar usuarios según permisos usando Groups.
+        Super Admin ve todos, Shelter Admin solo usuarios de su albergue.
         """
         qs = super().get_queryset(request)
 
         if request.user.is_superuser:
             return qs
+        if request.user.groups.filter(name="Super Admin").exists():
+            return qs
 
-        if hasattr(request.user, "is_shelter_admin") and request.user.is_shelter_admin():
+        if request.user.groups.filter(name="Shelter Admin").exists():
             if hasattr(request.user, "shelter") and request.user.shelter:
-                return qs.filter(shelter=request.user.shelter)
+                from django.db.models import Q
+                return qs.filter(
+                    Q(shelter=request.user.shelter) |
+                    Q(shelter__isnull=True, groups__name="Regular User")
+                ).distinct()
+            return qs.none()
 
-        return qs
+        return qs.none()
+
+    def has_add_permission(self, request):
+        """Super Admin y Shelter Admin pueden crear usuarios"""
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name__in=["Super Admin", "Shelter Admin"]).exists():
+            return True
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """Solo Super Admin puede eliminar usuarios"""
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name="Super Admin").exists():
+            return True
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        """Super Admin y Shelter Admin pueden editar usuarios"""
+        if request.user.is_superuser:
+            return True
+        if request.user.groups.filter(name="Super Admin").exists():
+            return True
+
+        if request.user.groups.filter(name="Shelter Admin").exists():
+            if obj is None:  
+                return True
+            if hasattr(request.user, "shelter") and request.user.shelter:
+                if obj.shelter == request.user.shelter:
+                    return True
+                if obj.shelter is None and obj.groups.filter(name="Regular User").exists():
+                    return True
+            return False
+
+        return False
+
+    def save_model(self, request, obj, form, change):
+        """
+        Auto-asignar el shelter del Shelter Admin al crear usuarios.
+        """
+        if not change:
+            if request.user.groups.filter(name="Shelter Admin").exists():
+                if hasattr(request.user, "shelter") and request.user.shelter:
+                    if not obj.shelter:
+                        obj.shelter = request.user.shelter
+        
+        super().save_model(request, obj, form, change)

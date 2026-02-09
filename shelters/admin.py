@@ -62,7 +62,7 @@ class ShelterAdmin(admin.ModelAdmin):
     )
 
     def payment_status(self, obj):
-        """It shows if you have configured payment information."""
+        """Muestra si tiene configurada la información de pago"""
         if obj.has_payment_info():
             return format_html(
                 '<span style="color: green; font-weight: bold;">✓ Configurado</span><br>'
@@ -78,51 +78,58 @@ class ShelterAdmin(admin.ModelAdmin):
     payment_status.short_description = "Estado de Pago"
 
     def get_queryset(self, request):
-        """Filter hostels by role"""
+        """Filtrar albergues por rol usando Groups"""
         qs = super().get_queryset(request)
 
         if request.user.is_superuser:
             return qs
-
-        if hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
+        if request.user.groups.filter(name="Super Admin").exists():
             return qs
 
-        if (
-            hasattr(request.user, "is_shelter_admin")
-            and request.user.is_shelter_admin()
-        ):
+        if request.user.groups.filter(name="Shelter Admin").exists():
             if hasattr(request.user, "shelter") and request.user.shelter:
                 return qs.filter(id=request.user.shelter.id)
+            return qs.none()
 
         return qs.none()
 
+    def get_readonly_fields(self, request, obj=None):
+        """Hacer ciertos campos readonly para Shelter Admins"""
+        readonly = list(self.readonly_fields)
+        
+        if request.user.groups.filter(name="Shelter Admin").exists():
+            readonly.extend(['legal_name', 'identification_number', 'is_active'])
+        
+        return readonly
+
     def has_add_permission(self, request):
-        """Only Super Admins can create hostels"""
+        """Solo Super Admins pueden crear albergues"""
         if request.user.is_superuser:
             return True
-        if hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
+        if request.user.groups.filter(name="Super Admin").exists():
             return True
         return False
 
     def has_delete_permission(self, request, obj=None):
-        """Only Super Admin can delete hostels"""
+        """Solo Super Admin puede eliminar albergues"""
         if request.user.is_superuser:
             return True
-        if hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
+        if request.user.groups.filter(name="Super Admin").exists():
             return True
         return False
 
     def has_change_permission(self, request, obj=None):
-        """Super Admin and Shelter Admin can edit"""
+        """Super Admin y Shelter Admin pueden editar"""
         if request.user.is_superuser:
             return True
-        if hasattr(request.user, "is_superadmin") and request.user.is_superadmin():
+        if request.user.groups.filter(name="Super Admin").exists():
             return True
-        if (
-            hasattr(request.user, "is_shelter_admin")
-            and request.user.is_shelter_admin()
-        ):
-            if obj is None:
+        
+        if request.user.groups.filter(name="Shelter Admin").exists():
+            if obj is None:  
                 return True
-            return obj == request.user.shelter
+            if hasattr(request.user, "shelter") and request.user.shelter:
+                return obj == request.user.shelter
+            return False
+        
         return False

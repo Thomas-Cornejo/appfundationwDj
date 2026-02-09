@@ -98,11 +98,10 @@ class History(models.Model):
         help_text="Solo llenar si es un ingreso. Dejar vacío para eventos médicos.",
     )
 
-    clinical_document = CloudinaryField(
+    clinical_document = models.FileField(
+        upload_to="clinical_histories/",
         blank=True,
         null=True,
-        resource_type="auto",
-        folder="clinical_histories",
         verbose_name="Documento clínico",
         help_text="Sube la historia clínica en formato PDF, JPG, JPEG, PNG o WEBP",
     )

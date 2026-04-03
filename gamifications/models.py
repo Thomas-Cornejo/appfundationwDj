@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.db.models import OuterRef, Subquery
 from django.utils import timezone
 
 from animals.models import Animal
@@ -369,6 +370,16 @@ class WalletRecharge(models.Model):
         help_text="Datos completos de la respuesta de Wompi",
     )
 
+    retry_count = models.IntegerField(default=0, verbose_name="Numero de reintentos realizados")
+    failure_reason = models.CharField(
+        max_length=100, blank=True, null=True, verbose_name="Razon del fallo"
+    )
+    retry_key = models.CharField(
+        max_length=64, blank=True, null=True, unique=True, verbose_name="Clave de reintento"
+    )
+    original_recharge = models.ForeignKey(
+        "self", null=True, blank=True, on_delete=models.SET_NULL, related_name="retries"
+    )
     admin_notes = models.TextField(blank=True, null=True, verbose_name="Notas del administrador")
     created_at = models.DateTimeField(auto_now_add=True)
     approved_at = models.DateTimeField(null=True, blank=True)

@@ -425,6 +425,107 @@ class WalletRecharge(models.Model):
         return int(amount_cop / 10)
 
 
+class PaymentEvent(models.Model):
+    """
+    Tabla append-only de eventos de pago.
+    """
+
+    STATUS_CHOICES = [
+        ("PENDING", "Pendiente"),
+        ("APPROVED", "Aprobado"),
+        ("FAILED", "Fallido"),
+        ("RETRYING", "En reintento"),
+        ("ABANDONED", "Abandonado"),
+    ]
+    recharge = models.ForeignKey(
+        WalletRecharge,
+        on_delete=models.CASCADE,
+        related_name="events",
+        verbose_name="Recarga asociada",
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        verbose_name="Estado del evento",
+    )
+
+    idempotency_key = models.CharField(
+        max_length=64,
+        unique=True,
+        verbose_name="Clave de idempotencia",
+        help_text="SHA256(wallet_id + shelter_id + amount + titular + fecha_dia)",
+    )
+
+    failure_reason = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name="Razón del fallo (código Wompi)",
+    )
+
+    wompi_transaction_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="ID de transacción Wompi",
+    )
+
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name="Datos extra del evento",
+        help_text="Respuesta completa de Wompi u otros datos de contexto",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Evento de Pago"
+        verbose_name_plural = "Eventos de Pago"
+        ordering = ["-created_at"]
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            raise ValueError(
+                "PaymentEvent es append-only. No se puede modificar un evento existente."
+            )
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ValueError("PaymentEvent es append-only. No se puede eliminar un evento.")
+
+    def __str__(self):
+        return f"Recharge #{self.recharge.id} → {self.status} [{self.created_at}]"
+
+    @classmethod
+    def get_latest_status(cls, recharge):
+        """Devuelve el evento más reciente para una recarga."""
+        return cls.objects.filter(recharge=recharge).first()
+
+    @classmethod
+    def get_failed_retryable(cls):
+        """
+        Devuelve las recargas cuyo último evento es FAILED
+        y que no han agotado reintentos.
+        """
+
+        latest_event = (
+            cls.objects.filter(recharge=OuterRef("recharge"))
+            .order_by("-created_at")
+            .values("status")[:1]
+        )
+
+        return cls.objects.filter(
+            status="FAILED",
+            created_at=Subquery(
+                cls.objects.filter(recharge=OuterRef("recharge"))
+                .order_by("-created_at")
+                .values("created_at")[:1]
+            ),
+        ).select_related("recharge__wallet__user", "recharge__wallet__shelter")
+
+
 class DirectPayment(models.Model):
     """
     Direct payments to shelters (for medical emergencies).

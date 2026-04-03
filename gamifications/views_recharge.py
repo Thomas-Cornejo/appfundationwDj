@@ -7,12 +7,14 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from engagements.models import AnimalEngagement
+from gamifications.models import PaymentEvent
+from gamifications.services.idempotency import generate_idempotency_key
 from shelters.models import Shelter
 
 from .models import Wallet, WalletRecharge
@@ -81,20 +83,33 @@ def create_recharge(request):
     Create a pending recharge and generate the reference for Wompi.
     """
     try:
-        amount_cop = int(request.POST.get("amount_cop"))
-        shelter_id = request.POST.get("shelter_id")
-        payment_method = request.POST.get("payment_method", "WOMPI")
+        amount_cop = int(request.POST.get("amount_cop", "").strip())
+    except (ValueError, TypeError):
+        return JsonResponse(
+            {"success": False, "error": "El monto debe ser un número entero."},
+            status=400,
+        )
 
-        if amount_cop < 5000:
-            return JsonResponse(
-                {"success": False, "error": "El monto mínimo de recarga es $5,000 COP"},
-                status=400,
-            )
+    if amount_cop < 5000:
+        return JsonResponse(
+            {"success": False, "error": "El monto mínimo de recarga es $5,000 COP"},
+            status=400,
+        )
 
+    shelter_id = request.POST.get("shelter_id", "").strip()
+    if not shelter_id:
+        return JsonResponse(
+            {"success": False, "error": "Debes seleccionar un albergue."},
+            status=400,
+        )
+
+    try:
         shelter = get_object_or_404(Shelter, id=shelter_id, is_active=True)
 
-        wallet, created = Wallet.objects.get_or_create(
-            user=request.user, shelter=shelter, defaults={"balance": 0}
+        wallet, _ = Wallet.objects.get_or_create(
+            user=request.user,
+            shelter=shelter,
+            defaults={"balance": 0},
         )
 
         base_coins = amount_cop // 10
@@ -105,9 +120,36 @@ def create_recharge(request):
             bonus = int(base_coins * 0.15)
         elif amount_cop >= 20000:
             bonus = int(base_coins * 0.10)
-
         total_coins = base_coins + bonus
 
+        idempotency_key = generate_idempotency_key(
+            wallet_id=wallet.id,
+            shelter_id=shelter.id,
+            amount_cop=amount_cop,
+            username=request.user.username,
+        )
+
+        existing_event = (
+            PaymentEvent.objects.filter(idempotency_key=idempotency_key)
+            .select_related("recharge")
+            .first()
+        )
+        if existing_event:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "idempotent": True,
+                    "existing_status": existing_event.status,
+                    "existing_recharge_id": existing_event.recharge.id,
+                    "error": (
+                        "Ya existe un pago con estos datos hoy. "
+                        f"Estado actual: {existing_event.get_status_display()}"
+                    ),
+                },
+                status=409,
+            )
+
+        payment_method = request.POST.get("payment_method", "WOMPI")
         recharge = WalletRecharge.objects.create(
             wallet=wallet,
             amount_cop=amount_cop,
@@ -119,12 +161,18 @@ def create_recharge(request):
         timestamp = int(time.time())
         reference = f"RCG{recharge.id}U{request.user.id}T{timestamp}"
         recharge.payment_reference = reference
-        recharge.save()
+        recharge.save(update_fields=["payment_reference"])
+
+        PaymentEvent.objects.create(
+            recharge=recharge,
+            status="PENDING",
+            idempotency_key=idempotency_key,
+        )
+
         amount_in_cents = amount_cop * 100
-        amount_in_cents_str = str(amount_in_cents)
         currency = "COP"
         concatenated_string = (
-            f"{reference}{amount_in_cents_str}{currency}{settings.WOMPI_INTEGRITY_SECRET}"
+            f"{reference}{amount_in_cents}{currency}{settings.WOMPI_INTEGRITY_SECRET}"
         )
         integrity_signature = hashlib.sha256(concatenated_string.encode("utf-8")).hexdigest()
 
@@ -144,16 +192,16 @@ def create_recharge(request):
             }
         )
 
-    except Shelter.DoesNotExist:
-        return JsonResponse({"success": False, "error": "Albergue no encontrado"}, status=404)
-    except ValueError as e:
-        return JsonResponse({"success": False, "error": f"Datos inválidos: {str(e)}"}, status=400)
+    except Http404:
+        return JsonResponse({"success": False, "error": "Albergue no encontrado."}, status=404)
     except Exception as e:
-        print(f"Error en create_recharge: {e}")
         import traceback
 
         traceback.print_exc()
-        return JsonResponse({"success": False, "error": f"Error interno: {str(e)}"}, status=500)
+        return JsonResponse(
+            {"success": False, "error": "Error interno del servidor."},
+            status=500,
+        )
 
 
 @csrf_exempt
